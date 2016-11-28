@@ -129,6 +129,7 @@ namespace libCanopenSimple
 
             serialPort.Write(String.Format("C\rS{0}\rO\r", (int)speed));
 
+            threadrun = true;
             Thread thread = new Thread(new ThreadStart(asyncprocess));
             thread.Name = "CAN Open worker";
             thread.Start();
@@ -340,6 +341,19 @@ namespace libCanopenSimple
                 }
                     SDO.kick_SDO();
 
+                    if (sdo_queue.Count > 0)
+                    {
+                        SDO front = sdo_queue.Peek();
+                        if (!SDOcallbacks.ContainsKey((UInt16)(front.node + 0x580)))
+                        {
+                            front = sdo_queue.Dequeue();
+                            //Listen for the reply on 0x580+node id
+                            SDOcallbacks.Add((UInt16)(front.node + 0x580), front);
+                            front.sendSDO();
+                        }
+                    }
+                     
+
                     System.Threading.Thread.Sleep(1);
             }
 
@@ -354,6 +368,8 @@ namespace libCanopenSimple
             return true;
 
         }
+
+        private Queue<SDO> sdo_queue = new Queue<SDO>();
 
         public SDO SDOwrite(byte node, UInt16 index, byte subindex, UInt32 udata, Action<SDO> completedcallback)
         {
@@ -389,20 +405,16 @@ namespace libCanopenSimple
         public SDO SDOwrite(byte node, UInt16 index, byte subindex, byte[] data, Action<SDO> completedcallback)
         {
 
-            SDO sdo = new SDO(this,node,index,subindex, SDO.direction.SDO_WRITE, completedcallback,data);
-            //Listen for the reply on 0x580+node id
-            SDOcallbacks.Add((UInt16)(node + 0x580), sdo);
-
+            SDO sdo = new SDO(this, node, index, subindex, SDO.direction.SDO_WRITE, completedcallback, data);
+            sdo_queue.Enqueue(sdo);
             return sdo;
         }
 
-       
+     
         public SDO SDOread(byte node, UInt16 index, byte subindex,Action<SDO> completedcallback)
         {
             SDO sdo = new SDO(this, node, index, subindex, SDO.direction.SDO_READ, completedcallback,null);
-            //Listen for the reply on 0x580+node id
-            SDOcallbacks.Add((UInt16)(node + 0x580), sdo);
-
+            sdo_queue.Enqueue(sdo);
             return sdo;
         }
 

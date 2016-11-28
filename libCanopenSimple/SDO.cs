@@ -68,8 +68,11 @@ namespace libCanopenSimple
             timeout = DateTime.Now + new TimeSpan(0, 0, 5);
             dbglevel = can.dbglevel;
 
+        }
 
-            lock(activeSDO)
+        public void sendSDO()
+        {
+            lock (activeSDO)
                 activeSDO.Add(this);
         }
 

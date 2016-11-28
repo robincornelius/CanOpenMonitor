@@ -3,3 +3,8 @@
 /CanMonitor/CanMonitor/bin/Debug
 /libCanopenSimple/obj/Debug
 /libCanopenSimple/bin/Debug
+/CanMonitor/BWPDOParser/bin/Debug
+/CanMonitor/BWPDOParser/obj/Debug
+/CanMonitor/PDOInterface/bin/Debug
+/CanMonitor/PDOInterface/obj/Debug
+/CanMonitor/*.suo
