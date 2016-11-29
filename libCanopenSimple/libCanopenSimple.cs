@@ -354,7 +354,7 @@ namespace libCanopenSimple
                     }
                      
 
-                    System.Threading.Thread.Sleep(1);
+                   // System.Threading.Thread.Sleep(1);
             }
 
         }
@@ -383,9 +383,9 @@ namespace libCanopenSimple
             return SDOwrite(node, index, subindex, bytes, completedcallback);
         }
 
-        public SDO SDOwrite(byte node, UInt16 index, byte subindex, float ddata, Action<SDO> completedcallback)
+        public SDO SDOwrite(byte node, UInt16 index, byte subindex, Int16 udata, Action<SDO> completedcallback)
         {
-            byte[] bytes = BitConverter.GetBytes(ddata);
+            byte[] bytes = BitConverter.GetBytes(udata);
             return SDOwrite(node, index, subindex, bytes, completedcallback);
         }
 
@@ -395,12 +395,27 @@ namespace libCanopenSimple
             return SDOwrite(node, index, subindex, bytes, completedcallback);
         }
 
+        public SDO SDOwrite(byte node, UInt16 index, byte subindex, float ddata, Action<SDO> completedcallback)
+        {
+            byte[] bytes = BitConverter.GetBytes(ddata);
+            return SDOwrite(node, index, subindex, bytes, completedcallback);
+        }
+
+
         public SDO SDOwrite(byte node, UInt16 index, byte subindex, byte udata, Action<SDO> completedcallback)
         {
             byte[] bytes = new byte[1];
             bytes[0] = udata;
             return SDOwrite(node, index, subindex, bytes, completedcallback);
         }
+
+        public SDO SDOwrite(byte node, UInt16 index, byte subindex, sbyte udata, Action<SDO> completedcallback)
+        {
+            byte[] bytes = new byte[1];
+            bytes[0] = (byte)udata;
+            return SDOwrite(node, index, subindex, bytes, completedcallback);
+        }
+
 
         public SDO SDOwrite(byte node, UInt16 index, byte subindex, byte[] data, Action<SDO> completedcallback)
         {

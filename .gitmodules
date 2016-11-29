@@ -1,0 +1,3 @@
+[submodule "libeds"]
+	path = libeds
+	url = https://github.com/robincornelius/libedssharp.git

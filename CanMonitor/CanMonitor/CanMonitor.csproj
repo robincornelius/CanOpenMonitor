@@ -55,6 +55,18 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SDOEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SDOEditor.Designer.cs">
+      <DependentUpon>SDOEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ValueEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ValueEditor.Designer.cs">
+      <DependentUpon>ValueEditor.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -68,6 +80,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="SDOEditor.resx">
+      <DependentUpon>SDOEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ValueEditor.resx">
+      <DependentUpon>ValueEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -85,6 +103,10 @@
     <ProjectReference Include="..\..\libCanopenSimple\libCanopenSimple.csproj">
       <Project>{2fb81add-258f-4135-a9b9-17e2aca2448e}</Project>
       <Name>libCanopenSimple</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libeds\libEDSsharp\libEDSsharp.csproj">
+      <Project>{cc0fa4b1-2bfc-43b3-8c56-b428df2d24e7}</Project>
+      <Name>libEDSsharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\PDOInterface\PDOInterface.csproj">
       <Project>{1f61b56a-0bdc-45f6-8954-cf2550775cbd}</Project>

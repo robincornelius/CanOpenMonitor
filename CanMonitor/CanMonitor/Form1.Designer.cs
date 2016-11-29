@@ -58,6 +58,7 @@
             this.button_eepromreset = new System.Windows.Forms.Button();
             this.button_readAD = new System.Windows.Forms.Button();
             this.textBox_ad = new System.Windows.Forms.TextBox();
+            this.button_sdo = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -86,6 +87,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.button_sdo);
             this.splitContainer1.Panel1.Controls.Add(this.button_open);
             this.splitContainer1.Panel1.Controls.Add(this.comboBox_rate);
             this.splitContainer1.Panel1.Controls.Add(this.label3);
@@ -372,6 +374,16 @@
             this.textBox_ad.Size = new System.Drawing.Size(100, 20);
             this.textBox_ad.TabIndex = 16;
             // 
+            // button_sdo
+            // 
+            this.button_sdo.Location = new System.Drawing.Point(642, 12);
+            this.button_sdo.Name = "button_sdo";
+            this.button_sdo.Size = new System.Drawing.Size(106, 23);
+            this.button_sdo.TabIndex = 4;
+            this.button_sdo.Text = "SDO";
+            this.button_sdo.UseVisualStyleBackColor = true;
+            this.button_sdo.Click += new System.EventHandler(this.button_sdo_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -429,6 +441,7 @@
         private System.Windows.Forms.Button button_eepromreset;
         private System.Windows.Forms.TextBox textBox_ad;
         private System.Windows.Forms.Button button_readAD;
+        private System.Windows.Forms.Button button_sdo;
     }
 }
 

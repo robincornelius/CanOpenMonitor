@@ -32,8 +32,15 @@ namespace CanMonitor
 
 
             comboBox_rate.SelectedIndex = 6;
-            if(comboBox_port.Items.Count>1)
+
+
+            if (comboBox_port.Items.Count > 1)
+            {
                 comboBox_port.SelectedIndex = 1;
+                comboBox_port.Text = "COM4";
+                comboBox_port.SelectedItem = "COM4";
+            }
+
 
             lco.loggercallback_NMT = log_NMT;
             lco.loggercallback_NMTEC = log_NMTEC;
@@ -66,7 +73,7 @@ namespace CanMonitor
 
         private void log_NMT(canpacket payload)
         {
-            listView1.Invoke(new MethodInvoker(delegate
+            listView1.BeginInvoke(new MethodInvoker(delegate
             {
                 string[] items = new string[5];
                 items[0] = "NMT";
@@ -123,7 +130,7 @@ namespace CanMonitor
 
         private void log_NMTEC(canpacket payload)
         {
-            listView1.Invoke(new MethodInvoker(delegate
+            listView1.BeginInvoke(new MethodInvoker(delegate
             {
                 string[] items = new string[5];
                 items[0] = "NMTEC";
@@ -165,7 +172,7 @@ namespace CanMonitor
 
         private void log_SDO(canpacket payload)
         {
-            listView1.Invoke(new MethodInvoker(delegate
+            listView1.BeginInvoke(new MethodInvoker(delegate
             {
                 string[] items = new string[5];
                 items[0] = "SDO";
@@ -231,7 +238,7 @@ namespace CanMonitor
 
         private void log_PDO(canpacket payload)
         {
-            listView1.Invoke(new MethodInvoker(delegate
+            listView1.BeginInvoke(new MethodInvoker(delegate
             {
                 string[] items = new string[5];
                 items[0] = "PDO";
@@ -260,7 +267,7 @@ namespace CanMonitor
 
         private void log_EMCY(canpacket payload)
         {
-            listView1.Invoke(new MethodInvoker(delegate
+            listView1.BeginInvoke(new MethodInvoker(delegate
             {
                 string[] items = new string[5];
                 items[0] = "EMCY";
@@ -398,6 +405,12 @@ namespace CanMonitor
             }));
 
 
+        }
+
+        private void button_sdo_Click(object sender, EventArgs e)
+        {
+            SDOEditor sdo = new SDOEditor(lco);
+            sdo.Show();
         }
     }
 

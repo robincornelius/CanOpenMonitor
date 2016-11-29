@@ -15,6 +15,8 @@ namespace PDOParser
             dic.Add(0x181, PDO181);
             dic.Add(0x183, PDO183);
             dic.Add(0x203, PDO203);
+            dic.Add(0x190, PDO190);
+
         }
 
         enum Estates
@@ -59,7 +61,9 @@ namespace PDOParser
             Estates chargerstate = (Estates)data[0];
             EController_states controller_state = (EController_states)data[1];
 
-            msg = string.Format("Charger = {0} - Master = {1}", chargerstate.ToString(), controller_state.ToString());
+            Int16 vcaps = BitConverter.ToInt16(data, 2);
+
+            msg = string.Format("Charger = {0} - Master = {1} - Caps = {2}", chargerstate.ToString(), controller_state.ToString(),vcaps);
 
             return msg;
 
@@ -81,6 +85,13 @@ namespace PDOParser
             msg = String.Format("OUT {0}", Convert.ToString(data[0], 2));
 
             return msg;
+        }
+
+        public static string PDO190(byte[] data)
+        {
+            
+            return String.Format("Target {0} Phase {1}", BitConverter.ToInt16(data,0),BitConverter.ToInt32(data,2));
+
         }
     }
 }

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BWPDOParser", "BWPDOParser\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDOInterface", "PDOInterface\PDOInterface.csproj", "{1F61B56A-0BDC-45F6-8954-CF2550775CBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libEDSsharp", "..\libeds\libEDSsharp\libEDSsharp.csproj", "{CC0FA4B1-2BFC-43B3-8C56-B428DF2D24E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{1F61B56A-0BDC-45F6-8954-CF2550775CBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F61B56A-0BDC-45F6-8954-CF2550775CBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F61B56A-0BDC-45F6-8954-CF2550775CBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC0FA4B1-2BFC-43B3-8C56-B428DF2D24E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC0FA4B1-2BFC-43B3-8C56-B428DF2D24E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC0FA4B1-2BFC-43B3-8C56-B428DF2D24E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC0FA4B1-2BFC-43B3-8C56-B428DF2D24E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
