@@ -16,6 +16,9 @@ namespace PDOParser
             dic.Add(0x183, PDO183);
             dic.Add(0x203, PDO203);
             dic.Add(0x190, PDO190);
+            dic.Add(0x204, PDO204);
+            dic.Add(0x304, PDO304);
+            dic.Add(0x404, PDO404);
 
         }
 
@@ -92,6 +95,21 @@ namespace PDOParser
             
             return String.Format("Target {0} Phase {1}", BitConverter.ToInt16(data,0),BitConverter.ToInt32(data,2));
 
+        }
+
+        public static string PDO204(byte[] data)
+        {
+            return "saftey unlock";
+        }
+        public static string PDO304(byte[] data)
+        {
+
+            return "fire in the hole";
+        }
+        public static string PDO404(byte[] data)
+        {
+
+            return string.Format("Select FX {0}", data[0]); ;
         }
     }
 }

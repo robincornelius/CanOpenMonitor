@@ -19,6 +19,10 @@ namespace CanMonitor
 
         EDSsharp eds;
         libCanopen lco;
+        string filename = null;
+        private string appdatafolder;
+
+        private List<string> _mru = new List<string>();
 
         public SDOEditor(libCanopen lco)
         {
@@ -26,73 +30,91 @@ namespace CanMonitor
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+        private void loadeds(string filename)
         {
+            if (filename == null || filename == "")
+                return;
 
-            OpenFileDialog odf = new OpenFileDialog();
-            odf.Filter = "XML (*.xml)|*.xml|EDS (*.eds)|*.eds";
-            if (odf.ShowDialog() == DialogResult.OK)
+            switch (Path.GetExtension(filename).ToLower())
             {
-                switch(Path.GetExtension(odf.FileName).ToLower())
-                {
-                    case ".xml":
-                        {
-                            CanOpenXML coxml = new CanOpenXML();
-                            coxml.readXML(odf.FileName);
-
-                            Bridge b = new Bridge();
-
-                            eds = b.convert(coxml.dev);
-                            eds.filename = odf.FileName;
-                          
-                        }
-
-                        break;
-
-                    case ".eds":
-                        {
-                            eds = new EDSsharp();
-                            eds.loadfile(odf.FileName);
-                        }
-                        break;
-
-
-                }
-
-                numericUpDown_node.Value = eds.di.concreteNodeId;
-
-                listView1.BeginUpdate();
-                listView1.Items.Clear();
-    
-                foreach(ODentry tod in eds.ods.Values)
-                {
-                    if (tod.location != StorageLocation.EEPROM)
-                        continue;
-
-                    if(tod.objecttype==ObjectType.ARRAY || tod.objecttype == ObjectType.REC)
+                case ".xml":
                     {
-                        foreach (ODentry subod in tod.subobjects.Values)
-                        {
-                            if (subod.subindex == 0)
-                                continue;
+                        CanOpenXML coxml = new CanOpenXML();
+                        coxml.readXML(filename);
 
-                            addtolist(subod);
-                        }
+                        Bridge b = new Bridge();
 
-                        continue;
+                        eds = b.convert(coxml.dev);
+                        eds.filename = filename;
 
                     }
 
-                    addtolist(tod);
+                    break;
 
+                case ".eds":
+                    {
+                        eds = new EDSsharp();
+                        eds.loadfile(filename);
+                    }
+                    break;
+
+
+            }
+
+            textBox_edsfilename.Text = eds.di.ProductName;
+
+            numericUpDown_node.Value = eds.di.concreteNodeId;
+
+            listView1.BeginUpdate();
+            listView1.Items.Clear();
+
+            StorageLocation loc = StorageLocation.EEPROM;
+
+
+            foreach (ODentry tod in eds.ods.Values)
+            {
+
+                if (comboBoxtype.SelectedItem.ToString() != "ALL")
+                { 
+                    if (comboBoxtype.SelectedItem.ToString()=="EEPROM" && (tod.location != StorageLocation.EEPROM))
+                        continue;
+                    if (comboBoxtype.SelectedItem.ToString() == "ROM" && (tod.location != StorageLocation.ROM))
+                        continue;
+                    if (comboBoxtype.SelectedItem.ToString() == "RAM" && (tod.location != StorageLocation.RAM))
+                        continue;
+                             
+                }
+              
+                if (tod.objecttype == ObjectType.ARRAY || tod.objecttype == ObjectType.REC)
+                {
+                    foreach (ODentry subod in tod.subobjects.Values)
+                    {
+                        if (subod.subindex == 0)
+                            continue;
+
+                        addtolist(subod);
+                    }
+
+                    continue;
 
                 }
 
-                listView1.EndUpdate();
+                addtolist(tod);
 
-   
+
             }
-           
+
+            listView1.EndUpdate();
+
+            this.filename = filename;
+            addtoMRU(filename);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+          
         }
 
         public struct sdocallbackhelper
@@ -108,8 +130,11 @@ namespace CanMonitor
             items[0] = string.Format("0x{0:x4}", od.index);
             items[1] = string.Format("0x{0:x2}", od.subindex);
 
-            items[2] = od.parameter_name;
-            
+            if(od.parent==null)
+                items[2] = od.parameter_name;
+            else
+                items[2] = od.parent.parameter_name + " -- " + od.parameter_name;
+
             if (od.datatype == DataType.UNKNOWN && od.parent!=null)
             {
                 items[3] = od.parent.datatype.ToString();
@@ -221,8 +246,22 @@ namespace CanMonitor
             if(listView1.SelectedItems.Count==0)
                 return;
 
+            if (!lco.isopen())
+            {
+                MessageBox.Show("CAN not open");
+                return;
+            }
+
+         
+
             sdocallbackhelper h = (sdocallbackhelper)listView1.SelectedItems[0].Tag;
             ValueEditor ve = new ValueEditor(h.od, listView1.SelectedItems[0].SubItems[5].Text);
+
+            if(h.od.location == StorageLocation.ROM)
+            {
+                MessageBox.Show("Cannot editor ROM objects");
+                return;
+            }
 
             SDO sdo = null;
             if(ve.ShowDialog()==DialogResult.OK)
@@ -296,6 +335,12 @@ namespace CanMonitor
         private void button_read_Click(object sender, EventArgs e)
         {
 
+            if (!lco.isopen())
+            {
+                MessageBox.Show("CAN not open");
+                return;
+            }
+                
             listView1.Invoke(new MethodInvoker(delegate
             {
                 foreach (ListViewItem lvi in listView1.Items)
@@ -312,6 +357,99 @@ namespace CanMonitor
 
 
         }
+
+        private void loadEDSXMLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog odf = new OpenFileDialog();
+            odf.Filter = "XML (*.xml)|*.xml|EDS (*.eds)|*.eds";
+            if (odf.ShowDialog() == DialogResult.OK)
+            {
+                loadeds(odf.FileName);
+            }
+           
+        }
+
+        void OpenRecentFile(object sender, EventArgs e)
+        {
+            var menuItem = (ToolStripMenuItem)sender;
+            var filepath = (string)menuItem.Tag;
+            loadeds(filepath);
+
+        }
+
+        private void comboBoxtype_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            loadeds(filename);
+        }
+
+        private void addtoMRU(string path)
+        {
+            // if it already exists remove it then let it readd itsself
+            // so it will be promoted to the top of the list
+            if (_mru.Contains(path))
+                _mru.Remove(path);
+
+            _mru.Insert(0, path);
+
+            if (_mru.Count > 10)
+                _mru.RemoveAt(10);
+
+            populateMRU();
+
+        }
+
+        private void populateMRU()
+        {
+
+            mnuRecentlyUsed.DropDownItems.Clear();
+
+            foreach (var path in _mru)
+            {
+                var item = new ToolStripMenuItem(path);
+                item.Tag = path;
+                item.Click += OpenRecentFile;
+                switch (Path.GetExtension(path))
+                {
+                    case ".xml":
+                        item.Image = Properties.Resources.GenericVSEditor_9905;
+                        break;
+                    case ".eds":
+                        item.Image = Properties.Resources.EventLog_5735;
+                        break;
+                  
+                }
+
+                mnuRecentlyUsed.DropDownItems.Add(item);
+            }
+        }
+
+        private void SDOEditor_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            var mruFilePath = Path.Combine(appdatafolder, "SDOMRU.txt");
+            System.IO.File.WriteAllLines(mruFilePath, _mru);
+        }
+
+        private void SDOEditor_Load(object sender, EventArgs e)
+        {
+            //First lets create an appdata folder
+
+            // The folder for the roaming current user 
+            string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            // Combine the base folder with your specific folder....
+            appdatafolder = Path.Combine(folder, "CanMonitor");
+
+            // Check if folder exists and if not, create it
+            if (!Directory.Exists(appdatafolder))
+                Directory.CreateDirectory(appdatafolder);
+
+            var mruFilePath = Path.Combine(appdatafolder, "SDOMRU.txt");
+            if (System.IO.File.Exists(mruFilePath))
+                _mru.AddRange(System.IO.File.ReadAllLines(mruFilePath));
+
+            populateMRU();
+        }
+
     }
 
 }

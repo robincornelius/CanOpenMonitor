@@ -103,6 +103,15 @@ namespace libCanopenSimple
         string buf;
         public debuglevel dbglevel = debuglevel.DEBUG_NONE;
 
+        public bool isopen()
+        {
+            if (serialPort == null)
+                return false;
+
+           return serialPort.IsOpen;
+
+        }
+
         public libCanopen()
         {
             //preallocate all NMT guards

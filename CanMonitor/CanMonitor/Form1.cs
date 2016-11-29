@@ -10,7 +10,8 @@ using System.Windows.Forms;
 using libCanopenSimple;
 using System.Reflection;
 using PDOInterface;
-
+using N_SettingsMgr;
+using System.IO;
 
 namespace CanMonitor
 {
@@ -19,9 +20,21 @@ namespace CanMonitor
 
         private libCanopen lco = new libCanopen();
         private Dictionary<UInt16, Func<byte[], string>> pdoprocessors = new Dictionary<ushort, Func<byte[], string>>();
+        private string appdatafolder;
 
         public Form1()
         {
+
+            try
+            {
+                string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                appdatafolder = Path.Combine(folder, "CanMonitor");
+                SettingsMgr.readXML(Path.Combine(appdatafolder, "settings.xml"));
+            }
+            catch (Exception e)
+            {
+            }
+
             InitializeComponent();
 
 
@@ -31,15 +44,7 @@ namespace CanMonitor
             }
 
 
-            comboBox_rate.SelectedIndex = 6;
-
-
-            if (comboBox_port.Items.Count > 1)
-            {
-                comboBox_port.SelectedIndex = 1;
-                comboBox_port.Text = "COM4";
-                comboBox_port.SelectedItem = "COM4";
-            }
+          
 
 
             lco.loggercallback_NMT = log_NMT;
@@ -309,16 +314,21 @@ namespace CanMonitor
 
                 lco.open(iport, (BUSSPEED)rate);
 
+                button_open.Enabled = false;
+
             }
             catch(Exception ex)
             {
                 MessageBox.Show("Setup error " + ex.ToString());
 
             }
+
+            button_open.Enabled = true;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            SettingsMgr.writeXML(Path.Combine(appdatafolder, "settings.xml"));
             lco.close();
         }
 
@@ -327,6 +337,7 @@ namespace CanMonitor
             listView1.Items.Clear();
         }
 
+        /*
         private void button_sendsdo_Click(object sender, EventArgs e)
         {
 
@@ -376,6 +387,7 @@ namespace CanMonitor
         {
 
         }
+         * 
 
         private void button_eepromreset_Click(object sender, EventArgs e)
         {
@@ -406,11 +418,48 @@ namespace CanMonitor
 
 
         }
+         * */
 
         private void button_sdo_Click(object sender, EventArgs e)
         {
             SDOEditor sdo = new SDOEditor(lco);
             sdo.Show();
+        }
+
+        private void sDOToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SDOEditor sdo = new SDOEditor(lco);
+            sdo.Show();
+        }
+
+        private void eEPROMResetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ResetEEPROM re = new ResetEEPROM(lco);
+            re.ShowDialog();         
+        }
+
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void comboBox_port_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SettingsMgr.settings.options.selectedport = comboBox_port.SelectedItem.ToString();
+            
+        }
+
+        private void comboBox_rate_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SettingsMgr.settings.options.selectedrate = comboBox_rate.SelectedIndex;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            comboBox_rate.SelectedIndex = SettingsMgr.settings.options.selectedrate;
+            comboBox_port.SelectedItem = SettingsMgr.settings.options.selectedport;
+
+           
         }
     }
 

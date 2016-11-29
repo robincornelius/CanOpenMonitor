@@ -8,3 +8,5 @@
 /CanMonitor/PDOInterface/bin/Debug
 /CanMonitor/PDOInterface/obj/Debug
 /CanMonitor/*.suo
+/CanMonitor/Settings/bin/Debug
+/CanMonitor/Settings/obj/Debug
