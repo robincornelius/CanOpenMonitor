@@ -46,7 +46,7 @@
     <Compile Include="SDO.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CAN232_Monitor_Lite_Source %281%29\Settings\Settings.csproj">
+    <ProjectReference Include="..\CanMonitor\Settings\Settings.csproj">
       <Project>{d77e70e0-5808-4f97-a2a1-fc23d03aef6a}</Project>
       <Name>Settings</Name>
     </ProjectReference>

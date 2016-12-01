@@ -125,8 +125,7 @@ namespace CanMonitor
                 listView1.BeginUpdate();
                 listView1.Items.Add(i);
                 listView1.EndUpdate();
-                if (checkbox_autoscroll.Checked)
-                    listView1.EnsureVisible(listView1.Items.Count - 1);
+              
             }));
 
            
@@ -170,8 +169,8 @@ namespace CanMonitor
                 listView1.BeginUpdate();
                 listView1.Items.Add(i);
                 listView1.EndUpdate();
-                if (checkbox_autoscroll.Checked)
-                    listView1.EnsureVisible(listView1.Items.Count - 1);
+                //if (checkbox_autoscroll.Checked)
+                //    listView1.EnsureVisible(listView1.Items.Count - 1);
             }));
         }
 
@@ -228,16 +227,24 @@ namespace CanMonitor
                 string.Format("0x{0:x4}/{1:x2}", index, sub);
                 msg += string.Format("SCS {0} size {1} expidited {2} size set {3} seg size {4} tottle {5}", SCS, n, e, s, sn, t);
 
-
                 items[4] = msg;
 
                 ListViewItem i = new ListViewItem(items);
+
+                if ((payload.data[0] & 0x80) != 0)
+                {
+                    i.BackColor = Color.Orange;
+                }
+
                 i.ForeColor = Color.DarkBlue;
                 listView1.BeginUpdate();
                 listView1.Items.Add(i);
                 listView1.EndUpdate();
+
                 if (checkbox_autoscroll.Checked)
                     listView1.EnsureVisible(listView1.Items.Count - 1);
+
+
             }));
         }
 
@@ -290,7 +297,15 @@ namespace CanMonitor
                 ListViewItem i = new ListViewItem(items);
 
                 i.ForeColor = Color.White;
-                i.BackColor = Color.Red;
+
+                if (code == 0)
+                {
+                    i.BackColor = Color.Green;
+                }
+                else
+                {
+                    i.BackColor = Color.Red;
+                } 
 
                 listView1.BeginUpdate();
                 listView1.Items.Add(i);
@@ -307,6 +322,12 @@ namespace CanMonitor
             {
                 lco.close();
 
+                if(button_open.Text == "Close")
+                {
+                    button_open.Text = "Open";
+                    return;
+                }
+
                 string port = comboBox_port.SelectedItem.ToString();
                 int iport = int.Parse(port.Substring(3));
 
@@ -314,7 +335,8 @@ namespace CanMonitor
 
                 lco.open(iport, (BUSSPEED)rate);
 
-                button_open.Enabled = false;
+                button_open.Text = "Close";
+
 
             }
             catch(Exception ex)
@@ -460,6 +482,28 @@ namespace CanMonitor
             comboBox_port.SelectedItem = SettingsMgr.settings.options.selectedport;
 
            
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (checkbox_autoscroll.Checked)
+            {
+                if (listView1.Items.Count>1)
+                    listView1.EnsureVisible(listView1.Items.Count - 1);
+            }
+        }
+
+        private void nMTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NMTFrm frm = new NMTFrm(lco);
+            frm.Show();
+        }
+
+        private void errorInjectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ErrorInject ei = new ErrorInject(lco);
+            ei.Show();
+
         }
     }
 

@@ -47,11 +47,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ErrorInject.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErrorInject.Designer.cs">
+      <DependentUpon>ErrorInject.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NMTFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NMTFrm.Designer.cs">
+      <DependentUpon>NMTFrm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -73,8 +85,14 @@
     <Compile Include="ValueEditor.Designer.cs">
       <DependentUpon>ValueEditor.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ErrorInject.resx">
+      <DependentUpon>ErrorInject.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NMTFrm.resx">
+      <DependentUpon>NMTFrm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

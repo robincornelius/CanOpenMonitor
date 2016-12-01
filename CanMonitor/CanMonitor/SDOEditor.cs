@@ -203,9 +203,20 @@ namespace CanMonitor
                     sdocallbackhelper h = (sdocallbackhelper)lvi.Tag;
                     if (h.sdo == sdo)
                     {
+                        if (sdo.state == SDO.SDO_STATE.SDO_ERROR)
+                        {
+                            lvi.SubItems[5].Text = " **ERROR **";
+                            return;
+                        }
+
                         if (sdo.exp == true)
                         {
-                            switch(h.od.datatype)
+
+                            DataType meh = h.od.datatype;
+                            if (meh == DataType.UNKNOWN && h.od.parent != null)
+                                meh = h.od.parent.datatype;
+
+                            switch(meh)
                             {
                                 case DataType.REAL32:
 

@@ -104,12 +104,12 @@ namespace PDOParser
         public static string PDO304(byte[] data)
         {
 
-            return "fire in the hole";
+            return string.Format("Fire inthe hole FX {0}", data[0]); ;
         }
         public static string PDO404(byte[] data)
         {
 
-            return string.Format("Select FX {0}", data[0]); ;
+            return string.Format("Select FX {0} vol {1}", data[0],BitConverter.ToUInt16(data,1));
         }
     }
 }

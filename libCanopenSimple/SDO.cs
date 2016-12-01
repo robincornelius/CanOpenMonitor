@@ -21,6 +21,7 @@ namespace libCanopenSimple
         bool lasttoggle = false;
 
         DateTime timeout;
+      
 
         ManualResetEvent finishedevent;
 
@@ -65,7 +66,7 @@ namespace libCanopenSimple
 
             state = SDO_STATE.SDO_INIT;
 
-            timeout = DateTime.Now + new TimeSpan(0, 0, 5);
+           // timeout = DateTime.Now + new TimeSpan(0, 0, 5);
             dbglevel = can.dbglevel;
 
         }
@@ -109,8 +110,22 @@ namespace libCanopenSimple
 
         public void kick_SDOp()
         {
+
+            if (state != SDO_STATE.SDO_INIT && DateTime.Now > timeout)
+            {
+                state = SDO_STATE.SDO_ERROR;
+
+                Console.WriteLine("SDO Timeout Error on {0:x4}/{1:x2} {2:x8}", this.index, this.subindex, expitideddata);
+
+                if (completedcallback != null)
+                    completedcallback(this);
+
+                return;
+            }
+
             if (state == SDO_STATE.SDO_INIT)
             {
+                timeout = DateTime.Now + new TimeSpan(0, 0, 5);
                 state = SDO_STATE.SDO_SENT;
 
                 if (dir == direction.SDO_READ)

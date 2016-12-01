@@ -72,6 +72,8 @@ namespace libCanopenSimple
         public DateTime lastping;
         public bool compulsory;
 
+       
+
         public Action<e_NMTState> NMT_boot = null;
         public Action<int> NMT_guard = null;
 
@@ -102,6 +104,7 @@ namespace libCanopenSimple
         SerialPort serialPort;
         string buf;
         public debuglevel dbglevel = debuglevel.DEBUG_NONE;
+        public bool echo = true;
 
         public bool isopen()
         {
@@ -459,6 +462,11 @@ namespace libCanopenSimple
             {
                 serialPort.Write(canframe);
             }
+
+            if(echo==true)
+            {
+                processCanRX(canframe.Substring(0,canframe.Length-1));
+            }
         }
 
         public void NMT_start(byte nodeid = 0)
@@ -501,6 +509,18 @@ namespace libCanopenSimple
             p.len = 2;
             p.data = new byte[2];
             p.data[0] = 0x81;
+            p.data[1] = nodeid;
+
+            SendPacket(p);
+        }
+
+        public void NMT_ResetComms(byte nodeid = 0)
+        {
+            canpacket p = new canpacket();
+            p.cob = 000;
+            p.len = 2;
+            p.data = new byte[2];
+            p.data[0] = 0x82;
             p.data[1] = nodeid;
 
             SendPacket(p);

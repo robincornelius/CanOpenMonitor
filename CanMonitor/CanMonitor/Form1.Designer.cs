@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.button_open = new System.Windows.Forms.Button();
@@ -35,22 +36,24 @@
             this.label3 = new System.Windows.Forms.Label();
             this.comboBox_port = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.checkbox_autoscroll = new System.Windows.Forms.CheckBox();
+            this.button_clear = new System.Windows.Forms.Button();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.button_clear = new System.Windows.Forms.Button();
-            this.checkbox_autoscroll = new System.Windows.Forms.CheckBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ManualSDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nMTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROMResetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.errorInjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -148,6 +151,28 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "Port";
             // 
+            // checkbox_autoscroll
+            // 
+            this.checkbox_autoscroll.AutoSize = true;
+            this.checkbox_autoscroll.Checked = true;
+            this.checkbox_autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkbox_autoscroll.Location = new System.Drawing.Point(528, 17);
+            this.checkbox_autoscroll.Name = "checkbox_autoscroll";
+            this.checkbox_autoscroll.Size = new System.Drawing.Size(72, 17);
+            this.checkbox_autoscroll.TabIndex = 0;
+            this.checkbox_autoscroll.Text = "Autoscroll";
+            this.checkbox_autoscroll.UseVisualStyleBackColor = true;
+            // 
+            // button_clear
+            // 
+            this.button_clear.Location = new System.Drawing.Point(606, 13);
+            this.button_clear.Name = "button_clear";
+            this.button_clear.Size = new System.Drawing.Size(75, 23);
+            this.button_clear.TabIndex = 1;
+            this.button_clear.Text = "Clear all";
+            this.button_clear.UseVisualStyleBackColor = true;
+            this.button_clear.Click += new System.EventHandler(this.button_clear_Click);
+            // 
             // listView1
             // 
             this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -188,28 +213,6 @@
             this.columnHeader5.Text = "Info";
             this.columnHeader5.Width = 310;
             // 
-            // button_clear
-            // 
-            this.button_clear.Location = new System.Drawing.Point(606, 13);
-            this.button_clear.Name = "button_clear";
-            this.button_clear.Size = new System.Drawing.Size(75, 23);
-            this.button_clear.TabIndex = 1;
-            this.button_clear.Text = "Clear all";
-            this.button_clear.UseVisualStyleBackColor = true;
-            this.button_clear.Click += new System.EventHandler(this.button_clear_Click);
-            // 
-            // checkbox_autoscroll
-            // 
-            this.checkbox_autoscroll.AutoSize = true;
-            this.checkbox_autoscroll.Checked = true;
-            this.checkbox_autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkbox_autoscroll.Location = new System.Drawing.Point(528, 17);
-            this.checkbox_autoscroll.Name = "checkbox_autoscroll";
-            this.checkbox_autoscroll.Size = new System.Drawing.Size(72, 17);
-            this.checkbox_autoscroll.TabIndex = 0;
-            this.checkbox_autoscroll.Text = "Autoscroll";
-            this.checkbox_autoscroll.UseVisualStyleBackColor = true;
-            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -229,13 +232,21 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
+            // quitToolStripMenuItem
+            // 
+            this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
+            this.quitToolStripMenuItem.Text = "Quit";
+            this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
+            // 
             // actionsToolStripMenuItem
             // 
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.sDOToolStripMenuItem,
             this.ManualSDOToolStripMenuItem,
             this.nMTToolStripMenuItem,
-            this.eEPROMResetToolStripMenuItem});
+            this.eEPROMResetToolStripMenuItem,
+            this.errorInjectToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
@@ -258,6 +269,7 @@
             this.nMTToolStripMenuItem.Name = "nMTToolStripMenuItem";
             this.nMTToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.nMTToolStripMenuItem.Text = "NMT";
+            this.nMTToolStripMenuItem.Click += new System.EventHandler(this.nMTToolStripMenuItem_Click);
             // 
             // eEPROMResetToolStripMenuItem
             // 
@@ -266,12 +278,18 @@
             this.eEPROMResetToolStripMenuItem.Text = "EEPROM reset";
             this.eEPROMResetToolStripMenuItem.Click += new System.EventHandler(this.eEPROMResetToolStripMenuItem_Click);
             // 
-            // quitToolStripMenuItem
+            // timer1
             // 
-            this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            this.quitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.quitToolStripMenuItem.Text = "Quit";
-            this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 1000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // errorInjectToolStripMenuItem
+            // 
+            this.errorInjectToolStripMenuItem.Name = "errorInjectToolStripMenuItem";
+            this.errorInjectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.errorInjectToolStripMenuItem.Text = "error inject";
+            this.errorInjectToolStripMenuItem.Click += new System.EventHandler(this.errorInjectToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -283,7 +301,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "CanOpen monitor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
@@ -323,6 +341,8 @@
         private System.Windows.Forms.ToolStripMenuItem nMTToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem eEPROMResetToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem quitToolStripMenuItem;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripMenuItem errorInjectToolStripMenuItem;
     }
 }
 
