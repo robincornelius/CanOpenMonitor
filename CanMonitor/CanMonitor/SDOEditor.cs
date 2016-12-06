@@ -30,7 +30,6 @@ namespace CanMonitor
             InitializeComponent();
         }
 
-
         private void loadeds(string filename)
         {
             if (filename == null || filename == "")
@@ -64,7 +63,8 @@ namespace CanMonitor
 
             textBox_edsfilename.Text = eds.di.ProductName;
 
-            numericUpDown_node.Value = eds.di.concreteNodeId;
+            if (eds.di.concreteNodeId >= numericUpDown_node.Minimum && eds.di.concreteNodeId <= numericUpDown_node.Maximum)
+                numericUpDown_node.Value = eds.di.concreteNodeId;
 
             listView1.BeginUpdate();
             listView1.Items.Clear();
@@ -231,7 +231,8 @@ namespace CanMonitor
                                 case DataType.UNSIGNED16:
                                 case DataType.UNSIGNED32:
 
-                                    lvi.SubItems[5].Text = h.sdo.expitideddata.ToString();
+
+                                    lvi.SubItems[5].Text = String.Format("{0:x}", h.sdo.expitideddata);
                                     break;
 
                                 default:
@@ -277,7 +278,13 @@ namespace CanMonitor
             SDO sdo = null;
             if(ve.ShowDialog()==DialogResult.OK)
             {
-                switch (h.od.datatype)
+
+                DataType dt = h.od.datatype;
+
+                if (dt == DataType.UNKNOWN && h.od.parent != null)
+                    dt = h.od.parent.datatype;
+
+                switch (dt)
                 {
                     case DataType.REAL32:
                         {

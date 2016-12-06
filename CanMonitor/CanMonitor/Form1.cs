@@ -141,7 +141,11 @@ namespace CanMonitor
                 items[1] = string.Format("{0:x3}", payload.cob);
                 items[2] = string.Format("{0:x3}", payload.cob & 0x0FF);
                 items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
-              
+
+
+                if (checkBox_heartbeats.Checked == false && payload.data[0] != 0)
+                    return;
+
 
                 string msg = "";
                 switch (payload.data[0])
@@ -260,7 +264,12 @@ namespace CanMonitor
 
                 if (pdoprocessors.ContainsKey(payload.cob))
                 {
-                    items[4] = pdoprocessors[payload.cob](payload.data);
+                    string msg = pdoprocessors[payload.cob](payload.data);
+
+                    if (msg == null)
+                        return;
+
+                    items[4] = msg;
                 }
                 else
                 {

@@ -31,6 +31,7 @@
             this.numericUpDown_node = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
+            this.button_savetoeeprom = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).BeginInit();
             this.SuspendLayout();
             // 
@@ -75,11 +76,22 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // button_savetoeeprom
+            // 
+            this.button_savetoeeprom.Location = new System.Drawing.Point(65, 148);
+            this.button_savetoeeprom.Name = "button_savetoeeprom";
+            this.button_savetoeeprom.Size = new System.Drawing.Size(126, 23);
+            this.button_savetoeeprom.TabIndex = 3;
+            this.button_savetoeeprom.Text = "Save to EEPROM";
+            this.button_savetoeeprom.UseVisualStyleBackColor = true;
+            this.button_savetoeeprom.Click += new System.EventHandler(this.button_savetoeeprom_Click);
+            // 
             // ResetEEPROM
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 136);
+            this.ClientSize = new System.Drawing.Size(284, 206);
+            this.Controls.Add(this.button_savetoeeprom);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.numericUpDown_node);
@@ -96,5 +108,6 @@
         private System.Windows.Forms.NumericUpDown numericUpDown_node;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_savetoeeprom;
     }
 }

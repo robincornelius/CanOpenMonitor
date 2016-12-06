@@ -52,8 +52,9 @@
             this.ManualSDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nMTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROMResetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.errorInjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.checkBox_heartbeats = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -79,6 +80,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.checkBox_heartbeats);
             this.splitContainer1.Panel1.Controls.Add(this.button_open);
             this.splitContainer1.Panel1.Controls.Add(this.comboBox_rate);
             this.splitContainer1.Panel1.Controls.Add(this.label3);
@@ -278,18 +280,30 @@
             this.eEPROMResetToolStripMenuItem.Text = "EEPROM reset";
             this.eEPROMResetToolStripMenuItem.Click += new System.EventHandler(this.eEPROMResetToolStripMenuItem_Click);
             // 
-            // timer1
-            // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 1000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // errorInjectToolStripMenuItem
             // 
             this.errorInjectToolStripMenuItem.Name = "errorInjectToolStripMenuItem";
             this.errorInjectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.errorInjectToolStripMenuItem.Text = "error inject";
             this.errorInjectToolStripMenuItem.Click += new System.EventHandler(this.errorInjectToolStripMenuItem_Click);
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 1000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // checkBox_heartbeats
+            // 
+            this.checkBox_heartbeats.AutoSize = true;
+            this.checkBox_heartbeats.Checked = true;
+            this.checkBox_heartbeats.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_heartbeats.Location = new System.Drawing.Point(730, 15);
+            this.checkBox_heartbeats.Name = "checkBox_heartbeats";
+            this.checkBox_heartbeats.Size = new System.Drawing.Size(78, 17);
+            this.checkBox_heartbeats.TabIndex = 4;
+            this.checkBox_heartbeats.Text = "Heartbeats";
+            this.checkBox_heartbeats.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -343,6 +357,7 @@
         private System.Windows.Forms.ToolStripMenuItem quitToolStripMenuItem;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripMenuItem errorInjectToolStripMenuItem;
+        private System.Windows.Forms.CheckBox checkBox_heartbeats;
     }
 }
 

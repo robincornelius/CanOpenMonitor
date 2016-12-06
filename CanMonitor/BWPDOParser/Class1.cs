@@ -25,6 +25,10 @@ namespace PDOParser
         enum Estates
         {
             BOOT = 0,
+            HW_FAULT,
+            ENTER_ABORT,
+            ABORT, //4
+    
             SELF_CHECK, //1
             WAIT_SAFE, //2
             SAFE_RST,
@@ -35,8 +39,6 @@ namespace PDOParser
             LIVE_CONTACTOR_DELAY,
             CHARGING,
             CHARGED,
-            ENTER_ABORT,
-            ABORT, //4
             DO_DISCHARGE,
             POST_DISHCARGE,
             DISCHARGE_VERIFY,
@@ -47,15 +49,19 @@ namespace PDOParser
         enum EController_states
         {
             CTRL_BOOT = 0,
+            CTRL_ALARM,
             CTRL_WAIT_ON,
+            CTRL_INTERLOCK,
             CTRL_RUN,
             CTRL_MAGNETISE,
             CTRL_LIVE,
             CTRL_CHARGE,
             CTRL_WAITCOMPLETE,
-            CTRL_ALARM,
         };
 
+
+        static Estates lastcharger;
+        static EController_states lastcontroller;
 
         public static string PDO181(byte[] data)
         {
@@ -63,8 +69,13 @@ namespace PDOParser
 
             Estates chargerstate = (Estates)data[0];
             EController_states controller_state = (EController_states)data[1];
-
             Int16 vcaps = BitConverter.ToInt16(data, 2);
+
+            if (lastcharger == chargerstate && lastcontroller == controller_state && vcaps < 50)
+                return null;
+
+            lastcharger = chargerstate;
+            lastcontroller = controller_state;
 
             msg = string.Format("Charger = {0} - Master = {1} - Caps = {2}", chargerstate.ToString(), controller_state.ToString(),vcaps);
 

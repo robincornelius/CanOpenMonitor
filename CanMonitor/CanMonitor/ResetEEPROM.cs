@@ -34,5 +34,15 @@ namespace CanMonitor
 
             }
         }
+
+        private void button_savetoeeprom_Click(object sender, EventArgs e)
+        {
+            byte node = (byte)numericUpDown_node.Value;
+
+            if (MessageBox.Show("save to eeprom?", string.Format("Really save to eeprom on node {0}", node), MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                lco.SDOwrite(node, 0x1010, 0x01, 0x65766173, null);
+            }
+        }
     }
 }
