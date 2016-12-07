@@ -34,22 +34,23 @@
             this.label2 = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.button_read = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label3 = new System.Windows.Forms.Label();
+            this.comboBoxtype = new System.Windows.Forms.ComboBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadEDSXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuRecentlyUsed = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.comboBoxtype = new System.Windows.Forms.ComboBox();
-            this.label3 = new System.Windows.Forms.Label();
+            this.saveDifferenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -111,6 +112,10 @@
             // 
             this.columnHeader1.Text = "Index";
             // 
+            // columnHeader6
+            // 
+            this.columnHeader6.Text = "Sub";
+            // 
             // columnHeader2
             // 
             this.columnHeader2.Text = "Name";
@@ -130,10 +135,6 @@
             // 
             this.columnHeader5.Text = "Current";
             this.columnHeader5.Width = 155;
-            // 
-            // columnHeader6
-            // 
-            this.columnHeader6.Text = "Sub";
             // 
             // button_read
             // 
@@ -174,51 +175,16 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1074, 75);
             this.panel1.TabIndex = 6;
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
-            // menuStrip1
+            // label3
             // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1080, 24);
-            this.menuStrip1.TabIndex = 8;
-            this.menuStrip1.Text = "menuStrip1";
-            // 
-            // fileToolStripMenuItem
-            // 
-            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.loadEDSXMLToolStripMenuItem,
-            this.mnuRecentlyUsed,
-            this.toolStripSeparator1,
-            this.closeToolStripMenuItem});
-            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            this.fileToolStripMenuItem.Text = "File";
-            // 
-            // loadEDSXMLToolStripMenuItem
-            // 
-            this.loadEDSXMLToolStripMenuItem.Name = "loadEDSXMLToolStripMenuItem";
-            this.loadEDSXMLToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.loadEDSXMLToolStripMenuItem.Text = "Load EDS/XML";
-            this.loadEDSXMLToolStripMenuItem.Click += new System.EventHandler(this.loadEDSXMLToolStripMenuItem_Click);
-            // 
-            // mnuRecentlyUsed
-            // 
-            this.mnuRecentlyUsed.Name = "mnuRecentlyUsed";
-            this.mnuRecentlyUsed.Size = new System.Drawing.Size(152, 22);
-            this.mnuRecentlyUsed.Text = "Recent";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
-            // 
-            // closeToolStripMenuItem
-            // 
-            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.closeToolStripMenuItem.Text = "Close";
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(276, 38);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(31, 13);
+            this.label3.TabIndex = 8;
+            this.label3.Text = "Type";
             // 
             // comboBoxtype
             // 
@@ -235,14 +201,58 @@
             this.comboBoxtype.Text = "EEPROM";
             this.comboBoxtype.SelectedIndexChanged += new System.EventHandler(this.comboBoxtype_SelectedIndexChanged);
             // 
-            // label3
+            // menuStrip1
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(276, 38);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(31, 13);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Type";
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(1080, 24);
+            this.menuStrip1.TabIndex = 8;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadEDSXMLToolStripMenuItem,
+            this.saveDifferenceToolStripMenuItem,
+            this.mnuRecentlyUsed,
+            this.toolStripSeparator1,
+            this.closeToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "File";
+            // 
+            // loadEDSXMLToolStripMenuItem
+            // 
+            this.loadEDSXMLToolStripMenuItem.Name = "loadEDSXMLToolStripMenuItem";
+            this.loadEDSXMLToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.loadEDSXMLToolStripMenuItem.Text = "Load EDS/XML";
+            this.loadEDSXMLToolStripMenuItem.Click += new System.EventHandler(this.loadEDSXMLToolStripMenuItem_Click);
+            // 
+            // mnuRecentlyUsed
+            // 
+            this.mnuRecentlyUsed.Name = "mnuRecentlyUsed";
+            this.mnuRecentlyUsed.Size = new System.Drawing.Size(154, 22);
+            this.mnuRecentlyUsed.Text = "Recent";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(151, 6);
+            // 
+            // closeToolStripMenuItem
+            // 
+            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.closeToolStripMenuItem.Text = "Close";
+            // 
+            // saveDifferenceToolStripMenuItem
+            // 
+            this.saveDifferenceToolStripMenuItem.Name = "saveDifferenceToolStripMenuItem";
+            this.saveDifferenceToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.saveDifferenceToolStripMenuItem.Text = "Save difference";
+            this.saveDifferenceToolStripMenuItem.Click += new System.EventHandler(this.saveDifferenceToolStripMenuItem_Click);
             // 
             // SDOEditor
             // 
@@ -291,5 +301,6 @@
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox comboBoxtype;
+        private System.Windows.Forms.ToolStripMenuItem saveDifferenceToolStripMenuItem;
     }
 }

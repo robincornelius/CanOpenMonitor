@@ -468,6 +468,45 @@ namespace CanMonitor
             populateMRU();
         }
 
+        private void saveDifferenceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            SaveFileDialog odf = new SaveFileDialog();
+            odf.Filter = "(*.txt)|*.txt";
+            if (odf.ShowDialog() == DialogResult.OK)
+            {
+
+                System.IO.StreamWriter file = new System.IO.StreamWriter(odf.FileName);
+
+                file.WriteLine("Object\tSub Index\tName\tDefault\tCurrent\t");
+
+                foreach (ListViewItem lvi in listView1.Items)
+                {
+                    
+                    string index = lvi.SubItems[0].Text;
+                    string sub = lvi.SubItems[1].Text;
+                    string name = lvi.SubItems[2].Text;
+
+                    string defaultstring = lvi.SubItems[4].Text;
+                    string currentstring = lvi.SubItems[5].Text;
+
+
+                    file.WriteLine(string.Format("{0}\t{1}\t{2}\t{3}",index,sub,name,defaultstring,currentstring));
+
+
+                }
+
+                file.Close();
+            }
+
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
     }
 
 }
