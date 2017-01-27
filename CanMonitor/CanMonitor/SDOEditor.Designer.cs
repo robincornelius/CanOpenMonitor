@@ -47,10 +47,11 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadEDSXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveDifferenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuRecentlyUsed = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveDifferenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -163,6 +164,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.comboBoxtype);
             this.panel1.Controls.Add(this.numericUpDown_node);
@@ -230,6 +232,13 @@
             this.loadEDSXMLToolStripMenuItem.Text = "Load EDS/XML";
             this.loadEDSXMLToolStripMenuItem.Click += new System.EventHandler(this.loadEDSXMLToolStripMenuItem_Click);
             // 
+            // saveDifferenceToolStripMenuItem
+            // 
+            this.saveDifferenceToolStripMenuItem.Name = "saveDifferenceToolStripMenuItem";
+            this.saveDifferenceToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.saveDifferenceToolStripMenuItem.Text = "Save difference";
+            this.saveDifferenceToolStripMenuItem.Click += new System.EventHandler(this.saveDifferenceToolStripMenuItem_Click);
+            // 
             // mnuRecentlyUsed
             // 
             this.mnuRecentlyUsed.Name = "mnuRecentlyUsed";
@@ -247,12 +256,15 @@
             this.closeToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.closeToolStripMenuItem.Text = "Close";
             // 
-            // saveDifferenceToolStripMenuItem
+            // button1
             // 
-            this.saveDifferenceToolStripMenuItem.Name = "saveDifferenceToolStripMenuItem";
-            this.saveDifferenceToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
-            this.saveDifferenceToolStripMenuItem.Text = "Save difference";
-            this.saveDifferenceToolStripMenuItem.Click += new System.EventHandler(this.saveDifferenceToolStripMenuItem_Click);
+            this.button1.Location = new System.Drawing.Point(533, 28);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(89, 23);
+            this.button1.TabIndex = 9;
+            this.button1.Text = "Save all";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // SDOEditor
             // 
@@ -302,5 +314,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox comboBoxtype;
         private System.Windows.Forms.ToolStripMenuItem saveDifferenceToolStripMenuItem;
+        private System.Windows.Forms.Button button1;
     }
 }

@@ -7,7 +7,7 @@ using PDOInterface;
 
 namespace PDOParser
 {
-   
+
     public class PDO : IPDOParser
     {
         public void registerPDOS(Dictionary<UInt16, Func<byte[], string>> dic)
@@ -19,7 +19,11 @@ namespace PDOParser
             dic.Add(0x204, PDO204);
             dic.Add(0x304, PDO304);
             dic.Add(0x404, PDO404);
-        
+            dic.Add(0x205, PDO205);
+            dic.Add(0x206, PDO206);
+            dic.Add(0x185, PDO185);
+            dic.Add(0x200, PDO200);
+
         }
 
         enum Estates
@@ -28,7 +32,7 @@ namespace PDOParser
             HW_FAULT,
             ENTER_ABORT,
             ABORT, //4
-    
+
             SELF_CHECK, //1
             WAIT_SAFE, //2
             SAFE_RST,
@@ -77,7 +81,7 @@ namespace PDOParser
             lastcharger = chargerstate;
             lastcontroller = controller_state;
 
-            msg = string.Format("Charger = {0} - Master = {1} - Caps = {2}", chargerstate.ToString(), controller_state.ToString(),vcaps);
+            msg = string.Format("Charger = {0} - Master = {1} - Caps = {2}", chargerstate.ToString(), controller_state.ToString(), vcaps);
 
             return msg;
 
@@ -103,8 +107,8 @@ namespace PDOParser
 
         public static string PDO190(byte[] data)
         {
-            
-            return String.Format("Target {0} Phase {1}", BitConverter.ToInt16(data,0),BitConverter.ToInt32(data,2));
+
+            return String.Format("Target {0} Phase {1}", BitConverter.ToInt16(data, 0), BitConverter.ToInt32(data, 2));
 
         }
 
@@ -120,11 +124,78 @@ namespace PDOParser
         public static string PDO404(byte[] data)
         {
 
-            return string.Format("Select FX {0} vol {1}", data[0],BitConverter.ToUInt16(data,1));
+            return string.Format("Select FX {0} vol {1}", data[0], BitConverter.ToUInt16(data, 1));
         }
 
+        public static string PDO206(byte[] data)
+        {
+            return string.Format("WRITE DI24");
+
+        }
+
+        public static string PDO205(byte[] data)
+        {
+            string msg = "OUT (";
+            if ((data[0] & (byte)0x01) != 0)
+                msg += "UP ";
+            if ((data[0] & (byte)0x02) != 0)
+                msg += "DOWN ";
+            if ((data[0] & (byte)0x04) != 0)
+                msg += "IN ";
+            if ((data[0] & (byte)0x08) != 0)
+                msg += "PASS ";
+            if ((data[0] & (byte)0x10) != 0)
+                msg += "FAIL ";
+            if ((data[0] & (byte)0x20) != 0)
+                msg += "READY";
+            if ((data[0] & (byte)0x40) != 0)
+                msg += "FAULT";
+            if ((data[0] & (byte)0x80) != 0)
+                msg += "";
+
+            msg += ")";
+
+            return msg;
+      
+        }
+
+        public static string PDO185(byte[] data)
+        {
+            string msg="IN (";
+            if ((data[0] & (byte)0x01) !=0)
+                msg += "UP ";
+            if ((data[0] & (byte)0x02) != 0)
+                msg += "DOWN ";
+            if ((data[0] & (byte)0x04)!=0)
+                msg += "IN ";
+            if ((data[0] & (byte)0x08)!=0)
+                msg += "OUT ";
+            if ((data[0] & (byte)0x10)!=0)
+                msg += "START ";
+            if ((data[0] & (byte)0x20)!=0)
+                msg += "";
+            if ((data[0] & (byte)0x40)!=0)
+                msg += "";
+            if ((data[0] & (byte)0x80)!=0)
+                msg += "";
+
+            msg += ")";
+
+             
       
 
+            return msg;
+        }
+
+        public static string PDO200(byte[] data)
+        {
+            string msg;
+
+            msg = String.Format("PHASE {0} TAR {1} OUT {2}", BitConverter.ToUInt32(data, 0),BitConverter.ToUInt16(data,4),BitConverter.ToUInt16(data,6));
+
+            return msg;
+
+        }
 
     }
 }

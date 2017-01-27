@@ -288,6 +288,7 @@ namespace CanMonitor
                 {
                     case DataType.REAL32:
                         {
+                            
                             float val = Convert.ToSingle(ve.newvalue);
                             sdo=lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
@@ -505,6 +506,11 @@ namespace CanMonitor
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)0x1010, (byte)0x01, (UInt32)0x65766173, null);
         }
 
     }

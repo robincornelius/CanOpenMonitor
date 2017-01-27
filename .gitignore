@@ -10,3 +10,5 @@
 /CanMonitor/*.suo
 /CanMonitor/Settings/bin/Debug
 /CanMonitor/Settings/obj/Debug
+/CanMonitor/JLRParser/bin/Debug
+/CanMonitor/JLRParser/obj/Debug

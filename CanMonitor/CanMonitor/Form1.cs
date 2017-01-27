@@ -56,7 +56,9 @@ namespace CanMonitor
             listView1.DoubleBuffering(true);
 
 
-            Assembly assembly = Assembly.LoadFrom("..\\..\\..\\BWPDOParser\\bin\\Debug\\BWPDOParser.dll");
+           // Assembly assembly = Assembly.LoadFrom("..\\..\\..\\BWPDOParser\\bin\\Debug\\BWPDOParser.dll");
+             Assembly assembly = Assembly.LoadFrom("..\\..\\..\\JLRParser\\bin\\Debug\\JLRParser.dll");
+            
             Type[] types = assembly.GetExportedTypes();
 
             for (int i = 0; i < types.Length; i++)
