@@ -189,7 +189,12 @@ namespace libCanopenSimple
             p.data[2] = (byte)(index >> 8);
             p.data[3] = subindex;
 
-            for (int x = 0; x < payload.Length;x++)
+            int sendlength = 4;
+
+            if (payload.Length < 4)
+                sendlength = payload.Length;
+
+            for (int x = 0; x < sendlength;x++)
             {
                 p.data[4+x] = payload[x];
             }

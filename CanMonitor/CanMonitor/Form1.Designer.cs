@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.checkBox_heartbeats = new System.Windows.Forms.CheckBox();
             this.button_open = new System.Windows.Forms.Button();
             this.comboBox_rate = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -54,7 +55,7 @@
             this.eEPROMResetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.errorInjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.checkBox_heartbeats = new System.Windows.Forms.CheckBox();
+            this.flashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -95,6 +96,18 @@
             this.splitContainer1.Size = new System.Drawing.Size(1098, 674);
             this.splitContainer1.SplitterDistance = 43;
             this.splitContainer1.TabIndex = 1;
+            // 
+            // checkBox_heartbeats
+            // 
+            this.checkBox_heartbeats.AutoSize = true;
+            this.checkBox_heartbeats.Checked = true;
+            this.checkBox_heartbeats.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_heartbeats.Location = new System.Drawing.Point(730, 15);
+            this.checkBox_heartbeats.Name = "checkBox_heartbeats";
+            this.checkBox_heartbeats.Size = new System.Drawing.Size(78, 17);
+            this.checkBox_heartbeats.TabIndex = 4;
+            this.checkBox_heartbeats.Text = "Heartbeats";
+            this.checkBox_heartbeats.UseVisualStyleBackColor = true;
             // 
             // button_open
             // 
@@ -248,7 +261,8 @@
             this.ManualSDOToolStripMenuItem,
             this.nMTToolStripMenuItem,
             this.eEPROMResetToolStripMenuItem,
-            this.errorInjectToolStripMenuItem});
+            this.errorInjectToolStripMenuItem,
+            this.flashToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
@@ -293,17 +307,12 @@
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // checkBox_heartbeats
+            // flashToolStripMenuItem
             // 
-            this.checkBox_heartbeats.AutoSize = true;
-            this.checkBox_heartbeats.Checked = true;
-            this.checkBox_heartbeats.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_heartbeats.Location = new System.Drawing.Point(730, 15);
-            this.checkBox_heartbeats.Name = "checkBox_heartbeats";
-            this.checkBox_heartbeats.Size = new System.Drawing.Size(78, 17);
-            this.checkBox_heartbeats.TabIndex = 4;
-            this.checkBox_heartbeats.Text = "Heartbeats";
-            this.checkBox_heartbeats.UseVisualStyleBackColor = true;
+            this.flashToolStripMenuItem.Name = "flashToolStripMenuItem";
+            this.flashToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.flashToolStripMenuItem.Text = "Flash";
+            this.flashToolStripMenuItem.Click += new System.EventHandler(this.flashToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -358,6 +367,7 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripMenuItem errorInjectToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBox_heartbeats;
+        private System.Windows.Forms.ToolStripMenuItem flashToolStripMenuItem;
     }
 }
 

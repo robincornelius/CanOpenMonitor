@@ -516,9 +516,16 @@ namespace CanMonitor
             ei.Show();
 
         }
+
+        private void flashToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Flasher f = new Flasher(lco);
+            f.ShowDialog();
+
+        }
     }
 
-   
+
 
     public static class ControlExtensions
     {
