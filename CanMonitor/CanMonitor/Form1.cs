@@ -55,7 +55,7 @@ namespace CanMonitor
 
             listView1.DoubleBuffering(true);
 
-
+            /*
            // Assembly assembly = Assembly.LoadFrom("..\\..\\..\\BWPDOParser\\bin\\Debug\\BWPDOParser.dll");
              Assembly assembly = Assembly.LoadFrom("..\\..\\..\\JLRParser\\bin\\Debug\\JLRParser.dll");
             
@@ -75,6 +75,7 @@ namespace CanMonitor
                 }
  
              }
+             */
 
         }
 
