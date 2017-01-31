@@ -85,7 +85,12 @@ namespace CanMonitor
                         continue;
                              
                 }
-              
+
+
+                if (tod.Disabled == true)
+                    continue;
+
+
                 if (tod.objecttype == ObjectType.ARRAY || tod.objecttype == ObjectType.REC)
                 {
                     foreach (ODentry subod in tod.subobjects.Values)

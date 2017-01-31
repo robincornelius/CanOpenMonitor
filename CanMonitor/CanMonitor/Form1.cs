@@ -77,6 +77,8 @@ namespace CanMonitor
              }
              */
 
+            interror();
+
         }
 
         private void log_NMT(canpacket payload)
@@ -304,7 +306,29 @@ namespace CanMonitor
                 byte bits = (byte)(payload.data[3]);
                 UInt32 info = (UInt32)(payload.data[4] + (payload.data[5] << 8) + (payload.data[6] << 16) + (payload.data[7] << 24));
 
-                items[4] = string.Format("Error code 0x{0:x4} bits 0x{1:x2} info 0x{2:x8}", code, bits, info);
+
+
+                if(errcode.ContainsKey(code))
+                {
+
+                    string bitinfo;
+
+                    if(errbit.ContainsKey(bits))
+                    {
+                        bitinfo = errbit[bits];
+                    }
+                    else
+                    {
+                        bitinfo = string.Format("bits 0x{1:x2}", bits);
+                    }
+
+                    items[4] = string.Format("Error: {0} - {1} info 0x{2:x8}", errcode[code], bitinfo, info);
+                }
+                else
+                {
+                    items[4] = string.Format("Error code 0x{0:x4} bits 0x{1:x2} info 0x{2:x8}", code, bits, info);
+                }
+             
 
                 ListViewItem i = new ListViewItem(items);
 
@@ -326,6 +350,117 @@ namespace CanMonitor
                     listView1.EnsureVisible(listView1.Items.Count - 1);
             }));
         }
+
+
+        Dictionary<UInt16, string> errcode = new Dictionary<ushort, string>();
+        Dictionary<UInt16, string> errbit = new Dictionary<ushort, string>();
+
+        private void interror()
+        {
+
+            errcode.Add(0x0000, "error Reset or No Error");
+            errcode.Add(0x1000, "Generic Error");
+            errcode.Add(0x2000, "Current");
+            errcode.Add(0x2100, "device input side");
+            errcode.Add(0x2200, "Current inside the device");
+            errcode.Add(0x2300, "device output side");
+            errcode.Add(0x3000, "Voltage");
+            errcode.Add(0x3100, "Mains Voltage");
+            errcode.Add(0x3200, "Voltage inside the device");
+            errcode.Add(0x3300, "Output Voltage");
+            errcode.Add(0x4000, "Temperature");
+            errcode.Add(0x4100, "Ambient Temperature");
+            errcode.Add(0x4200, "Device Temperature");
+            errcode.Add(0x5000, "Device Hardware");
+            errcode.Add(0x6000, "Device Software");
+            errcode.Add(0x6100, "Internal Software");
+            errcode.Add(0x6200, "User Software");
+            errcode.Add(0x6300, "Data Set");
+            errcode.Add(0x7000, "Additional Modules");
+            errcode.Add(0x8000, "Monitoring");
+            errcode.Add(0x8100, "Communication");
+            errcode.Add(0x8110, "CAN Overrun (Objects lost)");
+            errcode.Add(0x8120, "CAN in Error Passive Mode");
+            errcode.Add(0x8130, "Life Guard Error or Heartbeat Error");
+            errcode.Add(0x8140, "recovered from bus off");
+            errcode.Add(0x8150, "CAN-ID collision");
+            errcode.Add(0x8200, "Protocol Error");
+            errcode.Add(0x8210, "PDO not processed due to length error");
+            errcode.Add(0x8220, "PDO length exceeded");
+            errcode.Add(0x8230, "destination object not available");
+            errcode.Add(0x8240, "Unexpected SYNC data length");
+            errcode.Add(0x8250, "RPDO timeout");
+            errcode.Add(0x9000, "External Error");
+            errcode.Add(0xF000, "Additional Functions");
+            errcode.Add(0xFF00, "Device specific");
+
+            errcode.Add(0x2310, "Current at outputs too high (overload)");
+            errcode.Add(0x2320, "Short circuit at outputs");
+            errcode.Add(0x2330, "Load dump at outputs");
+            errcode.Add(0x3110, "Input voltage too high");
+            errcode.Add(0x3120, "Input voltage too low");
+            errcode.Add(0x3210, "Internal voltage too high");
+            errcode.Add(0x3220, "Internal voltage too low");
+            errcode.Add(0x3310, "Output voltage too high");
+            errcode.Add(0x3320, "Output voltage too low");
+
+            errbit.Add(0x00, "Error Reset or No Error");
+            errbit.Add(0x01, "CAN bus warning limit reached");
+            errbit.Add(0x02, "Wrong data length of the received CAN message");
+            errbit.Add(0x03, "Previous received CAN message wasn't processed yet");
+            errbit.Add(0x04, "Wrong data length of received PDO");
+            errbit.Add(0x05, "Previous received PDO wasn't processed yet");
+            errbit.Add(0x06, "CAN receive bus is passive");
+            errbit.Add(0x07, "CAN transmit bus is passive");
+            errbit.Add(0x08, "Wrong NMT command received");
+            errbit.Add(0x09, "(unused)");
+            errbit.Add(0x0A, "(unused)");
+            errbit.Add(0x0B, "(unused)");
+            errbit.Add(0x0C, "(unused)");
+            errbit.Add(0x0D, "(unused)");
+            errbit.Add(0x0E, "(unused)");
+            errbit.Add(0x0F, "(unused)");
+
+            errbit.Add(0x10, "(unused)");
+            errbit.Add(0x11, "(unused)");
+            errbit.Add(0x12, "CAN transmit bus is off");
+            errbit.Add(0x13, "CAN module receive buffer has overflowed");
+            errbit.Add(0x14, "CAN transmit buffer has overflowed");
+            errbit.Add(0x15, "TPDO is outside SYNC window");
+            errbit.Add(0x16, "(unused)");
+            errbit.Add(0x17, "(unused)");
+            errbit.Add(0x18, "SYNC message timeout");
+            errbit.Add(0x19, "Unexpected SYNC data length");
+            errbit.Add(0x1A, "Error with PDO mapping");
+            errbit.Add(0x1B, "Heartbeat consumer timeout");
+            errbit.Add(0x1C, "Heartbeat consumer detected remote node reset");
+            errbit.Add(0x1D, "(unused)");
+            errbit.Add(0x1E, "(unused)");
+            errbit.Add(0x1F, "(unused)");
+
+            errbit.Add(0x20, "Emergency message wasn't sent");
+            errbit.Add(0x21, "(unused)");
+            errbit.Add(0x22, "Microcontroller has just started");
+            errbit.Add(0x23, "(unused)");
+            errbit.Add(0x24, "(unused)");
+            errbit.Add(0x25, "(unused)");
+            errbit.Add(0x26, "(unused)");
+            errbit.Add(0x27, "(unused)");
+
+            errbit.Add(0x28, "Wrong parameters to CO_errorReport() function");
+            errbit.Add(0x29, "Timer task has overflowed");
+            errbit.Add(0x2A, "Unable to allocate memory for objects");
+            errbit.Add(0x2B, "test usage");
+            errbit.Add(0x2C, "Software error");
+            errbit.Add(0x2D, "Object dictionary does not match the software");
+            errbit.Add(0x2E, "Error in calculation of device parameters");
+            errbit.Add(0x2F, "Error with access to non volatile device memory");
+
+
+
+
+        }
+
 
 
         private void button_open_Click(object sender, EventArgs e)
