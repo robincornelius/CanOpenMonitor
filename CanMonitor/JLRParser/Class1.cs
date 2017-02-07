@@ -26,6 +26,49 @@ namespace PDOParser
 
         }
 
+        public string decodesdo(int node,int index,int sub ,byte[] payload)
+        {
+            string ret = "";
+
+            if (node >= 0x580 && node < 0x600)
+            {
+                node = node - 0x580;
+
+                //expidited handler
+                byte[] payload2 = new byte[4];
+
+                payload2[0] = payload[4];
+                payload2[1] = payload[5];
+                payload2[2] = payload[6];
+                payload2[3] = payload[7];
+
+
+                if (node >= 0x08 && node <= 0x0d)
+                {
+                    //gaussmeter
+
+                    if (index == 0x6413)
+                    {
+                        float val = BitConverter.ToSingle(payload2, 0);
+                        ret = string.Format(" GM {0} CHAN {1} = {2} T", node, sub, val);
+                        return ret;
+                    }
+
+                }
+
+
+                if (node == 0x07)
+                {
+                    float val = BitConverter.ToSingle(payload2, 0);
+                    ret = string.Format("TEMP CHAN {0} = {1} T", sub, val);
+                    return ret;
+                }
+            }
+
+
+            return ret;
+        }
+
         enum Estates
         {
             BOOT = 0,
@@ -51,18 +94,29 @@ namespace PDOParser
         };
 
         enum EController_states
-        {
-            CTRL_BOOT = 0,
-            CTRL_ALARM,
-            CTRL_WAIT_ON,
-            CTRL_INTERLOCK,
-            CTRL_RUN,
-            CTRL_MAGNETISE,
-            CTRL_LIVE,
-            CTRL_CHARGE,
-            CTRL_WAITCOMPLETE,
-        };
-
+{
+        CTRL_BOOT=0,
+        CTRL_ALARM, //1
+        CTRL_WAIT_ON, //2
+        CTRL_INTERLOCK, //3
+        CTRL_RUN, //4
+        CTRL_WAITOUT,
+        CTRL_WAITIN,
+        CTRL_WAITUP,
+        CTRL_WAITDOWN,
+        CTRL_WAITSTART,
+        
+        CTRL_MAGNETISE, //5
+        CTRL_LIVE, //6
+        CTRL_STARTCHARGE,
+        CTRL_CHARGE, //7       
+        CTRL_THYMUX,
+        CTRL_DISCHARGE,
+        CTRL_INDEXNEXT,
+        CTRL_WAITCOMPLETE, //8
+        CTRL_READGAUSSMETERS,
+        
+ } ;
 
         static Estates lastcharger;
         static EController_states lastcontroller;
@@ -162,18 +216,25 @@ namespace PDOParser
         public static string PDO185(byte[] data)
         {
             string msg="IN (";
+
             if ((data[0] & (byte)0x01) !=0)
                 msg += "UP ";
+            
             if ((data[0] & (byte)0x02) != 0)
                 msg += "DOWN ";
+            
             if ((data[0] & (byte)0x04)!=0)
                 msg += "IN ";
+            
             if ((data[0] & (byte)0x08)!=0)
-                msg += "OUT ";
-            if ((data[0] & (byte)0x10)!=0)
-                msg += "START ";
-            if ((data[0] & (byte)0x20)!=0)
                 msg += "";
+            
+            if ((data[0] & (byte)0x10)!=0)
+                msg += "OUT ";
+            
+            if ((data[0] & (byte)0x20)!=0)
+                msg += "START";
+            
             if ((data[0] & (byte)0x40)!=0)
                 msg += "";
             if ((data[0] & (byte)0x80)!=0)
