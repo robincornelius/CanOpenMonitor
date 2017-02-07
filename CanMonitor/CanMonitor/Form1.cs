@@ -21,6 +21,9 @@ namespace CanMonitor
         private libCanopen lco = new libCanopen();
         private Dictionary<UInt16, Func<byte[], string>> pdoprocessors = new Dictionary<ushort, Func<byte[], string>>();
         private string appdatafolder;
+        IPDOParser ipdo;
+
+        private Dictionary<UInt32, string> sdoerrormessages = new Dictionary<UInt32, string>();
 
         public Form1()
         {
@@ -55,7 +58,7 @@ namespace CanMonitor
 
             listView1.DoubleBuffering(true);
 
-            /*
+            
            // Assembly assembly = Assembly.LoadFrom("..\\..\\..\\BWPDOParser\\bin\\Debug\\BWPDOParser.dll");
              Assembly assembly = Assembly.LoadFrom("..\\..\\..\\JLRParser\\bin\\Debug\\JLRParser.dll");
             
@@ -69,13 +72,13 @@ namespace CanMonitor
                     object obj = Activator.CreateInstance(type);
                     if (obj != null)
                     {
-                        IPDOParser ipdo = (IPDOParser)obj;
+                        ipdo = (IPDOParser)obj;
                         ipdo.registerPDOS(pdoprocessors);
                     }
                 }
  
              }
-             */
+             
 
             interror();
 
@@ -236,14 +239,42 @@ namespace CanMonitor
                 string.Format("0x{0:x4}/{1:x2}", index, sub);
                 msg += string.Format("SCS {0} size {1} expidited {2} size set {3} seg size {4} tottle {5}", SCS, n, e, s, sn, t);
 
-                items[4] = msg;
 
-                ListViewItem i = new ListViewItem(items);
 
                 if ((payload.data[0] & 0x80) != 0)
                 {
-                    i.BackColor = Color.Orange;
+                    byte[] errorcode = new byte[4];
+                    errorcode[0] = payload.data[4];
+                    errorcode[1] = payload.data[5];
+                    errorcode[2] = payload.data[6];
+                    errorcode[3] = payload.data[7];
+
+                    UInt32 err = BitConverter.ToUInt32(errorcode, 0);
+
+                    if (sdoerrormessages.ContainsKey(err))
+                    {
+
+                        msg += " " + sdoerrormessages[err];
+                    }
+
                 }
+                else
+                {
+                    msg += " "+ipdo.decodesdo(payload.cob, index, sub, payload.data);
+                }
+
+
+                items[4] = msg;
+
+                ListViewItem i = new ListViewItem(items);
+                
+                if ((payload.data[0] & 0x80) != 0)
+                {
+                    i.BackColor = Color.Orange;                
+                }
+
+               
+
 
                 i.ForeColor = Color.DarkBlue;
                 listView1.BeginUpdate();
@@ -456,7 +487,37 @@ namespace CanMonitor
             errbit.Add(0x2E, "Error in calculation of device parameters");
             errbit.Add(0x2F, "Error with access to non volatile device memory");
 
-
+            sdoerrormessages.Add(0x05030000, "Toggle bit not altered");
+            sdoerrormessages.Add(0x05040000, "SDO protocol timed out");
+            sdoerrormessages.Add(0x05040001, "Command specifier not valid or unknown");
+            sdoerrormessages.Add(0x05040002, "Invalid block size in block mode");
+            sdoerrormessages.Add(0x05040003, "Invalid sequence number in block mode");
+            sdoerrormessages.Add(0x05040004, "CRC error (block mode only)");
+            sdoerrormessages.Add(0x05040005, "Out of memory");
+            sdoerrormessages.Add(0x06010000, "Unsupported access to an object");
+            sdoerrormessages.Add(0x06010001, "Attempt to read a write only object");
+            sdoerrormessages.Add(0x06010002, "Attempt to write a read only object");
+            sdoerrormessages.Add(0x06020000, "Object does not exist");
+            sdoerrormessages.Add(0x06040041, "Object cannot be mapped to the PDO");
+            sdoerrormessages.Add(0x06040042, "Number and length of object to be mapped exceeds PDO length");
+            sdoerrormessages.Add(0x06040043, "General parameter incompatibility reasons");
+            sdoerrormessages.Add(0x06040047, "General internal incompatibility in device");
+            sdoerrormessages.Add(0x06060000, "Access failed due to hardware error");
+            sdoerrormessages.Add(0x06070010, "Data type does not match, length of service parameter does not match");
+            sdoerrormessages.Add(0x06070012, "Data type does not match, length of service parameter too high");
+            sdoerrormessages.Add(0x06070013, "Data type does not match, length of service parameter too short");
+            sdoerrormessages.Add(0x06090011, "Sub index does not exist");
+            sdoerrormessages.Add(0x06090030, "Invalid value for parameter (download only).");
+            sdoerrormessages.Add(0x06090031, "Value range of parameter written too high");
+            sdoerrormessages.Add(0x06090032, "Value range of parameter written too low");
+            sdoerrormessages.Add(0x06090036, "Maximum value is less than minimum value.");
+            sdoerrormessages.Add(0x060A0023, "Resource not available: SDO connection");
+            sdoerrormessages.Add(0x08000000, "General error");
+            sdoerrormessages.Add(0x08000020, "Data cannot be transferred or stored to application");
+            sdoerrormessages.Add(0x08000021, "Data cannot be transferred or stored to application because of local control");
+            sdoerrormessages.Add(0x08000022, "Data cannot be transferred or stored to application because of present device state");
+            sdoerrormessages.Add(0x08000023, "Object dictionary not present or dynamic generation fails");
+            sdoerrormessages.Add(0x08000024, "No data available");
 
 
         }
@@ -472,6 +533,12 @@ namespace CanMonitor
                 if(button_open.Text == "Close")
                 {
                     button_open.Text = "Open";
+                    return;
+                }
+
+                if(comboBox_port.SelectedItem==null)
+                {
+                    comboBox_port.Text = "";
                     return;
                 }
 

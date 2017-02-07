@@ -22,6 +22,12 @@ namespace PDOParser
         
         }
 
+        public string decodesdo(int node, int index, int sub, byte[] payload)
+        {
+            return "";
+
+        }
+
         enum Estates
         {
             BOOT = 0,

@@ -9,5 +9,7 @@ namespace PDOInterface
     public interface IPDOParser
     {
         void registerPDOS(Dictionary<UInt16, Func<byte[], string>> dic);
+        string decodesdo(int node, int index, int sub, byte[] payload);
+
     }
 }
