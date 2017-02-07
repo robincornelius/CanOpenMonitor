@@ -54,8 +54,8 @@
             this.nMTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROMResetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.errorInjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.flashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -279,6 +279,7 @@
             this.ManualSDOToolStripMenuItem.Name = "ManualSDOToolStripMenuItem";
             this.ManualSDOToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.ManualSDOToolStripMenuItem.Text = "Manual SDO";
+            this.ManualSDOToolStripMenuItem.Click += new System.EventHandler(this.ManualSDOToolStripMenuItem_Click);
             // 
             // nMTToolStripMenuItem
             // 
@@ -301,18 +302,18 @@
             this.errorInjectToolStripMenuItem.Text = "error inject";
             this.errorInjectToolStripMenuItem.Click += new System.EventHandler(this.errorInjectToolStripMenuItem_Click);
             // 
-            // timer1
-            // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 1000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // flashToolStripMenuItem
             // 
             this.flashToolStripMenuItem.Name = "flashToolStripMenuItem";
             this.flashToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.flashToolStripMenuItem.Text = "Flash";
             this.flashToolStripMenuItem.Click += new System.EventHandler(this.flashToolStripMenuItem_Click);
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 1000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Form1
             // 

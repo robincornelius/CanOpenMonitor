@@ -659,6 +659,22 @@ namespace CanMonitor
             f.ShowDialog();
 
         }
+
+        void done(SDO sdo)
+        {
+
+            int x = 00;
+            x++;
+            x--;
+
+        }
+
+        private void ManualSDOToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            lco.SDOread(0x01, 0x2010, 0x00, done);
+
+        }
     }
 
 
