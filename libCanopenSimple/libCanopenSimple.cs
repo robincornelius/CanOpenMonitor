@@ -198,11 +198,11 @@ namespace libCanopenSimple
         {
             int val = (int)hex;
             //For uppercase A-F letters:
-            return val - (val < 58 ? 48 : 55);
+            //return val - (val < 58 ? 48 : 55);
             //For lowercase a-f letters:
             //return val - (val < 58 ? 48 : 87);
             //Or the two combined, but a bit slower:
-            //return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
+            return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
 
         Dictionary<UInt16, Action<byte[]>> PDOcallbacks = new Dictionary<ushort, Action<byte[]>>();
@@ -225,7 +225,7 @@ namespace libCanopenSimple
             PDOcallbacks[cob] = handler;
         }
 
-        private void processCanRX(string packet)
+        private void processCanRX(string packet,bool loopback=false)
         {
             //packet must be at least "700 0" as a min
 
@@ -289,7 +289,7 @@ namespace libCanopenSimple
 
                         if (SDOcallbacks.ContainsKey(cp.cob))
                         {
-                            if (SDOcallbacks[cp.cob].SDOProcess(cp.data))
+                            if (SDOcallbacks[cp.cob].SDOProcess(cp))
                             {
                                 SDOcallbacks.Remove(cp.cob);
                             }

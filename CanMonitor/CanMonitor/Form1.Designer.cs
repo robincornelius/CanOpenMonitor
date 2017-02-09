@@ -56,6 +56,8 @@
             this.errorInjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.flashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.sDOUPLOADToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -258,11 +260,13 @@
             // 
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.sDOToolStripMenuItem,
-            this.ManualSDOToolStripMenuItem,
             this.nMTToolStripMenuItem,
             this.eEPROMResetToolStripMenuItem,
             this.errorInjectToolStripMenuItem,
-            this.flashToolStripMenuItem});
+            this.flashToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.sDOUPLOADToolStripMenuItem,
+            this.ManualSDOToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
@@ -270,42 +274,42 @@
             // sDOToolStripMenuItem
             // 
             this.sDOToolStripMenuItem.Name = "sDOToolStripMenuItem";
-            this.sDOToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sDOToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.sDOToolStripMenuItem.Text = "SDO Editor";
             this.sDOToolStripMenuItem.Click += new System.EventHandler(this.sDOToolStripMenuItem_Click);
             // 
             // ManualSDOToolStripMenuItem
             // 
             this.ManualSDOToolStripMenuItem.Name = "ManualSDOToolStripMenuItem";
-            this.ManualSDOToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.ManualSDOToolStripMenuItem.Text = "Manual SDO";
+            this.ManualSDOToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.ManualSDOToolStripMenuItem.Text = "SDO DOWNLOAD";
             this.ManualSDOToolStripMenuItem.Click += new System.EventHandler(this.ManualSDOToolStripMenuItem_Click);
             // 
             // nMTToolStripMenuItem
             // 
             this.nMTToolStripMenuItem.Name = "nMTToolStripMenuItem";
-            this.nMTToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.nMTToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.nMTToolStripMenuItem.Text = "NMT";
             this.nMTToolStripMenuItem.Click += new System.EventHandler(this.nMTToolStripMenuItem_Click);
             // 
             // eEPROMResetToolStripMenuItem
             // 
             this.eEPROMResetToolStripMenuItem.Name = "eEPROMResetToolStripMenuItem";
-            this.eEPROMResetToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.eEPROMResetToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.eEPROMResetToolStripMenuItem.Text = "EEPROM reset";
             this.eEPROMResetToolStripMenuItem.Click += new System.EventHandler(this.eEPROMResetToolStripMenuItem_Click);
             // 
             // errorInjectToolStripMenuItem
             // 
             this.errorInjectToolStripMenuItem.Name = "errorInjectToolStripMenuItem";
-            this.errorInjectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.errorInjectToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.errorInjectToolStripMenuItem.Text = "error inject";
             this.errorInjectToolStripMenuItem.Click += new System.EventHandler(this.errorInjectToolStripMenuItem_Click);
             // 
             // flashToolStripMenuItem
             // 
             this.flashToolStripMenuItem.Name = "flashToolStripMenuItem";
-            this.flashToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.flashToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.flashToolStripMenuItem.Text = "Flash";
             this.flashToolStripMenuItem.Click += new System.EventHandler(this.flashToolStripMenuItem_Click);
             // 
@@ -314,6 +318,18 @@
             this.timer1.Enabled = true;
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // sDOUPLOADToolStripMenuItem
+            // 
+            this.sDOUPLOADToolStripMenuItem.Name = "sDOUPLOADToolStripMenuItem";
+            this.sDOUPLOADToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.sDOUPLOADToolStripMenuItem.Text = "SDO UPLOAD";
+            this.sDOUPLOADToolStripMenuItem.Click += new System.EventHandler(this.sDOUPLOADToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(165, 6);
             // 
             // Form1
             // 
@@ -369,6 +385,8 @@
         private System.Windows.Forms.ToolStripMenuItem errorInjectToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBox_heartbeats;
         private System.Windows.Forms.ToolStripMenuItem flashToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem sDOUPLOADToolStripMenuItem;
     }
 }
 

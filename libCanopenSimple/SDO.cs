@@ -156,6 +156,7 @@ namespace libCanopenSimple
                         default:
                             //Bigger than 4 bytes we use segmented transfer
                             cmd = 0x21;
+
                             byte[] payload = new byte[4];
                             payload[0] = (byte) databuffer.Length;
                             payload[1] = (byte) (databuffer.Length >> 8);
@@ -171,7 +172,7 @@ namespace libCanopenSimple
                     }
 
                   
-                    sendpacket(cmd, databuffer);
+                   // sendpacket(cmd, databuffer);
 
                 }
             }
@@ -205,29 +206,51 @@ namespace libCanopenSimple
             can.SendPacket(p);
         }
 
+        public void sendpacketsegment(byte cmd, byte[] payload)
+        {
+            canpacket p = new canpacket();
+            p.cob = (UInt16)(0x600 + node);
+            p.len = 8;
+            p.data = new byte[8];
+            p.data[0] = cmd;
+           
+            for (int x = 0; x < payload.Length; x++)
+            {
+                p.data[1 + x] = payload[x];
+            }
+
+            if (dbglevel == debuglevel.DEBUG_ALL)
+                Console.WriteLine(String.Format("Sending a new segmented SDO packet: {0}", p.ToString()));
+
+            can.SendPacket(p);
+        }
+
         public void SDOFinish()
         {
             can.SDOcallbacks.Remove((UInt16)(this.node + 0x580));
             finishedevent.Set();
         }
 
-        public bool SDOProcess(byte[] data)
+        public bool SDOProcess(canpacket cp)
         {
-            int SCS = data[0] >> 5; //7-5
 
-            int n = (0x03 & (data[0] >> 2)); //3-2 data size for normal packets
-            int e = (0x01 & (data[0] >> 1)); // expidited flag
-            int s = (data[0] & 0x01); // data size set flag
+            int SCS = cp.data[0] >> 5; //7-5
 
-            int sn = (0x07 & (data[0] >> 1)); //3-1 data size for segment packets
-            int t = (0x01 & (data[0] >> 4));  //toggle flag
+            int n = (0x03 & (cp.data[0] >> 2)); //3-2 data size for normal packets
+            int e = (0x01 & (cp.data[0] >> 1)); // expidited flag
+            int s = (cp.data[0] & 0x01); // data size set flag
+
+            int sn = (0x07 & (cp.data[0] >> 1)); //3-1 data size for segment packets
+            int t = (0x01 & (cp.data[0] >> 4));  //toggle flag
+
+            int c = 0x01 & cp.data[0]; //More segments to upload?
 
             //ERROR abort
             if (SCS == 0x04)
             {
                 exp = true;
 
-                expitideddata = (UInt32)(data[4] + (data[5] << 8) + (data[6] << 16) + (data[7] << 24));
+                expitideddata = (UInt32)(cp.data[4] + (cp.data[5] << 8) + (cp.data[6] << 16) + (cp.data[7] << 24));
                 databuffer = BitConverter.GetBytes(expitideddata);
 
                 state = SDO_STATE.SDO_ERROR;
@@ -243,6 +266,30 @@ namespace libCanopenSimple
             //Write complete
             if (SCS == 0x03)
             {
+
+
+                UInt16 index = (UInt16)(cp.data[1] + (cp.data[2] << 8));
+                byte sub = cp.data[3];
+
+                int node = cp.cob - 0x580;
+
+
+                foreach (SDO sdo in activeSDO)
+                {
+                    if(sdo.node==node)
+                    {
+
+                        if(index==sdo.index && sub == sdo.subindex)
+                        {
+                            state = SDO_STATE.SDO_HANDSHAKE;
+                            requestNextSegment(false);
+                            return false;
+                        }
+
+                    }
+                }
+
+
                 state = SDO_STATE.SDO_FINISHED;
 
                 if (completedcallback != null)
@@ -259,7 +306,7 @@ namespace libCanopenSimple
                     lasttoggle = !lasttoggle;
                     requestNextSegment(lasttoggle);
 
-                    totaldata += 4;
+                    //totaldata += 7;
                 }
                 else
                 {
@@ -276,7 +323,7 @@ namespace libCanopenSimple
                 //Expidited and length are set so its a regular short transfer
                 exp = true;
 
-                expitideddata = (UInt32)(data[4] + (data[5] << 8) + (data[6] << 16) + (data[7] << 24));
+                expitideddata = (UInt32)(cp.data[4] + (cp.data[5] << 8) + (cp.data[6] << 16) + (cp.data[7] << 24));
                 databuffer = BitConverter.GetBytes(expitideddata);
               
                 state = SDO_STATE.SDO_FINISHED;
@@ -292,7 +339,9 @@ namespace libCanopenSimple
 
             if (SCS == 0x02)
             {
-                UInt32 count = (UInt32)(data[4] + (data[5] << 8) + (data[6] << 16) + (data[7] << 24));
+                UInt32 count = (UInt32)(cp.data[4] + (cp.data[5] << 8) + (cp.data[6] << 16) + (cp.data[7] << 24));
+
+                Console.WriteLine("Segmented transfer start length is {0}", count);
                 expitideddata = count;
                 databuffer = new byte[expitideddata];
                 totaldata = 0;
@@ -307,18 +356,23 @@ namespace libCanopenSimple
 
             UInt32 scount = (UInt32)(7 - sn);
 
+            Console.WriteLine("Segmented transfer update length is {0} -- {1}", scount,totaldata);
+
             //Segments toggle on
             if (SCS == 0x00)
             {
 
                 for (int x = 0; x < scount; x++)
                 {
-                    databuffer[totaldata + x] = data[1 + x];
+                    if ((totaldata + x) < databuffer.Length)
+                        databuffer[totaldata + x] = cp.data[1 + x];
                 }
 
-                totaldata += scount;
+                totaldata += 7;
 
-                if (totaldata < expitideddata)
+                //totaldata += scount;
+
+                if ((totaldata < expitideddata) && c==0)
                 {
                     lasttoggle = !lasttoggle;
                     requestNextSegment(lasttoggle);
@@ -345,6 +399,8 @@ namespace libCanopenSimple
                     cmd |= 0x10;
 
                 sendpacket(cmd, new byte[4]);
+
+                //totaldata += 7;
             }
             else
             {
@@ -352,17 +408,23 @@ namespace libCanopenSimple
                 if (toggle)
                     cmd |= 0x10;
 
-                byte[] nextdata = new byte[4];
+                byte[] nextdata = new byte[7];
 
-                nextdata[0] = databuffer[totaldata];
-                if (databuffer.Length < totaldata + 1)
-                    nextdata[1] = databuffer[totaldata + 1];
-                if (databuffer.Length < totaldata + 2)
-                    nextdata[2] = databuffer[totaldata + 2];
-                if (databuffer.Length < totaldata + 3)
-                    nextdata[3] = databuffer[totaldata + 3];
+                for(int x=0;x<7;x++)
+                {
+                    if (databuffer.Length > (totaldata + x))
+                        nextdata[x] = databuffer[totaldata + x];
 
-                sendpacket(cmd, nextdata);
+                }
+
+                if (totaldata+7>=databuffer.Length)
+                {
+                    cmd |= 0x01; //END of packet sequence
+                }
+
+                sendpacketsegment(cmd, nextdata);
+
+                totaldata += 7;
 
             }
 

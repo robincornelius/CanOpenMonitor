@@ -25,6 +25,8 @@ namespace CanMonitor
 
         private Dictionary<UInt32, string> sdoerrormessages = new Dictionary<UInt32, string>();
 
+        Dictionary<UInt32, List<byte>> sdotransferdata = new Dictionary<uint, List<byte>>();
+
         public Form1()
         {
 
@@ -47,8 +49,8 @@ namespace CanMonitor
             }
 
 
-          
 
+            lco.dbglevel = debuglevel.DEBUG_ALL;
 
             lco.loggercallback_NMT = log_NMT;
             lco.loggercallback_NMTEC = log_NMTEC;
@@ -198,47 +200,198 @@ namespace CanMonitor
 
                 string msg="";
 
-                if(payload.cob >=0x600)
-                {
-                    msg += "TX";
-                }
-                else
-                {
-                    msg += "RX";
-                }
-
 
                 int SCS = payload.data[0] >> 5; //7-5
 
                 int n = (0x03 & (payload.data[0] >> 2)); //3-2 data size for normal packets
                 int e = (0x01 & (payload.data[0] >> 1)); // expidited flag
-                int s = (payload.data[0] & 0x01); // data size set flag
-
+                int s = (payload.data[0] & 0x01); // data size set flag //also in block
+                int c = s;
+       
                 int sn = (0x07 & (payload.data[0] >> 1)); //3-1 data size for segment packets
                 int t = (0x01 & (payload.data[0] >> 4));  //toggle flag
 
-                switch(SCS)
-                {
-                    case 0:
-                        break;
-                    case 1:
-                        break;
-                    case 2:
-                        break;
-                    case 3:
-                        break;
-                    case 4:
-                        break;
+                int cc = (0x01 & (payload.data[0] >> 2));
 
-                }
 
 
                 UInt16 index =(UInt16)(payload.data[1] + (payload.data[2] << 8));
                 byte sub = payload.data[3];
 
-                string.Format("0x{0:x4}/{1:x2}", index, sub);
-                msg += string.Format("SCS {0} size {1} expidited {2} size set {3} seg size {4} tottle {5}", SCS, n, e, s, sn, t);
 
+                int valid = 7;
+
+                if (n != 0)
+                    valid = 8 - (7 - n);
+
+
+                if (payload.cob>=0x580 && payload.cob<=0x600)
+                {
+                    string mode = "";
+                    string sdoproto = "";
+
+                    string setsize = "";
+
+                    switch (SCS)
+                    {
+                        case 0:
+                            mode = "upload segment response";
+                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF",valid,c==0?"MORE":"END");
+                          
+                            if(sdotransferdata.ContainsKey(payload.cob))
+                            {
+
+                                for(int x=1;x<=valid;x++)
+                                {
+                                    sdotransferdata[payload.cob].Add(payload.data[x]);
+                                }
+
+                                if (c == 1)
+                                {
+
+                                    StringBuilder hex = new StringBuilder(sdotransferdata[payload.cob].Count * 2);
+                                    StringBuilder ascii = new StringBuilder(sdotransferdata[payload.cob].Count * 2);
+                                    foreach (byte b in sdotransferdata[payload.cob])
+                                    {
+                                        hex.AppendFormat("{0:x2} ", b);
+                                        ascii.AppendFormat("{0}", (char)Convert.ToChar(b));
+                                    }
+
+                                    sdoproto += "\nDATA = "+hex.ToString() +"\n("+ascii+")";
+
+                                    Console.WriteLine(hex.ToString());
+                                    Console.WriteLine(ascii.ToString());
+
+                                    sdotransferdata.Remove(payload.cob);
+                                }
+
+                            }
+
+                            break;
+                        case 1:
+                            mode = "download segment response";
+                            sdoproto = string.Format("{0} {1}", mode, t == 1 ? "TOG ON" : "TOG OFF");
+                            break;
+                        case 2:
+                            mode = "initate upload response";
+                            string nbytes = "";
+
+                            if(e==1 && s==1)
+                            {
+                                //n is valid
+                                nbytes = string.Format("Valid bytes = {0}", 4 - n);
+                            }
+
+                            if(e==0 && s==1)
+                            {
+                                byte[] size = new byte[4];
+                                Array.Copy(payload.data, 4, size, 0, 4);
+                                UInt32 isize = (UInt32)BitConverter.ToUInt32(size, 0);
+                                nbytes = string.Format("Bytes = {0}", isize);
+
+                                if (sdotransferdata.ContainsKey(payload.cob))
+                                    sdotransferdata.Remove(payload.cob);
+
+                                sdotransferdata.Add(payload.cob, new List<byte>());
+                            }
+
+                            sdoproto = string.Format("{0} {1} {2} 0x{3:x4}/{4:x2}", mode,nbytes,e==1?"Normal":"Expedite", index, sub);
+                            break;
+                        case 3:
+                            mode = "initate download response";
+                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2}", mode, index, sub);
+                            break;
+
+                        case 5:
+                            mode = "Block download response";
+
+                            byte segperblock = payload.data[4];
+                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2} Blksize = {3}", mode, cc == 0 ? "NO SERVER CRC" : "SERVER CRC", index, sub,segperblock);
+
+                            break;
+
+
+                        default:
+                            mode = string.Format("SCS {0}", SCS);
+                            break;
+
+                    }
+
+
+
+                    msg = sdoproto;
+  
+
+                }
+                else
+                {
+                    //Client to server
+
+                    string mode = "";
+                    string sdoproto = "";
+
+                    switch (SCS)
+                    {
+                        case 0:
+                            mode = "download segment request";
+                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", valid, c == 0 ? "MORE" : "END");
+
+                            break;
+                        case 1:
+                            string nbytes = "";
+
+                            if (e == 1 && s == 1)
+                            {
+                                //n is valid
+                                nbytes = string.Format("Valid bytes = {0}", 4 - n);
+                            }
+
+                            if (e == 0 && s == 1)
+                            {
+                                byte[] size2 = new byte[4];
+                                Array.Copy(payload.data, 4, size2, 0, 4);
+                                UInt32 isize2 = (UInt32)BitConverter.ToUInt32(size2, 0);
+                                nbytes = string.Format("Bytes = {0}", isize2);
+                            }
+
+                            mode = "initate download request";
+                            sdoproto = string.Format("{0} {1} {2} 0x{3:x4}/{4:x2}", mode, nbytes, e == 1 ? "Normal" : "Expedite", index, sub);
+                            break;
+                        case 2:
+                            mode = "initate upload request";
+                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2}",mode, index, sub);
+                            break;
+                        case 3:
+                            mode = "upload segment request";
+                            sdoproto = string.Format("{0} {1}", mode, t == 1 ? "TOG ON" : "TOG OFF");
+                            break;
+
+                        case 5:
+                            mode = "Block download";
+                            sdoproto = string.Format("{0}", mode);
+                            break;
+
+                        case 6:
+                            mode = "Initate Block download request";
+
+                            byte[] size = new byte[4];
+                            Array.Copy(payload.data, 4, size, 0, 4);
+                            UInt32 isize = (UInt32)BitConverter.ToUInt32(size, 0);
+
+                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2} Size = {3}", mode,cc==0?"NO CLIENT CRC":"CLIENT CRC", index, sub,isize);
+                            break;
+
+
+                        default:
+                            mode = string.Format("CSC {0}", SCS);
+                            break;
+
+                    }
+
+
+                    msg = sdoproto;
+
+                }
 
 
                 if ((payload.data[0] & 0x80) != 0)
@@ -727,20 +880,30 @@ namespace CanMonitor
 
         }
 
-        void done(SDO sdo)
-        {
-
-            int x = 00;
-            x++;
-            x--;
-
-        }
-
         private void ManualSDOToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
-            lco.SDOread(0x01, 0x2010, 0x00, done);
+            Encoding u8 = Encoding.UTF8;
 
+            byte[] data = new byte[8];
+            data[0] = 0xfe;
+            data[1] = 18;
+            data[2] = 0x00;
+            data[3] = 0x00;
+            data[4] = 0x00;
+            data[5] = 0x00;
+            data[6] = 0x00;
+            data[7] = 0xfd;
+
+
+
+            lco.SDOwrite(0x04, 0x2010, 0x02, data, null);
+
+        }
+
+        private void sDOUPLOADToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            lco.SDOread(0x04, 0x2010, 0x02, null);
         }
     }
 
