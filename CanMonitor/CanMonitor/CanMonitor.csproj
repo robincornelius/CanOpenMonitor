@@ -47,6 +47,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChgrFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ChgrFrm.Designer.cs">
+      <DependentUpon>ChgrFrm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ErrorInject.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -92,6 +98,9 @@
     <Compile Include="ValueEditor.Designer.cs">
       <DependentUpon>ValueEditor.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ChgrFrm.resx">
+      <DependentUpon>ChgrFrm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ErrorInject.resx">
       <DependentUpon>ErrorInject.cs</DependentUpon>
     </EmbeddedResource>

@@ -212,7 +212,7 @@ namespace libCanopenSimple
         public Action<canpacket> loggercallback_SDO = null;
         public Action<canpacket> loggercallback_NMTEC = null;
         public Action<canpacket> loggercallback_NMT = null;
-        public Action<canpacket> loggercallback_PDO = null;
+        public Action<canpacket[]> loggercallback_PDO = null;
         public Action<canpacket> loggercallback_EMCY = null;
         public Action<canpacket> loggercallback_LSS = null;
         public Action<canpacket> loggercallback_TIME = null;
@@ -267,6 +267,7 @@ namespace libCanopenSimple
             while (threadrun)
             {
                 canpacket cp;
+                List<canpacket> pdos = new List<canpacket>();
                 while (packetqueue.TryDequeue(out cp))
                 {
                     //Handle PDO first
@@ -277,8 +278,10 @@ namespace libCanopenSimple
                         if (PDOcallbacks.ContainsKey(cp.cob))
                             PDOcallbacks[cp.cob](cp.data);
 
-                        if (loggercallback_PDO != null)
-                            loggercallback_PDO(cp);
+                        pdos.Add(cp);
+
+                        //if (loggercallback_PDO != null)
+                        //    loggercallback_PDO(cp);
                     }
 
                     //SDO replies 0x601-0x67F
@@ -351,6 +354,13 @@ namespace libCanopenSimple
                     }
 
                 }
+
+                if(pdos.Count>0)
+                {
+                    if (loggercallback_PDO != null)
+                        loggercallback_PDO(pdos.ToArray());
+                }
+
                     SDO.kick_SDO();
 
                     if (sdo_queue.Count > 0)

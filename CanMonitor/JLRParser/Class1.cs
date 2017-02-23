@@ -4,25 +4,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PDOInterface;
+using System.Windows.Forms;
+using JLRParser;
 
 namespace PDOParser
 {
 
     public class PDO : IPDOParser
     {
+        public JLRStatus status;
+
         public void registerPDOS(Dictionary<UInt16, Func<byte[], string>> dic)
         {
             dic.Add(0x181, PDO181);
             dic.Add(0x183, PDO183);
-            dic.Add(0x203, PDO203);
+            //dic.Add(0x203, PDO203);
             dic.Add(0x190, PDO190);
-            dic.Add(0x204, PDO204);
-            dic.Add(0x304, PDO304);
-            dic.Add(0x404, PDO404);
+            dic.Add(0x203, PDO203);
+            dic.Add(0x303, PDO303);
+            dic.Add(0x403, PDO403);
             dic.Add(0x205, PDO205);
             dic.Add(0x206, PDO206);
             dic.Add(0x185, PDO185);
             dic.Add(0x200, PDO200);
+            dic.Add(0x201, PDO201);
+            dic.Add(0x214, PDO214);
+            dic.Add(0x215, PDO215);
+
+
+            status = new JLRStatus();
+            status.Show();
+
+            for(byte x=0;x<16;x++)
+            {
+                status.updateGM(x, 0);
+            }
 
         }
 
@@ -51,6 +67,11 @@ namespace PDOParser
                     {
                         float val = BitConverter.ToSingle(payload2, 0);
                         ret = string.Format(" GM {0} CHAN {1} = {2} T", node, sub, val);
+
+                        int chan = 3*(node - 8);
+                        chan = chan + (sub - 1);
+
+                        status.updateGM((byte)chan,val);
                         return ret;
                     }
 
@@ -61,6 +82,8 @@ namespace PDOParser
                 {
                     float val = BitConverter.ToSingle(payload2, 0);
                     ret = string.Format("TEMP CHAN {0} = {1} T", sub, val);
+
+                    status.updatetemp((byte)(sub-1), val);
                     return ret;
                 }
             }
@@ -95,33 +118,80 @@ namespace PDOParser
 
         enum EController_states
 {
-        CTRL_BOOT=0,
-        CTRL_ALARM, //1
-        CTRL_WAIT_ON, //2
-        CTRL_INTERLOCK, //3
-        CTRL_RUN, //4
-        CTRL_WAITOUT,
-        CTRL_WAITIN,
-        CTRL_WAITUP,
-        CTRL_WAITDOWN,
-        CTRL_WAITSTART,
-        
-        CTRL_MAGNETISE, //5
-        CTRL_LIVE, //6
-        CTRL_STARTCHARGE,
-        CTRL_CHARGE, //7       
-        CTRL_THYMUX,
-        CTRL_DISCHARGE,
-        CTRL_INDEXNEXT,
-        CTRL_WAITCOMPLETE, //8
-        CTRL_READGAUSSMETERS,
-        
+    CTRL_BOOT = 0,
+    CTRL_WAITPLC,
+    CTRL_BUSALARM,
+    CTRL_CHGRALARM,
+    CTRL_MOTORALARM,
+    CTRL_SAFEALARM,
+
+    CTRL_OFF,
+
+    CTRL_WAIT_ON,
+    CTRL_INTERLOCK,
+    CTRL_RUN,
+    CTRL_WAITOUT,
+    CTRL_WAITIN,
+    CTRL_WAITUP,
+    CTRL_WAITDOWN,
+    CTRL_WAITSTART,
+
+    CTRL_UPLOADUSER,
+
+    CTRL_WAITUPLOADUSER,
+
+    CTRL_WAITBARCODE,
+    CTRL_GETBARCODE,
+    CTRL_GETBARCODEREPLY,
+    CTRL_WAITUPLOADBARCODE,
+
+    CTRL_SETOVERCHECK,
+    CTRL_WAITOVERCHECKREPLY,
+
+
+
+    CTRL_MAGNETISE, //5
+    CTRL_LIVE, //6
+    CTRL_STARTCHARGE,
+    CTRL_CHARGE, //7       
+    CTRL_THYMUX,
+    CTRL_DISCHARGE,
+    CTRL_INDEXNEXT,
+    CTRL_WAITCOMPLETE, //8
+    CTRL_READGAUSSMETERS,
+
+    CTRL_UPLOADGAUSS,
+    CTRL_WAITUPLOADGAUSS,
+
+    CTRL_READTHERMOCOUPLE,
+    CTRL_WAITUPLOADTHERMOCOUPLE,
+
+
+    FLUXMETER_SAMPLE,
+    FLUXMETER_RESET,
+    FLUXMETER_GETVAL,
+    FLUXMETER_RANGE,
+    FLUXMETER_ISOLATE,
+    FLUXMETER_ZERO,
+
+    WAIT_FLUXWRITE,
+    WAIT_NEWWRITE,
+
+    CHECK_DATAREAD,
+    PUK_FAIL_OVERCHECK,
+    CTRL_OVERTEMP,
+    CTRL_HOME_REQUIRED,
+    CTRL_GOING_HOME,
+                             
  } ;
 
         static Estates lastcharger;
         static EController_states lastcontroller;
 
-        public static string PDO181(byte[] data)
+
+        UInt16 vcaps;
+
+        public string PDO181(byte[] data)
         {
             string msg = "";
 
@@ -137,6 +207,10 @@ namespace PDOParser
 
             msg = string.Format("Charger = {0} - Master = {1} - Caps = {2}", chargerstate.ToString(), controller_state.ToString(), vcaps);
 
+            status.updatevoltage(vcaps,chargerstate.ToString(), controller_state.ToString());
+
+            this.vcaps = (UInt16)vcaps;
+
             return msg;
 
         }
@@ -150,15 +224,6 @@ namespace PDOParser
             return msg;
         }
 
-        public static string PDO203(byte[] data)
-        {
-            string msg = "";
-
-            msg = String.Format("OUT {0}", Convert.ToString(data[0], 2));
-
-            return msg;
-        }
-
         public static string PDO190(byte[] data)
         {
 
@@ -166,18 +231,19 @@ namespace PDOParser
 
         }
 
-        public static string PDO204(byte[] data)
+        public static string PDO203(byte[] data)
         {
             return "saftey unlock";
         }
-        public static string PDO304(byte[] data)
+        public static string PDO303(byte[] data)
         {
 
             return string.Format("Fire inthe hole FX {0}", data[0]); ;
         }
-        public static string PDO404(byte[] data)
+        public string PDO403(byte[] data)
         {
 
+            status.updatemaxvoltage(BitConverter.ToUInt16(data, 1),data[0]);
             return string.Format("Select FX {0} vol {1}", data[0], BitConverter.ToUInt16(data, 1));
         }
 
@@ -236,7 +302,7 @@ namespace PDOParser
                 msg += "START";
             
             if ((data[0] & (byte)0x40)!=0)
-                msg += "";
+                msg += "POWERON";
             if ((data[0] & (byte)0x80)!=0)
                 msg += "";
 
@@ -250,12 +316,75 @@ namespace PDOParser
 
         public static string PDO200(byte[] data)
         {
+
+            return "WTF?";
             string msg;
 
             msg = String.Format("PHASE {0} TAR {1} OUT {2}", BitConverter.ToUInt32(data, 0),BitConverter.ToUInt16(data,4),BitConverter.ToUInt16(data,6));
 
             return msg;
 
+        }
+
+        public string PDO201(byte[] data)
+        {
+            string msg;
+
+            float val = (float)BitConverter.ToSingle(data, 0);
+            msg = String.Format("FLUX {0}", val);
+
+            status.updateflux(val);
+            
+
+            Console.WriteLine(msg);
+
+            return msg;
+
+        }
+
+
+        DateTime chargestart = new DateTime();
+        DateTime chargeend = new DateTime();
+
+        string PDO214(byte[] data)
+        {
+
+            string msg;
+
+            UInt16 vol = (UInt16)BitConverter.ToUInt16(data, 0);
+            byte flag = (byte)data[2];
+            msg = String.Format("Voltage {0} chargeflag {1}", vol,flag);
+
+            if(flag==0xff)
+            {
+                chargestart = DateTime.Now;
+            }
+            
+
+            return msg;
+
+        }
+
+        string PDO215(byte[] data)
+        {
+            string msg;
+           
+            byte flag = (byte)data[0];
+            msg = String.Format("end chargeflag {0}", flag);
+
+            if (flag == 0xaa)
+            {
+                chargeend = DateTime.Now;
+
+                double E = 0.5 * 80000e-6 * (double)vcaps * (double)vcaps;
+                TimeSpan span = chargeend-chargestart;
+
+                double power = 2.0 * ((double)E / (double)span.TotalSeconds);
+
+                msg += string.Format(" Time {0} PWR {1}",span.TotalSeconds, power);
+            }
+
+            return msg;
         }
 
     }

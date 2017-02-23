@@ -166,13 +166,13 @@ namespace libCanopenSimple
                             expitideddata = (UInt32)databuffer.Length;
                             totaldata = 0;
 
-                            sendpacket(cmd, payload);
+                            //sendpacket(cmd, payload);
                             break;
 
                     }
 
                   
-                   // sendpacket(cmd, databuffer);
+                    sendpacket(cmd, databuffer);
 
                 }
             }
@@ -279,7 +279,7 @@ namespace libCanopenSimple
                     if(sdo.node==node)
                     {
 
-                        if(index==sdo.index && sub == sdo.subindex)
+                        if(c!=0 && (index==sdo.index && sub == sdo.subindex)) //if segments break its here
                         {
                             state = SDO_STATE.SDO_HANDSHAKE;
                             requestNextSegment(false);

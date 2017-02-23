@@ -50,7 +50,7 @@ namespace CanMonitor
 
 
 
-            lco.dbglevel = debuglevel.DEBUG_ALL;
+            lco.dbglevel = debuglevel.DEBUG_NONE;
 
             lco.loggercallback_NMT = log_NMT;
             lco.loggercallback_NMTEC = log_NMTEC;
@@ -259,8 +259,8 @@ namespace CanMonitor
 
                                     sdoproto += "\nDATA = "+hex.ToString() +"\n("+ascii+")";
 
-                                    Console.WriteLine(hex.ToString());
-                                    Console.WriteLine(ascii.ToString());
+                                    //Console.WriteLine(hex.ToString());
+                                    //Console.WriteLine(ascii.ToString());
 
                                     sdotransferdata.Remove(payload.cob);
                                 }
@@ -441,37 +441,65 @@ namespace CanMonitor
             }));
         }
 
-        private void log_PDO(canpacket payload)
+        private void log_PDO(canpacket[] payloads)
         {
             listView1.BeginInvoke(new MethodInvoker(delegate
             {
-                string[] items = new string[5];
-                items[0] = "PDO";
-                items[1] = string.Format("{0:x3}", payload.cob);
-                items[2] = "";
-                items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
-
-                if (pdoprocessors.ContainsKey(payload.cob))
-                {
-                    string msg = pdoprocessors[payload.cob](payload.data);
-
-                    if (msg == null)
-                        return;
-
-                    items[4] = msg;
-                }
-                else
-                {
-                    items[4] = string.Format("Len = {0}", payload.len);
-                }
-
-                ListViewItem i = new ListViewItem(items);
 
                 listView1.BeginUpdate();
-                listView1.Items.Add(i);
+                
+                foreach (canpacket payload in payloads)
+                {
+
+                    string[] items = new string[5];
+                    items[0] = "PDO";
+                    items[1] = string.Format("{0:x3}", payload.cob);
+                    items[2] = "";
+                    items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+
+                    if(payload.cob==0x181)
+                    {
+                        continue;
+                    }
+
+                    if (pdoprocessors.ContainsKey(payload.cob))
+                    {
+                        string msg = pdoprocessors[payload.cob](payload.data);
+
+                        if (msg == null)
+                            continue;
+
+                        items[4] = msg;
+                    }
+                    else
+                    {
+                        items[4] = string.Format("Len = {0}", payload.len);
+                    }
+
+                    ListViewItem i = new ListViewItem(items);
+
+                    listView1.Items.Add(i);
+                
+                    //205 20
+                    if (payload.cob == 0x205)
+                    {
+                        if (payload.data[0] == 0x20)
+                        {
+                            //0x185 bit0x20
+                            byte[] data = new byte[2];
+                            data[0] = 0x20 | 0x10 | 0x02;
+                           // lco.writePDO(0x185, data);
+                        }
+                    }
+                }
+
                 listView1.EndUpdate();
                 if (checkbox_autoscroll.Checked)
-                    listView1.EnsureVisible(listView1.Items.Count - 1);
+                {
+                    if(listView1.Items.Count>1)
+                        listView1.EnsureVisible(listView1.Items.Count - 1);
+                }
+
             }));
         }
 
@@ -897,13 +925,82 @@ namespace CanMonitor
 
 
 
-            lco.SDOwrite(0x04, 0x2010, 0x02, data, null);
+            lco.SDOwrite(0x04, 0x2010, 0x01, data, null);
 
         }
 
         private void sDOUPLOADToolStripMenuItem_Click(object sender, EventArgs e)
         {
             lco.SDOread(0x04, 0x2010, 0x02, null);
+        }
+
+        private void sTARTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //0x185 bit0x20
+            byte[] data = new byte[2];
+            data[0] = 0x20 | 0x10 | 0x02;
+            lco.writePDO(0x185, data);
+        }
+
+        private void pDOTESTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            byte[] data = new byte[1];
+            data[0] = 0xff;
+            lco.writePDO(0x202, data);
+        }
+
+        private void charge100vToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            ChgrFrm frm = new ChgrFrm(lco);
+
+            frm.Show();
+
+        }
+
+        private void stopChargeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            byte[] data = new byte[2];
+            data[0] = 0x00;
+            data[1] = 0x00;
+
+            lco.writePDO(0x214, data);
+        }
+
+        private void ctrlOnToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            byte[] data = new byte[2];
+            data[0] = 0x04; //on bit 2 off bit 1
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+
+
+            System.Threading.Thread.Sleep(500);
+   
+            data[0] = 0x00; //on bit 2 off bit 1
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+
+        }
+
+        private void ctrlOffToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            byte[] data = new byte[3];
+            data[0] = 0x02;
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+
+            System.Threading.Thread.Sleep(500);
+            data[0] = 0x00; //on bit 2 off bit 1
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+
+
         }
     }
 

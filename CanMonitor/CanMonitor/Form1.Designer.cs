@@ -50,14 +50,20 @@
             this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ManualSDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nMTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROMResetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.errorInjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.flashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.sDOUPLOADToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.sDOUPLOADToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ManualSDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sTARTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pDOTESTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.charge100vToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopChargeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.ctrlOnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ctrlOffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -266,7 +272,13 @@
             this.flashToolStripMenuItem,
             this.toolStripSeparator1,
             this.sDOUPLOADToolStripMenuItem,
-            this.ManualSDOToolStripMenuItem});
+            this.ManualSDOToolStripMenuItem,
+            this.sTARTToolStripMenuItem,
+            this.pDOTESTToolStripMenuItem,
+            this.charge100vToolStripMenuItem,
+            this.stopChargeToolStripMenuItem,
+            this.ctrlOnToolStripMenuItem,
+            this.ctrlOffToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
@@ -277,13 +289,6 @@
             this.sDOToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.sDOToolStripMenuItem.Text = "SDO Editor";
             this.sDOToolStripMenuItem.Click += new System.EventHandler(this.sDOToolStripMenuItem_Click);
-            // 
-            // ManualSDOToolStripMenuItem
-            // 
-            this.ManualSDOToolStripMenuItem.Name = "ManualSDOToolStripMenuItem";
-            this.ManualSDOToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.ManualSDOToolStripMenuItem.Text = "SDO DOWNLOAD";
-            this.ManualSDOToolStripMenuItem.Click += new System.EventHandler(this.ManualSDOToolStripMenuItem_Click);
             // 
             // nMTToolStripMenuItem
             // 
@@ -313,11 +318,10 @@
             this.flashToolStripMenuItem.Text = "Flash";
             this.flashToolStripMenuItem.Click += new System.EventHandler(this.flashToolStripMenuItem_Click);
             // 
-            // timer1
+            // toolStripSeparator1
             // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 1000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(165, 6);
             // 
             // sDOUPLOADToolStripMenuItem
             // 
@@ -326,10 +330,60 @@
             this.sDOUPLOADToolStripMenuItem.Text = "SDO UPLOAD";
             this.sDOUPLOADToolStripMenuItem.Click += new System.EventHandler(this.sDOUPLOADToolStripMenuItem_Click);
             // 
-            // toolStripSeparator1
+            // ManualSDOToolStripMenuItem
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(165, 6);
+            this.ManualSDOToolStripMenuItem.Name = "ManualSDOToolStripMenuItem";
+            this.ManualSDOToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.ManualSDOToolStripMenuItem.Text = "SDO DOWNLOAD";
+            this.ManualSDOToolStripMenuItem.Click += new System.EventHandler(this.ManualSDOToolStripMenuItem_Click);
+            // 
+            // sTARTToolStripMenuItem
+            // 
+            this.sTARTToolStripMenuItem.Name = "sTARTToolStripMenuItem";
+            this.sTARTToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.sTARTToolStripMenuItem.Text = "START";
+            this.sTARTToolStripMenuItem.Click += new System.EventHandler(this.sTARTToolStripMenuItem_Click);
+            // 
+            // pDOTESTToolStripMenuItem
+            // 
+            this.pDOTESTToolStripMenuItem.Name = "pDOTESTToolStripMenuItem";
+            this.pDOTESTToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.pDOTESTToolStripMenuItem.Text = "PDOTEST";
+            this.pDOTESTToolStripMenuItem.Click += new System.EventHandler(this.pDOTESTToolStripMenuItem_Click);
+            // 
+            // charge100vToolStripMenuItem
+            // 
+            this.charge100vToolStripMenuItem.Name = "charge100vToolStripMenuItem";
+            this.charge100vToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.charge100vToolStripMenuItem.Text = "Charge Test";
+            this.charge100vToolStripMenuItem.Click += new System.EventHandler(this.charge100vToolStripMenuItem_Click);
+            // 
+            // stopChargeToolStripMenuItem
+            // 
+            this.stopChargeToolStripMenuItem.Name = "stopChargeToolStripMenuItem";
+            this.stopChargeToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.stopChargeToolStripMenuItem.Text = "Stop Charge";
+            this.stopChargeToolStripMenuItem.Click += new System.EventHandler(this.stopChargeToolStripMenuItem_Click);
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 1000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // ctrlOnToolStripMenuItem
+            // 
+            this.ctrlOnToolStripMenuItem.Name = "ctrlOnToolStripMenuItem";
+            this.ctrlOnToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.ctrlOnToolStripMenuItem.Text = "Ctrl On";
+            this.ctrlOnToolStripMenuItem.Click += new System.EventHandler(this.ctrlOnToolStripMenuItem_Click);
+            // 
+            // ctrlOffToolStripMenuItem
+            // 
+            this.ctrlOffToolStripMenuItem.Name = "ctrlOffToolStripMenuItem";
+            this.ctrlOffToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.ctrlOffToolStripMenuItem.Text = "Ctrl Off";
+            this.ctrlOffToolStripMenuItem.Click += new System.EventHandler(this.ctrlOffToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -387,6 +441,12 @@
         private System.Windows.Forms.ToolStripMenuItem flashToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem sDOUPLOADToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sTARTToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pDOTESTToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem charge100vToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopChargeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ctrlOnToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ctrlOffToolStripMenuItem;
     }
 }
 
