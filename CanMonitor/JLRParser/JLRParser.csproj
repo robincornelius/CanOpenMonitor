@@ -34,6 +34,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -56,6 +57,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\libCanopenSimple\libCanopenSimple.csproj">
+      <Project>{2fb81add-258f-4135-a9b9-17e2aca2448e}</Project>
+      <Name>libCanopenSimple</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PDOInterface\PDOInterface.csproj">
       <Project>{1f61b56a-0bdc-45f6-8954-cf2550775cbd}</Project>
       <Name>PDOInterface</Name>

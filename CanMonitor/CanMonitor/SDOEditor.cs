@@ -214,7 +214,7 @@ namespace CanMonitor
                             return;
                         }
 
-                        if (sdo.exp == true)
+                        //if (sdo.exp == true)
                         {
 
                             DataType meh = h.od.datatype;
@@ -238,6 +238,12 @@ namespace CanMonitor
 
 
                                     lvi.SubItems[5].Text = String.Format("{0:x}", h.sdo.expitideddata);
+                                    break;
+
+                                case DataType.VISIBLE_STRING:
+
+                                    lvi.SubItems[5].Text = System.Text.Encoding.UTF8.GetString(h.sdo.databuffer);
+
                                     break;
 
                                 default:
@@ -340,8 +346,17 @@ namespace CanMonitor
                             break;
                         }
 
+                    case DataType.VISIBLE_STRING:
+                        {
 
-                        break;
+                            byte [] payload = Encoding.ASCII.GetBytes(ve.newvalue);
+
+                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
+ 
+                            break;
+                        }
+
+
 
                     default:
 

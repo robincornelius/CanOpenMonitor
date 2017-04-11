@@ -23,9 +23,34 @@ namespace CanMonitor
         private string appdatafolder;
         IPDOParser ipdo;
 
+        List<ListViewItem> listitems = new List<ListViewItem>();
+
+        List<ListViewItem> EMClistitems = new List<ListViewItem>();
+
         private Dictionary<UInt32, string> sdoerrormessages = new Dictionary<UInt32, string>();
 
         Dictionary<UInt32, List<byte>> sdotransferdata = new Dictionary<uint, List<byte>>();
+
+        System.Windows.Forms.Timer updatetimer = new System.Windows.Forms.Timer();
+
+        StreamWriter sw;
+
+        public struct SNMTState
+        {
+            public byte state;
+            public DateTime lastupdate;
+            public bool dirty;
+            public ListViewItem LVI;
+            public bool isnew;
+            public string statemsg;
+        }
+
+        Dictionary<UInt16, SNMTState> NMTstate = new Dictionary<ushort, SNMTState>();
+        List<SNMTState> dirtyNMTstates = new List<SNMTState>();
+
+        bool NMTstateupdate = false;
+
+        
 
         public Form1()
         {
@@ -59,6 +84,8 @@ namespace CanMonitor
             lco.loggercallback_EMCY = log_EMCY;
 
             listView1.DoubleBuffering(true);
+            listView_emcy.DoubleBuffering(true);
+            listView_nmt.DoubleBuffering(true);
 
             
            // Assembly assembly = Assembly.LoadFrom("..\\..\\..\\BWPDOParser\\bin\\Debug\\BWPDOParser.dll");
@@ -76,25 +103,113 @@ namespace CanMonitor
                     {
                         ipdo = (IPDOParser)obj;
                         ipdo.registerPDOS(pdoprocessors);
+                        ipdo.setlco(lco);
                     }
                 }
  
              }
              
 
+
+
             interror();
+
+            listView1.ListViewItemSorter = null;
+
+            updatetimer.Interval = 1000;
+            updatetimer.Tick+=updatetimer_Tick;
+            updatetimer.Enabled =true;
 
         }
 
+
+        void appendfile(string[] ss)
+        {
+
+            if (sw == null)
+                return;
+
+            StringBuilder sb = new StringBuilder();
+            foreach (string s in ss)
+            {
+                sb.AppendFormat("{0}\t", s);
+            }
+
+            sw.WriteLine(sb.ToString());
+
+        }
+
+void updatetimer_Tick(object sender, EventArgs e)
+{
+
+    if (listitems.Count != 0)
+        lock(listitems)
+        {
+            listView1.BeginUpdate();
+
+            listView1.Items.AddRange(listitems.ToArray());
+
+            listitems.Clear();
+
+            if (checkbox_autoscroll.Checked && listView1.Items.Count>2)
+                listView1.EnsureVisible(listView1.Items.Count - 1);
+
+           
+
+
+            listView1.EndUpdate();
+
+        }
+
+    lock (NMTstate)
+    {
+        if (dirtyNMTstates.Count>0)
+        {
+            listView_nmt.BeginUpdate();
+
+            foreach(SNMTState state in dirtyNMTstates)
+            {
+                if(state.isnew)
+                {
+                    listView_nmt.Items.Add(state.LVI);
+                }
+                else
+                {
+                    state.LVI.SubItems[0].Text = state.lastupdate.ToString();
+                    state.LVI.SubItems[2].Text = state.statemsg;
+                }
+
+            }
+
+            dirtyNMTstates.Clear();
+          
+            listView_nmt.EndUpdate();
+        }
+    }
+
+    if (EMClistitems.Count > 0)
+    {
+        lock (EMClistitems)
+        {
+            listView_emcy.BeginUpdate();
+            listView_emcy.Items.AddRange(EMClistitems.ToArray());
+            EMClistitems.Clear();
+            listView_emcy.EndUpdate();
+        }
+    }
+
+}
+
         private void log_NMT(canpacket payload)
         {
-            listView1.BeginInvoke(new MethodInvoker(delegate
-            {
-                string[] items = new string[5];
-                items[0] = "NMT";
-                items[1] = string.Format("{0:x3}", payload.cob);
-                items[2] = "";
-                items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+            //listView1.BeginInvoke(new MethodInvoker(delegate
+            //{
+                string[] items = new string[6];
+                items[0] = DateTime.Now.ToString();
+                items[1] = "NMT";
+                items[2] = string.Format("{0:x3}", payload.cob);
+                items[3] = "";
+                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
                 string msg = "";
                 switch (payload.data[0])
@@ -126,17 +241,23 @@ namespace CanMonitor
                     msg += string.Format(" - Node 0x{0:x2}", payload.data[1]);
                 }
 
-                items[4] = msg;
+                items[5] = msg;
 
                 ListViewItem i = new ListViewItem(items);
 
                 i.ForeColor = Color.Red;
 
-                listView1.BeginUpdate();
-                listView1.Items.Add(i);
-                listView1.EndUpdate();
+                //listView1.BeginUpdate();
+                //listView1.Items.Add(i);
+                //listView1.EndUpdate();
               
-            }));
+                lock(listitems)
+                    listitems.Add(i);
+
+                appendfile(items);
+
+
+            //}));
 
            
 
@@ -144,18 +265,14 @@ namespace CanMonitor
 
         private void log_NMTEC(canpacket payload)
         {
-            listView1.BeginInvoke(new MethodInvoker(delegate
-            {
-                string[] items = new string[5];
-                items[0] = "NMTEC";
-                items[1] = string.Format("{0:x3}", payload.cob);
-                items[2] = string.Format("{0:x3}", payload.cob & 0x0FF);
-                items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
-
-
-                if (checkBox_heartbeats.Checked == false && payload.data[0] != 0)
-                    return;
-
+            //listView1.BeginInvoke(new MethodInvoker(delegate
+           // {
+                string[] items = new string[6];
+                items[0] = DateTime.Now.ToString();
+                items[1] = "NMTEC";
+                items[2] = string.Format("{0:x3}", payload.cob);
+                items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
+                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
                 string msg = "";
                 switch (payload.data[0])
@@ -175,28 +292,73 @@ namespace CanMonitor
 
                 }
 
-                items[4] = msg;
+                items[5] = msg;
 
                 ListViewItem i = new ListViewItem(items);
 
                 i.ForeColor = Color.DarkGreen;
-                listView1.BeginUpdate();
-                listView1.Items.Add(i);
-                listView1.EndUpdate();
-                //if (checkbox_autoscroll.Checked)
-                //    listView1.EnsureVisible(listView1.Items.Count - 1);
-            }));
+
+                appendfile(items);
+
+                if (checkBox_heartbeats.Checked == true || payload.data[0] == 0)
+                {
+                    lock (listitems)
+                    {
+                        listitems.Add(i);
+                    }
+                }
+
+                lock(NMTstate)
+                {
+                    byte node = (byte)(payload.cob & 0x0FF);
+
+                    if(NMTstate.ContainsKey(node))
+                    {
+                        SNMTState s = NMTstate[node];
+                        s.lastupdate = DateTime.Now;
+                        s.dirty = true;
+                        s.state = payload.data[0];
+                        s.isnew = false;
+                        s.statemsg = msg;
+                        NMTstate[node] = s;
+                        dirtyNMTstates.Add(NMTstate[node]);
+                    }
+                    else
+                    {
+                        SNMTState s = new SNMTState();
+                        s.lastupdate = DateTime.Now;
+                        s.dirty = true;
+                        s.state = payload.data[0];
+                        s.statemsg = msg;
+                        string[] ss = new string[3];
+                        ss[0] = DateTime.Now.ToString();
+                        ss[1] = node.ToString();
+                        ss[2] = msg;
+
+                        ListViewItem newitem = new ListViewItem(ss);
+                        s.LVI = newitem;
+                        s.isnew = true;
+
+                        NMTstate.Add(node,s);
+                        dirtyNMTstates.Add(NMTstate[node]);
+                    }
+                                
+                }
+
+
+
         }
 
         private void log_SDO(canpacket payload)
         {
-            listView1.BeginInvoke(new MethodInvoker(delegate
-            {
-                string[] items = new string[5];
-                items[0] = "SDO";
-                items[1] = string.Format("{0:x3}", payload.cob);
-                items[2] = string.Format("{0:x3}", payload.cob & 0x0FF);
-                items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+//            listView1.BeginInvoke(new MethodInvoker(delegate
+//            {
+                string[] items = new string[6];
+                items[0] = DateTime.Now.ToString();
+                items[1] = "SDO";
+                items[2] = string.Format("{0:x3}", payload.cob);
+                items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
+                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
                 string msg="";
 
@@ -257,7 +419,7 @@ namespace CanMonitor
                                         ascii.AppendFormat("{0}", (char)Convert.ToChar(b));
                                     }
 
-                                    sdoproto += "\nDATA = "+hex.ToString() +"\n("+ascii+")";
+                                    sdoproto += "\nDATA = "+hex.ToString() +"("+ascii+")";
 
                                     //Console.WriteLine(hex.ToString());
                                     //Console.WriteLine(ascii.ToString());
@@ -417,7 +579,8 @@ namespace CanMonitor
                 }
 
 
-                items[4] = msg;
+                items[5] = msg;
+                appendfile(items);
 
                 ListViewItem i = new ListViewItem(items);
                 
@@ -430,37 +593,30 @@ namespace CanMonitor
 
 
                 i.ForeColor = Color.DarkBlue;
-                listView1.BeginUpdate();
-                listView1.Items.Add(i);
-                listView1.EndUpdate();
+  
+                lock(listitems)
+                    listitems.Add(i);
 
-                if (checkbox_autoscroll.Checked)
-                    listView1.EnsureVisible(listView1.Items.Count - 1);
-
-
-            }));
         }
 
         private void log_PDO(canpacket[] payloads)
         {
-            listView1.BeginInvoke(new MethodInvoker(delegate
-            {
+            //return;
+ 
+  //          listView1.BeginInvoke(new MethodInvoker(delegate
+   //         {
 
-                listView1.BeginUpdate();
+                //listView1.BeginUpdate();
                 
                 foreach (canpacket payload in payloads)
                 {
 
-                    string[] items = new string[5];
-                    items[0] = "PDO";
-                    items[1] = string.Format("{0:x3}", payload.cob);
-                    items[2] = "";
-                    items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
-
-                    if(payload.cob==0x181)
-                    {
-                        continue;
-                    }
+                    string[] items = new string[6];
+                    items[0] = DateTime.Now.ToString();
+                    items[1] = "PDO";
+                    items[2] = string.Format("{0:x3}", payload.cob);
+                    items[3] = "";
+                    items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
                     if (pdoprocessors.ContainsKey(payload.cob))
                     {
@@ -469,50 +625,44 @@ namespace CanMonitor
                         if (msg == null)
                             continue;
 
-                        items[4] = msg;
+                        items[5] = msg;
                     }
                     else
                     {
-                        items[4] = string.Format("Len = {0}", payload.len);
+                        items[5] = string.Format("Len = {0}", payload.len);
                     }
 
                     ListViewItem i = new ListViewItem(items);
 
-                    listView1.Items.Add(i);
+                    appendfile(items);
+
+
+                    lock(listitems)
+                        listitems.Add(i);
+
+     //               listView1.Items.Add(i);
                 
-                    //205 20
-                    if (payload.cob == 0x205)
-                    {
-                        if (payload.data[0] == 0x20)
-                        {
-                            //0x185 bit0x20
-                            byte[] data = new byte[2];
-                            data[0] = 0x20 | 0x10 | 0x02;
-                           // lco.writePDO(0x185, data);
-                        }
-                    }
                 }
 
-                listView1.EndUpdate();
-                if (checkbox_autoscroll.Checked)
-                {
-                    if(listView1.Items.Count>1)
-                        listView1.EnsureVisible(listView1.Items.Count - 1);
-                }
-
-            }));
-        }
+         }
 
         private void log_EMCY(canpacket payload)
         {
-            listView1.BeginInvoke(new MethodInvoker(delegate
-            {
-                string[] items = new string[5];
-                items[0] = "EMCY";
-                items[1] = string.Format("{0:x3}", payload.cob);
-                items[2] = string.Format("{0:x3}", payload.cob - 0x080);
-                items[3] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+           // listView1.BeginInvoke(new MethodInvoker(delegate
+           // {
+                string[] items = new string[6];
+                string[] items2 = new string[5];
+
+                items[0] = DateTime.Now.ToString();
+                items[1] = "EMCY";
+                items[2] = string.Format("{0:x3}", payload.cob);
+                items[3] = string.Format("{0:x3}", payload.cob - 0x080);
+                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
                 //items[4] = "EMCY";
+
+                items2[0] = DateTime.Now.ToString();
+                items2[1] = items[2];
+                items2[2] = items[3];
 
                 UInt16 code = (UInt16)(payload.data[0] + (payload.data[1]<<8));
                 byte bits = (byte)(payload.data[3]);
@@ -531,36 +681,55 @@ namespace CanMonitor
                     }
                     else
                     {
-                        bitinfo = string.Format("bits 0x{1:x2}", bits);
+                        bitinfo = string.Format("bits 0x{0:x2}", bits);
                     }
 
-                    items[4] = string.Format("Error: {0} - {1} info 0x{2:x8}", errcode[code], bitinfo, info);
+                    items[5] = string.Format("Error: {0} - {1} info 0x{2:x8}", errcode[code], bitinfo, info);
                 }
                 else
                 {
-                    items[4] = string.Format("Error code 0x{0:x4} bits 0x{1:x2} info 0x{2:x8}", code, bits, info);
+                    items[5] = string.Format("Error code 0x{0:x4} bits 0x{1:x2} info 0x{2:x8}", code, bits, info);
                 }
-             
+
+                items2[3] = items[4];
 
                 ListViewItem i = new ListViewItem(items);
+                ListViewItem i2 = new ListViewItem(items2);
 
                 i.ForeColor = Color.White;
+                i2.ForeColor = Color.White;
 
                 if (code == 0)
                 {
                     i.BackColor = Color.Green;
+                    i2.BackColor = Color.Green;
+
                 }
                 else
                 {
                     i.BackColor = Color.Red;
+                    i2.BackColor = Color.Red;
+
                 } 
 
-                listView1.BeginUpdate();
-                listView1.Items.Add(i);
-                listView1.EndUpdate();
-                if (checkbox_autoscroll.Checked)
-                    listView1.EnsureVisible(listView1.Items.Count - 1);
-            }));
+                
+
+ //               listView1.BeginUpdate();
+ //               listView1.Items.Add(i);
+ //               listView1.EndUpdate();
+ //               if (checkbox_autoscroll.Checked)
+ //                   listView1.EnsureVisible(listView1.Items.Count - 1);
+            //}));
+ 
+              lock(listitems)
+                    listitems.Add(i);
+
+              appendfile(items);
+
+
+              lock (EMClistitems)
+                  EMClistitems.Add(i2);
+
         }
 
 
@@ -732,6 +901,7 @@ namespace CanMonitor
 
                 button_open.Text = "Close";
 
+                sw = new StreamWriter("canlog.txt", true);
 
             }
             catch(Exception ex)
@@ -751,7 +921,25 @@ namespace CanMonitor
 
         private void button_clear_Click(object sender, EventArgs e)
         {
-            listView1.Items.Clear();
+            lock (listitems)
+            {
+                listitems.Clear();
+                listView1.Items.Clear();
+            }
+
+            lock(EMClistitems)
+            {
+                EMClistitems.Clear();
+                listView_emcy.Items.Clear();
+            }
+
+            lock(dirtyNMTstates)
+            {
+                NMTstate.Clear();
+                dirtyNMTstates.Clear();
+                listView_nmt.Items.Clear();
+            }
+
         }
 
         /*

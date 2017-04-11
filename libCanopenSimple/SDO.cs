@@ -135,8 +135,11 @@ namespace libCanopenSimple
                     sendpacket(cmd, payload);
                 }
 
+
+
                 if (dir == direction.SDO_WRITE)
                 {
+                    bool wpsent = false;
                     byte cmd = 0;
 
                     switch (databuffer.Length)
@@ -166,12 +169,13 @@ namespace libCanopenSimple
                             expitideddata = (UInt32)databuffer.Length;
                             totaldata = 0;
 
-                            //sendpacket(cmd, payload);
+                            wpsent = true;
+                            sendpacket(cmd, payload);
                             break;
 
                     }
 
-                  
+                  if(wpsent==false)
                     sendpacket(cmd, databuffer);
 
                 }
@@ -279,7 +283,10 @@ namespace libCanopenSimple
                     if(sdo.node==node)
                     {
 
-                        if(c!=0 && (index==sdo.index && sub == sdo.subindex)) //if segments break its here
+                        //if(c!=0 && (index==sdo.index && sub == sdo.subindex)) //if segments break its here
+
+                        //There is no c paramater on download reply?
+                        if((index==sdo.index && sub == sdo.subindex)) //if segments break its here
                         {
                             state = SDO_STATE.SDO_HANDSHAKE;
                             requestNextSegment(false);

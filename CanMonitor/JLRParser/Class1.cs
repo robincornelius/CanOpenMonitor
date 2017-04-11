@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using PDOInterface;
 using System.Windows.Forms;
 using JLRParser;
+using libCanopenSimple;
 
 namespace PDOParser
 {
@@ -13,6 +14,13 @@ namespace PDOParser
     public class PDO : IPDOParser
     {
         public JLRStatus status;
+        public libCanopen lco;
+
+        public void setlco(libCanopen lco)
+        {
+            this.lco = lco;
+            status.setlco(lco);
+        }
 
         public void registerPDOS(Dictionary<UInt16, Func<byte[], string>> dic)
         {
@@ -108,6 +116,7 @@ namespace PDOParser
             LIVE,
             LIVE_CONTACTOR_DELAY,
             CHARGING,
+            CHARGED_CONTACTOR_DELAY,
             CHARGED,
             DO_DISCHARGE,
             POST_DISHCARGE,
@@ -118,70 +127,57 @@ namespace PDOParser
 
         enum EController_states
 {
-    CTRL_BOOT = 0,
+    CTRL_BOOT = 0, //0
     CTRL_WAITPLC,
     CTRL_BUSALARM,
     CTRL_CHGRALARM,
     CTRL_MOTORALARM,
     CTRL_SAFEALARM,
-
+    CTRL_COMMSALARM,
+    CTRL_WAIT_USERID,
     CTRL_OFF,
-
     CTRL_WAIT_ON,
-    CTRL_INTERLOCK,
-    CTRL_RUN,
-    CTRL_WAITOUT,
+    CTRL_WAITOUT, //10
     CTRL_WAITIN,
     CTRL_WAITUP,
     CTRL_WAITDOWN,
     CTRL_WAITSTART,
-
     CTRL_UPLOADUSER,
-
     CTRL_WAITUPLOADUSER,
-
     CTRL_WAITBARCODE,
     CTRL_GETBARCODE,
     CTRL_GETBARCODEREPLY,
-    CTRL_WAITUPLOADBARCODE,
-
+    CTRL_WAITUPLOADBARCODE, //20
     CTRL_SETOVERCHECK,
     CTRL_WAITOVERCHECKREPLY,
-
-
-
-    CTRL_MAGNETISE, //5
-    CTRL_LIVE, //6
+    CTRL_MAGNETISE, //
+    CTRL_LIVE, //
     CTRL_STARTCHARGE,
-    CTRL_CHARGE, //7       
+    CTRL_CHARGE, //       
     CTRL_THYMUX,
     CTRL_DISCHARGE,
-    CTRL_INDEXNEXT,
-    CTRL_WAITCOMPLETE, //8
-    CTRL_READGAUSSMETERS,
-
+    CTRL_WAITCOMPLETE, //
+    CTRL_READGAUSSMETERS, //30
     CTRL_UPLOADGAUSS,
     CTRL_WAITUPLOADGAUSS,
-
     CTRL_READTHERMOCOUPLE,
     CTRL_WAITUPLOADTHERMOCOUPLE,
-
-
     FLUXMETER_SAMPLE,
     FLUXMETER_RESET,
     FLUXMETER_GETVAL,
     FLUXMETER_RANGE,
     FLUXMETER_ISOLATE,
-    FLUXMETER_ZERO,
-
+    FLUXMETER_ZERO,  //40
     WAIT_FLUXWRITE,
+    CTRL_LOG_PFSTATUS,
     WAIT_NEWWRITE,
-
+    CTRL_LOG_TIME,
     CHECK_DATAREAD,
     PUK_FAIL_OVERCHECK,
     CTRL_OVERTEMP,
     CTRL_HOME_REQUIRED,
     CTRL_GOING_HOME,
+    CTRL_FAIL, //50
                              
  } ;
 

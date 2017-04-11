@@ -24,27 +24,27 @@ namespace CanMonitor
 
         private void button_startbus_Click(object sender, EventArgs e)
         {
-            lco.NMT_start(0);
+            lco.NMT_start((byte)numericUpDown1.Value);
         }
 
         private void button_stopbus_Click(object sender, EventArgs e)
         {
-            lco.NMT_stop(0);
+            lco.NMT_stop((byte)numericUpDown1.Value);
         }
 
         private void button_preop_Click(object sender, EventArgs e)
         {
-            lco.NMT_preop(0);
+            lco.NMT_preop((byte)numericUpDown1.Value);
         }
 
         private void button_resetcomms_Click(object sender, EventArgs e)
         {
-            lco.NMT_ResetComms(0);
+            lco.NMT_ResetComms((byte)numericUpDown1.Value);
         }
 
         private void button_resetnodes_Click(object sender, EventArgs e)
         {
-            lco.NMT_ResetNode(0);
+            lco.NMT_ResetNode((byte)numericUpDown1.Value);
         }
     }
 }

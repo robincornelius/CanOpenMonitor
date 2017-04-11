@@ -275,6 +275,7 @@ namespace libCanopenSimple
                     //PDO 0x180 -- 0x57F
                     if (cp.cob >= 0x180 && cp.cob <= 0x57F)
                     {
+
                         if (PDOcallbacks.ContainsKey(cp.cob))
                             PDOcallbacks[cp.cob](cp.data);
 
@@ -366,12 +367,15 @@ namespace libCanopenSimple
                     if (sdo_queue.Count > 0)
                     {
                         SDO front = sdo_queue.Peek();
-                        if (!SDOcallbacks.ContainsKey((UInt16)(front.node + 0x580)))
+                        if (front != null)
                         {
-                            front = sdo_queue.Dequeue();
-                            //Listen for the reply on 0x580+node id
-                            SDOcallbacks.Add((UInt16)(front.node + 0x580), front);
-                            front.sendSDO();
+                            if (!SDOcallbacks.ContainsKey((UInt16)(front.node + 0x580)))
+                            {
+                                front = sdo_queue.Dequeue();
+                                //Listen for the reply on 0x580+node id
+                                SDOcallbacks.Add((UInt16)(front.node + 0x580), front);
+                                front.sendSDO();
+                            }
                         }
                     }
                      

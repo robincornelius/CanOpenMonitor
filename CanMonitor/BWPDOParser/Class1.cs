@@ -4,12 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PDOInterface;
-
+using libCanopenSimple;
 namespace PDOParser
 {
    
     public class PDO : IPDOParser
     {
+        public void setlco(libCanopen lco)
+        {
+
+        }
+
         public void registerPDOS(Dictionary<UInt16, Func<byte[], string>> dic)
         {
             dic.Add(0x181, PDO181);

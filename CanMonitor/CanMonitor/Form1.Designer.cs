@@ -39,12 +39,26 @@
             this.label2 = new System.Windows.Forms.Label();
             this.checkbox_autoscroll = new System.Windows.Forms.CheckBox();
             this.button_clear = new System.Windows.Forms.Button();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.listView_nmt = new System.Windows.Forms.ListView();
+            this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.listView_emcy = new System.Windows.Forms.ListView();
+            this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,13 +75,17 @@
             this.pDOTESTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.charge100vToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopChargeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.ctrlOnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ctrlOffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -100,7 +118,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.listView1);
+            this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer1.Size = new System.Drawing.Size(1098, 674);
             this.splitContainer1.SplitterDistance = 43;
             this.splitContainer1.TabIndex = 1;
@@ -108,9 +126,7 @@
             // checkBox_heartbeats
             // 
             this.checkBox_heartbeats.AutoSize = true;
-            this.checkBox_heartbeats.Checked = true;
-            this.checkBox_heartbeats.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_heartbeats.Location = new System.Drawing.Point(730, 15);
+            this.checkBox_heartbeats.Location = new System.Drawing.Point(623, 19);
             this.checkBox_heartbeats.Name = "checkBox_heartbeats";
             this.checkBox_heartbeats.Size = new System.Drawing.Size(78, 17);
             this.checkBox_heartbeats.TabIndex = 4;
@@ -179,7 +195,7 @@
             this.checkbox_autoscroll.AutoSize = true;
             this.checkbox_autoscroll.Checked = true;
             this.checkbox_autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkbox_autoscroll.Location = new System.Drawing.Point(528, 17);
+            this.checkbox_autoscroll.Location = new System.Drawing.Point(464, 19);
             this.checkbox_autoscroll.Name = "checkbox_autoscroll";
             this.checkbox_autoscroll.Size = new System.Drawing.Size(72, 17);
             this.checkbox_autoscroll.TabIndex = 0;
@@ -188,7 +204,7 @@
             // 
             // button_clear
             // 
-            this.button_clear.Location = new System.Drawing.Point(606, 13);
+            this.button_clear.Location = new System.Drawing.Point(542, 13);
             this.button_clear.Name = "button_clear";
             this.button_clear.Size = new System.Drawing.Size(75, 23);
             this.button_clear.TabIndex = 1;
@@ -196,18 +212,42 @@
             this.button_clear.UseVisualStyleBackColor = true;
             this.button_clear.Click += new System.EventHandler(this.button_clear_Click);
             // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(1098, 627);
+            this.tabControl1.TabIndex = 1;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.listView1);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(1090, 601);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Monitor";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
             // listView1
             // 
             this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader13,
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader4,
             this.columnHeader5});
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listView1.Location = new System.Drawing.Point(0, 0);
+            this.listView1.Location = new System.Drawing.Point(3, 3);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1098, 627);
+            this.listView1.Size = new System.Drawing.Size(1084, 595);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -215,7 +255,7 @@
             // columnHeader1
             // 
             this.columnHeader1.Text = "Type";
-            this.columnHeader1.Width = 74;
+            this.columnHeader1.Width = 103;
             // 
             // columnHeader2
             // 
@@ -234,7 +274,96 @@
             // columnHeader5
             // 
             this.columnHeader5.Text = "Info";
-            this.columnHeader5.Width = 310;
+            this.columnHeader5.Width = 559;
+            // 
+            // columnHeader13
+            // 
+            this.columnHeader13.Text = "Timestamp";
+            this.columnHeader13.Width = 93;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.listView_nmt);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(1090, 601);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "NMT";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // listView_nmt
+            // 
+            this.listView_nmt.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader12,
+            this.columnHeader6,
+            this.columnHeader7});
+            this.listView_nmt.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView_nmt.Location = new System.Drawing.Point(3, 3);
+            this.listView_nmt.Name = "listView_nmt";
+            this.listView_nmt.Size = new System.Drawing.Size(1084, 595);
+            this.listView_nmt.TabIndex = 0;
+            this.listView_nmt.UseCompatibleStateImageBehavior = false;
+            this.listView_nmt.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader12
+            // 
+            this.columnHeader12.Text = "Time";
+            this.columnHeader12.Width = 188;
+            // 
+            // columnHeader6
+            // 
+            this.columnHeader6.Text = "Node";
+            // 
+            // columnHeader7
+            // 
+            this.columnHeader7.Text = "State";
+            this.columnHeader7.Width = 280;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.listView_emcy);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(1090, 601);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Emergency";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // listView_emcy
+            // 
+            this.listView_emcy.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader8,
+            this.columnHeader9,
+            this.columnHeader10,
+            this.columnHeader11});
+            this.listView_emcy.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView_emcy.Location = new System.Drawing.Point(0, 0);
+            this.listView_emcy.Name = "listView_emcy";
+            this.listView_emcy.Size = new System.Drawing.Size(1090, 601);
+            this.listView_emcy.TabIndex = 0;
+            this.listView_emcy.UseCompatibleStateImageBehavior = false;
+            this.listView_emcy.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader8
+            // 
+            this.columnHeader8.Text = "Time";
+            this.columnHeader8.Width = 87;
+            // 
+            // columnHeader9
+            // 
+            this.columnHeader9.Text = "Node";
+            this.columnHeader9.Width = 78;
+            // 
+            // columnHeader10
+            // 
+            this.columnHeader10.Text = "Payload";
+            this.columnHeader10.Width = 129;
+            // 
+            // columnHeader11
+            // 
+            this.columnHeader11.Text = "Info";
+            this.columnHeader11.Width = 729;
             // 
             // menuStrip1
             // 
@@ -365,12 +494,6 @@
             this.stopChargeToolStripMenuItem.Text = "Stop Charge";
             this.stopChargeToolStripMenuItem.Click += new System.EventHandler(this.stopChargeToolStripMenuItem_Click);
             // 
-            // timer1
-            // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 1000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // ctrlOnToolStripMenuItem
             // 
             this.ctrlOnToolStripMenuItem.Name = "ctrlOnToolStripMenuItem";
@@ -384,6 +507,12 @@
             this.ctrlOffToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.ctrlOffToolStripMenuItem.Text = "Ctrl Off";
             this.ctrlOffToolStripMenuItem.Click += new System.EventHandler(this.ctrlOffToolStripMenuItem_Click);
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 1000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Form1
             // 
@@ -403,6 +532,10 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -447,6 +580,20 @@
         private System.Windows.Forms.ToolStripMenuItem stopChargeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ctrlOnToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ctrlOffToolStripMenuItem;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.ListView listView_nmt;
+        private System.Windows.Forms.ColumnHeader columnHeader6;
+        private System.Windows.Forms.ColumnHeader columnHeader7;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.ListView listView_emcy;
+        private System.Windows.Forms.ColumnHeader columnHeader8;
+        private System.Windows.Forms.ColumnHeader columnHeader9;
+        private System.Windows.Forms.ColumnHeader columnHeader10;
+        private System.Windows.Forms.ColumnHeader columnHeader11;
+        private System.Windows.Forms.ColumnHeader columnHeader12;
+        private System.Windows.Forms.ColumnHeader columnHeader13;
     }
 }
 

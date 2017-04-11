@@ -33,17 +33,14 @@
             this.button_preop = new System.Windows.Forms.Button();
             this.button_resetcomms = new System.Windows.Forms.Button();
             this.button_resetnodes = new System.Windows.Forms.Button();
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
-            this.richTextBox3 = new System.Windows.Forms.RichTextBox();
-            this.richTextBox4 = new System.Windows.Forms.RichTextBox();
-            this.flowLayoutPanel1.SuspendLayout();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
             // button_startbus
             // 
-            this.button_startbus.Location = new System.Drawing.Point(177, 12);
+            this.button_startbus.Location = new System.Drawing.Point(28, 27);
             this.button_startbus.Name = "button_startbus";
             this.button_startbus.Size = new System.Drawing.Size(75, 23);
             this.button_startbus.TabIndex = 0;
@@ -91,55 +88,34 @@
             this.button_resetnodes.UseVisualStyleBackColor = true;
             this.button_resetnodes.Click += new System.EventHandler(this.button_resetnodes_Click);
             // 
-            // flowLayoutPanel1
+            // numericUpDown1
             // 
-            this.flowLayoutPanel1.Controls.Add(this.richTextBox1);
-            this.flowLayoutPanel1.Controls.Add(this.richTextBox2);
-            this.flowLayoutPanel1.Controls.Add(this.richTextBox3);
-            this.flowLayoutPanel1.Controls.Add(this.richTextBox4);
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(223, 13);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(409, 214);
-            this.flowLayoutPanel1.TabIndex = 5;
+            this.numericUpDown1.Location = new System.Drawing.Point(288, 26);
+            this.numericUpDown1.Maximum = new decimal(new int[] {
+            127,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(67, 20);
+            this.numericUpDown1.TabIndex = 5;
             // 
-            // richTextBox1
+            // label1
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(3, 3);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(170, 23);
-            this.richTextBox1.TabIndex = 0;
-            this.richTextBox1.Text = "";
-            // 
-            // richTextBox2
-            // 
-            this.richTextBox2.Location = new System.Drawing.Point(179, 3);
-            this.richTextBox2.Name = "richTextBox2";
-            this.richTextBox2.Size = new System.Drawing.Size(170, 23);
-            this.richTextBox2.TabIndex = 1;
-            this.richTextBox2.Text = "";
-            // 
-            // richTextBox3
-            // 
-            this.richTextBox3.Location = new System.Drawing.Point(3, 32);
-            this.richTextBox3.Name = "richTextBox3";
-            this.richTextBox3.Size = new System.Drawing.Size(170, 23);
-            this.richTextBox3.TabIndex = 2;
-            this.richTextBox3.Text = "";
-            // 
-            // richTextBox4
-            // 
-            this.richTextBox4.Location = new System.Drawing.Point(179, 32);
-            this.richTextBox4.Name = "richTextBox4";
-            this.richTextBox4.Size = new System.Drawing.Size(170, 23);
-            this.richTextBox4.TabIndex = 3;
-            this.richTextBox4.Text = "";
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(206, 28);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(76, 13);
+            this.label1.TabIndex = 6;
+            this.label1.Text = "Node (0 for all)";
             // 
             // NMTFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(689, 261);
-            this.Controls.Add(this.flowLayoutPanel1);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.button_startbus);
             this.Controls.Add(this.button_resetnodes);
             this.Controls.Add(this.button_resetcomms);
@@ -147,8 +123,9 @@
             this.Controls.Add(this.button_stopbus);
             this.Name = "NMTFrm";
             this.Text = "NMTFrm";
-            this.flowLayoutPanel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -159,10 +136,7 @@
         private System.Windows.Forms.Button button_preop;
         private System.Windows.Forms.Button button_resetcomms;
         private System.Windows.Forms.Button button_resetnodes;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.RichTextBox richTextBox1;
-        private System.Windows.Forms.RichTextBox richTextBox2;
-        private System.Windows.Forms.RichTextBox richTextBox3;
-        private System.Windows.Forms.RichTextBox richTextBox4;
+        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.Label label1;
     }
 }

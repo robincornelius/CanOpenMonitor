@@ -31,8 +31,6 @@
             this.button_charge = new System.Windows.Forms.Button();
             this.button_stop = new System.Windows.Forms.Button();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.button_on = new System.Windows.Forms.Button();
-            this.button_off = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -68,33 +66,11 @@
             this.numericUpDown1.Size = new System.Drawing.Size(87, 20);
             this.numericUpDown1.TabIndex = 2;
             // 
-            // button_on
-            // 
-            this.button_on.Location = new System.Drawing.Point(25, 201);
-            this.button_on.Name = "button_on";
-            this.button_on.Size = new System.Drawing.Size(75, 23);
-            this.button_on.TabIndex = 3;
-            this.button_on.Text = "On";
-            this.button_on.UseVisualStyleBackColor = true;
-            this.button_on.Click += new System.EventHandler(this.button_on_Click);
-            // 
-            // button_off
-            // 
-            this.button_off.Location = new System.Drawing.Point(155, 201);
-            this.button_off.Name = "button_off";
-            this.button_off.Size = new System.Drawing.Size(75, 23);
-            this.button_off.TabIndex = 4;
-            this.button_off.Text = "Off";
-            this.button_off.UseVisualStyleBackColor = true;
-            this.button_off.Click += new System.EventHandler(this.button_off_Click);
-            // 
             // ChgrFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 261);
-            this.Controls.Add(this.button_off);
-            this.Controls.Add(this.button_on);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.button_stop);
             this.Controls.Add(this.button_charge);
@@ -110,7 +86,5 @@
         private System.Windows.Forms.Button button_charge;
         private System.Windows.Forms.Button button_stop;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.Button button_on;
-        private System.Windows.Forms.Button button_off;
     }
 }

@@ -25,8 +25,7 @@ namespace CanMonitor
         {
 
             UInt16 vol = (UInt16)numericUpDown1.Value;
-
-           
+          
             byte[] data = new byte[3];
             data[0] = (byte)vol;
             data[1] = (byte)(vol >> 8);
@@ -46,39 +45,6 @@ namespace CanMonitor
             lco.writePDO(0x214, data);
         }
 
-        private void button_on_Click(object sender, EventArgs e)
-        {
-            byte[] data = new byte[2];
-            data[0] = 0x04; //on bit 2 off bit 1
-            data[1] = 0x00;
 
-            lco.writePDO(0x182, data);
-
-
-            System.Threading.Thread.Sleep(500);
-
-            data[0] = 0x00; //on bit 2 off bit 1
-            data[1] = 0x00;
-
-            lco.writePDO(0x182, data);
-
-
-        }
-
-        private void button_off_Click(object sender, EventArgs e)
-        {
-            byte[] data = new byte[3];
-            data[0] = 0x02;
-            data[1] = 0x00;
-
-            lco.writePDO(0x182, data);
-
-            System.Threading.Thread.Sleep(500);
-            data[0] = 0x00; //on bit 2 off bit 1
-            data[1] = 0x00;
-
-            lco.writePDO(0x182, data);
-
-        }
     }
 }
