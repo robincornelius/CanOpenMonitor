@@ -300,21 +300,21 @@ namespace CanMonitor
                     case DataType.REAL32:
                         {
                             
-                            float val = Convert.ToSingle(ve.newvalue);
+                            float val = (float)new SingleConverter().ConvertFromString(ve.newvalue);
                             sdo=lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
                         }
 
                     case DataType.INTEGER8:
                         {
-                            sbyte val = Convert.ToSByte(ve.newvalue);
+                            sbyte val = (sbyte)new SByteConverter().ConvertFromString(ve.newvalue);
                             sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
                         }
 
                     case DataType.INTEGER16:
                         {
-                            Int16 val = Convert.ToInt16(ve.newvalue);
+                            Int16 val = (Int16)new Int16Converter().ConvertFromString(ve.newvalue);
                             sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
                         }
@@ -322,26 +322,26 @@ namespace CanMonitor
 
                     case DataType.INTEGER32:
                         {
-                            Int32 val = Convert.ToInt32(ve.newvalue);
+                            Int32 val = (Int32)new Int32Converter().ConvertFromString(ve.newvalue);
                             sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
                         }
                     case DataType.UNSIGNED8:
                         {
-                            byte val = Convert.ToByte(ve.newvalue);
+                            byte val = (byte)new ByteConverter().ConvertFromString(ve.newvalue);
                             sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
                         }
                     case DataType.UNSIGNED16:
                         {
-                            UInt16 val = Convert.ToUInt16(ve.newvalue);
+                            UInt16 val = (UInt16)new UInt16Converter().ConvertFromString(ve.newvalue);
                             sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
                         }
                     
                     case DataType.UNSIGNED32:
                         {
-                            UInt32 val = Convert.ToUInt32(ve.newvalue);
+                            UInt32 val = (UInt32)new UInt32Converter().ConvertFromString(ve.newvalue);
                             sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
                             break;
                         }
