@@ -129,25 +129,35 @@ namespace PDOParser
 {
     CTRL_BOOT = 0, //0
     CTRL_WAITPLC,
+    CTRL_ERROR_CHECK,
+    CTRL_ERROR_RESET,
+
     CTRL_BUSALARM,
     CTRL_CHGRALARM,
     CTRL_MOTORALARM,
     CTRL_SAFEALARM,
     CTRL_COMMSALARM,
-    CTRL_WAIT_USERID,
+    CTRL_TAQ_REQERR,
+    CTRL_TAQ_DATAERR,
+    CTRL_TAQ_TIMEOUT,
+
+
+    CTRL_PART_REJECTED1,
     CTRL_OFF,
     CTRL_WAIT_ON,
-    CTRL_WAITOUT, //10
+    CTRL_WAITOUT, //10 
+
     CTRL_WAITIN,
     CTRL_WAITUP,
     CTRL_WAITDOWN,
     CTRL_WAITSTART,
-    CTRL_UPLOADUSER,
-    CTRL_WAITUPLOADUSER,
+    CTRL_DUMMY1,
+    CTRL_DUMMY2,
     CTRL_WAITBARCODE,
     CTRL_GETBARCODE,
     CTRL_GETBARCODEREPLY,
     CTRL_WAITUPLOADBARCODE, //20
+
     CTRL_SETOVERCHECK,
     CTRL_WAITOVERCHECKREPLY,
     CTRL_MAGNETISE, //
@@ -158,27 +168,33 @@ namespace PDOParser
     CTRL_DISCHARGE,
     CTRL_WAITCOMPLETE, //
     CTRL_READGAUSSMETERS, //30
+
     CTRL_UPLOADGAUSS,
     CTRL_WAITUPLOADGAUSS,
     CTRL_READTHERMOCOUPLE,
-    CTRL_WAITUPLOADTHERMOCOUPLE,
+    CTRL_DUMMY3,
     FLUXMETER_SAMPLE,
     FLUXMETER_RESET,
     FLUXMETER_GETVAL,
     FLUXMETER_RANGE,
     FLUXMETER_ISOLATE,
     FLUXMETER_ZERO,  //40
-    WAIT_FLUXWRITE,
+
+    CTRL_DUMMY4,
     CTRL_LOG_PFSTATUS,
     WAIT_NEWWRITE,
-    CTRL_LOG_TIME,
+    CTRL_DUMMY5,
     CHECK_DATAREAD,
     PUK_FAIL_OVERCHECK,
     CTRL_OVERTEMP,
     CTRL_HOME_REQUIRED,
     CTRL_GOING_HOME,
     CTRL_FAIL, //50
-                             
+    CTRL_PART_REJECTED2,
+    CTRL_TABS_INCORRECT,
+    CTRL_INOUT_TIMEOUT,
+    CTRL_BARCODE_TIMEOUT,
+                                             
  } ;
 
         static Estates lastcharger;
@@ -289,10 +305,10 @@ namespace PDOParser
                 msg += "IN ";
             
             if ((data[0] & (byte)0x08)!=0)
-                msg += "";
+                msg += "N/A";
             
             if ((data[0] & (byte)0x10)!=0)
-                msg += "OUT ";
+                msg += "OUT";
             
             if ((data[0] & (byte)0x20)!=0)
                 msg += "START";
@@ -300,7 +316,7 @@ namespace PDOParser
             if ((data[0] & (byte)0x40)!=0)
                 msg += "POWERON";
             if ((data[0] & (byte)0x80)!=0)
-                msg += "";
+                msg += "M-ALARM";
 
             msg += ")";
 

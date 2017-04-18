@@ -882,6 +882,8 @@ void updatetimer_Tick(object sender, EventArgs e)
 
                 if(button_open.Text == "Close")
                 {
+                    if (sw != null)
+                        sw.Close();
                     button_open.Text = "Open";
                     return;
                 }
