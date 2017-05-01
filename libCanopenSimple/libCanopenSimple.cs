@@ -5,9 +5,15 @@ using System.Text;
 using System.Threading;
 using System.IO.Ports;
 using System.Collections.Concurrent;
+using NNanomsg;
+using NNanomsg.Protocols;
+
 
 namespace libCanopenSimple
 {
+
+
+
 
     public enum BUSSPEED
     {
@@ -102,12 +108,21 @@ namespace libCanopenSimple
     public class libCanopen
     {
         SerialPort serialPort;
+        BusSocket s;
+        NanomsgListener l;
+
         string buf;
         public debuglevel dbglevel = debuglevel.DEBUG_NONE;
         public bool echo = true;
 
+        public bool ipcisopen = false;
+
         public bool isopen()
         {
+
+            if (ipcisopen)
+                return true;
+
             if (serialPort == null)
                 return false;
 
@@ -147,6 +162,76 @@ namespace libCanopenSimple
             thread.Start();
 
         }
+
+        public void open(string ipc)
+        {
+            //serialPort = new SerialPort();
+            //serialPort.PortName = string.Format("COM{0}", comport);
+            //serialPort.BaudRate = 115200;
+            //serialPort.DataReceived += SerialPort_DataReceived;
+            //serialPort.Open();
+            //serialPort.Write(String.Format("C\rS{0}\rO\r", (int)speed));
+
+            s = new BusSocket();
+            l = new NanomsgListener();
+
+            s.Connect(ipc);
+            l.AddSocket(s);
+            l.ReceivedMessage += L_ReceivedMessage;
+
+            System.Threading.Thread t = new System.Threading.Thread(ipclistentask);
+            t.Start();
+
+            ipcisopen = true;
+
+            threadrun = true;
+            Thread thread = new Thread(new ThreadStart(asyncprocess));
+            thread.Name = "CAN Open worker";
+            thread.Start();
+
+
+        }
+
+        void ipclistentask()
+        {
+            while (true)
+            {
+                l.Listen(new TimeSpan(0));
+                System.Threading.Thread.Sleep(1);
+            }
+        }
+
+        private void L_ReceivedMessage(int socketID)
+        {
+            byte[] payload = s.ReceiveImmediate();
+
+            canpacket cp = new canpacket();
+            cp.cob = (ushort)(payload[0] | (payload[1] << 8)); //actually 332 bit
+
+            int length = cp.cob & 0xF000;
+
+            length = (length >> 12);
+
+            cp.len = (byte)length;
+
+            cp.cob =(ushort)( cp.cob & 0x0fff);
+            cp.data = new byte[length];
+
+            
+
+            for(int x=0;x<length;x++)
+            {
+                cp.data[x] = payload[x + 5];
+            }
+
+            packetqueue.Enqueue(cp);
+
+            if (dbglevel == debuglevel.DEBUG_ALL)
+                Console.WriteLine(String.Format("RX packet packet: {0}", cp.ToString()));
+
+           
+        }
+
 
         public void close()
         {
@@ -472,9 +557,27 @@ namespace libCanopenSimple
 
             canframe += "\r";
 
-            if (serialPort.IsOpen)
+            if (serialPort != null && serialPort.IsOpen)
             {
                 serialPort.Write(canframe);
+            }
+
+            if(ipcisopen)
+            {
+                byte[] payload = new byte[15];
+
+                payload[0] = (byte)p.cob;
+                payload[1] = (byte)(p.cob >> 8);
+               // payload[1] |= (byte) (p.len << 4);
+
+                payload[4] = p.len;
+
+                for(int x=0;x<p.len;x++)
+                {
+                    payload[5 + x] = p.data[x];
+                }
+
+                s.Send(payload);
             }
 
             if(echo==true)

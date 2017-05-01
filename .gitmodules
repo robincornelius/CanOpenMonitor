@@ -1,3 +1,6 @@
 [submodule "libeds"]
 	path = libeds
 	url = https://github.com/robincornelius/libedssharp.git
+[submodule "NNanomsg"]
+	path = NNanomsg
+	url = git@github.com:robincornelius/NNanomsg.git

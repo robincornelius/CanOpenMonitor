@@ -68,6 +68,8 @@ namespace CanMonitor
             InitializeComponent();
 
 
+            comboBox_port.Items.Add("ipc://can_id0");
+
             foreach (string portName in System.IO.Ports.SerialPort.GetPortNames())
             {
                 comboBox_port.Items.Add(portName);
@@ -89,7 +91,7 @@ namespace CanMonitor
 
             
            // Assembly assembly = Assembly.LoadFrom("..\\..\\..\\BWPDOParser\\bin\\Debug\\BWPDOParser.dll");
-             Assembly assembly = Assembly.LoadFrom("..\\..\\..\\JLRParser\\bin\\Debug\\JLRParser.dll");
+           /*  Assembly assembly = Assembly.LoadFrom("..\\..\\..\\JLRParser\\bin\\Debug\\JLRParser.dll");
             
             Type[] types = assembly.GetExportedTypes();
 
@@ -108,7 +110,7 @@ namespace CanMonitor
                 }
  
              }
-             
+             */
 
 
 
@@ -575,7 +577,8 @@ void updatetimer_Tick(object sender, EventArgs e)
                 }
                 else
                 {
-                    msg += " "+ipdo.decodesdo(payload.cob, index, sub, payload.data);
+                    if(ipdo!=null)
+                        msg += " "+ipdo.decodesdo(payload.cob, index, sub, payload.data);
                 }
 
 
@@ -895,11 +898,21 @@ void updatetimer_Tick(object sender, EventArgs e)
                 }
 
                 string port = comboBox_port.SelectedItem.ToString();
-                int iport = int.Parse(port.Substring(3));
 
-                int rate = comboBox_rate.SelectedIndex;
+                if (port == "ipc://can_id0")
+                {
 
-                lco.open(iport, (BUSSPEED)rate);
+                    lco.open(port);
+                }
+                else
+                {
+
+                    int iport = int.Parse(port.Substring(3));
+
+                    int rate = comboBox_rate.SelectedIndex;
+
+                    lco.open(iport, (BUSSPEED)rate);
+                }
 
                 button_open.Text = "Close";
 
