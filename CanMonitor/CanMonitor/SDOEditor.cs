@@ -229,6 +229,12 @@ namespace CanMonitor
                                     lvi.SubItems[5].Text = myFloat.ToString();
                                     break;
 
+                                case DataType.REAL64:
+                                    
+                                    double myDouble = System.BitConverter.ToDouble(h.sdo.databuffer, 0);
+                                    lvi.SubItems[5].Text = myDouble.ToString();
+                                    break;
+
                                 case DataType.INTEGER8:
                                 case DataType.INTEGER16:
                                 case DataType.INTEGER32:
@@ -244,6 +250,34 @@ namespace CanMonitor
 
                                     lvi.SubItems[5].Text = System.Text.Encoding.UTF8.GetString(h.sdo.databuffer);
 
+                                    break;
+
+                                case DataType.OCTET_STRING:
+
+                                    StringBuilder sb = new StringBuilder();
+
+                                    foreach(byte b in h.sdo.databuffer)
+                                    {
+                                        sb.Append(string.Format("{0:x} ", b));
+                                    }
+
+                                    lvi.SubItems[5].Text = sb.ToString();
+
+                                    break;
+
+
+                                case DataType.UNSIGNED64:
+                                    {
+                                        UInt64 data = (UInt64)System.BitConverter.ToUInt64(h.sdo.databuffer, 0);
+                                        lvi.SubItems[5].Text = String.Format("{0:x}", data);
+                                    }
+                                    break;
+
+                                case DataType.INTEGER64:
+                                    {
+                                        Int64 data = (Int64)System.BitConverter.ToInt64(h.sdo.databuffer, 0);
+                                        lvi.SubItems[5].Text = String.Format("{0:x}", data);
+                                    }
                                     break;
 
                                 default:
@@ -305,6 +339,15 @@ namespace CanMonitor
                             break;
                         }
 
+                    case DataType.REAL64:
+                        {
+
+                            double val = (double)new DoubleConverter().ConvertFromString(ve.newvalue);
+                            byte[] payload = BitConverter.GetBytes(val);
+                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
+                            break;
+                        }
+
                     case DataType.INTEGER8:
                         {
                             sbyte val = (sbyte)new SByteConverter().ConvertFromString(ve.newvalue);
@@ -346,13 +389,28 @@ namespace CanMonitor
                             break;
                         }
 
+                    case DataType.INTEGER64:
+                        {
+
+                            Int64 val = (Int64)new Int64Converter().ConvertFromString(ve.newvalue);
+                            byte[] payload = BitConverter.GetBytes(val);
+                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
+                            break;
+                        }
+
+                    case DataType.UNSIGNED64:                        {
+
+                            UInt64 val = (UInt64)new UInt64Converter().ConvertFromString(ve.newvalue);
+                            byte[] payload = BitConverter.GetBytes(val);
+                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
+                            break;
+                        }
+
                     case DataType.VISIBLE_STRING:
                         {
 
                             byte [] payload = Encoding.ASCII.GetBytes(ve.newvalue);
-
                             sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
- 
                             break;
                         }
 

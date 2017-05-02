@@ -249,6 +249,8 @@ namespace libCanopenSimple
 
             int c = 0x01 & cp.data[0]; //More segments to upload?
 
+            Console.WriteLine(string.Format("SCS {0}", SCS));
+
             //ERROR abort
             if (SCS == 0x04)
             {
@@ -348,7 +350,7 @@ namespace libCanopenSimple
             {
                 UInt32 count = (UInt32)(cp.data[4] + (cp.data[5] << 8) + (cp.data[6] << 16) + (cp.data[7] << 24));
 
-                Console.WriteLine("Segmented transfer start length is {0}", count);
+                Console.WriteLine("RX Segmented transfer start length is {0}", count);
                 expitideddata = count;
                 databuffer = new byte[expitideddata];
                 totaldata = 0;
@@ -363,11 +365,13 @@ namespace libCanopenSimple
 
             UInt32 scount = (UInt32)(7 - sn);
 
-            Console.WriteLine("Segmented transfer update length is {0} -- {1}", scount,totaldata);
+           
 
             //Segments toggle on
             if (SCS == 0x00)
             {
+
+                Console.WriteLine("RX Segmented transfer update length is {0} -- {1}", scount, totaldata);
 
                 for (int x = 0; x < scount; x++)
                 {
@@ -415,9 +419,17 @@ namespace libCanopenSimple
                 if (toggle)
                     cmd |= 0x10;
 
-                byte[] nextdata = new byte[7];
+                int bytecount = (int)(databuffer.Length - totaldata); //11 - 7
+                byte[] nextdata;
+                if (bytecount >= 7)
+                {
+                    bytecount = 7;
+                }
 
-                for(int x=0;x<7;x++)
+
+                nextdata = new byte[bytecount];
+
+                for (int x=0;x<bytecount;x++)
                 {
                     if (databuffer.Length > (totaldata + x))
                         nextdata[x] = databuffer[totaldata + x];
@@ -429,9 +441,24 @@ namespace libCanopenSimple
                     cmd |= 0x01; //END of packet sequence
                 }
 
+                if(bytecount!=7)
+                {
+                    //int sn = (0x07 & (payload.data[0] >> 1)); //3-1 data size for segment packets
+                    //int valid = 7;
+
+                    //if (n != 0)
+                    //    valid = 8 - (7 - n);
+
+                 //valid 
+
+
+                }
+
                 sendpacketsegment(cmd, nextdata);
 
-                totaldata += 7;
+                totaldata += (uint)bytecount;
+
+                Console.WriteLine("TX TOTAL DATA is " + totaldata.ToString());
 
             }
 

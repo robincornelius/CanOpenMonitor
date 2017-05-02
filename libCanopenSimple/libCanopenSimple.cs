@@ -204,6 +204,8 @@ namespace libCanopenSimple
         private void L_ReceivedMessage(int socketID)
         {
             byte[] payload = s.ReceiveImmediate();
+            if (payload == null)
+                return;
 
             canpacket cp = new canpacket();
             cp.cob = (ushort)(payload[0] | (payload[1] << 8)); //actually 332 bit
