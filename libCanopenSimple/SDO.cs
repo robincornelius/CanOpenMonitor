@@ -443,14 +443,11 @@ namespace libCanopenSimple
 
                 if(bytecount!=7)
                 {
-                    //int sn = (0x07 & (payload.data[0] >> 1)); //3-1 data size for segment packets
-                    //int valid = 7;
 
-                    //if (n != 0)
-                    //    valid = 8 - (7 - n);
-
-                 //valid 
-
+                    int n = 7 - bytecount;
+                    n = n << 1;
+      
+                    cmd |= (byte)n;
 
                 }
 

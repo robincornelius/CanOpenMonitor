@@ -42,12 +42,12 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.listView1 = new System.Windows.Forms.ListView();
+            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.listView_nmt = new System.Windows.Forms.ListView();
             this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -59,11 +59,13 @@
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.textBox_info = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadPluginToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nMTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROMResetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.errorInjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -71,13 +73,12 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.sDOUPLOADToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ManualSDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sTARTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pDOTESTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.charge100vToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopChargeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ctrlOnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ctrlOffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.sDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -86,6 +87,7 @@
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -217,6 +219,7 @@
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -252,6 +255,11 @@
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             // 
+            // columnHeader13
+            // 
+            this.columnHeader13.Text = "Timestamp";
+            this.columnHeader13.Width = 93;
+            // 
             // columnHeader1
             // 
             this.columnHeader1.Text = "Type";
@@ -275,11 +283,6 @@
             // 
             this.columnHeader5.Text = "Info";
             this.columnHeader5.Width = 559;
-            // 
-            // columnHeader13
-            // 
-            this.columnHeader13.Text = "Timestamp";
-            this.columnHeader13.Width = 93;
             // 
             // tabPage2
             // 
@@ -365,11 +368,34 @@
             this.columnHeader11.Text = "Info";
             this.columnHeader11.Width = 729;
             // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.textBox_info);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(1090, 601);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Info";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // textBox_info
+            // 
+            this.textBox_info.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBox_info.Location = new System.Drawing.Point(3, 3);
+            this.textBox_info.Multiline = true;
+            this.textBox_info.Name = "textBox_info";
+            this.textBox_info.ReadOnly = true;
+            this.textBox_info.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox_info.Size = new System.Drawing.Size(1084, 595);
+            this.textBox_info.TabIndex = 0;
+            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.actionsToolStripMenuItem});
+            this.actionsToolStripMenuItem,
+            this.toolsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1098, 24);
@@ -379,7 +405,8 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.quitToolStripMenuItem});
+            this.quitToolStripMenuItem,
+            this.loadPluginToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -387,9 +414,16 @@
             // quitToolStripMenuItem
             // 
             this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            this.quitToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.quitToolStripMenuItem.Text = "Quit";
             this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
+            // 
+            // loadPluginToolStripMenuItem
+            // 
+            this.loadPluginToolStripMenuItem.Name = "loadPluginToolStripMenuItem";
+            this.loadPluginToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.loadPluginToolStripMenuItem.Text = "Load Plugin";
+            this.loadPluginToolStripMenuItem.Click += new System.EventHandler(this.loadPluginToolStripMenuItem_Click);
             // 
             // actionsToolStripMenuItem
             // 
@@ -402,22 +436,12 @@
             this.toolStripSeparator1,
             this.sDOUPLOADToolStripMenuItem,
             this.ManualSDOToolStripMenuItem,
-            this.sTARTToolStripMenuItem,
             this.pDOTESTToolStripMenuItem,
             this.charge100vToolStripMenuItem,
-            this.stopChargeToolStripMenuItem,
-            this.ctrlOnToolStripMenuItem,
-            this.ctrlOffToolStripMenuItem});
+            this.stopChargeToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
-            // 
-            // sDOToolStripMenuItem
-            // 
-            this.sDOToolStripMenuItem.Name = "sDOToolStripMenuItem";
-            this.sDOToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.sDOToolStripMenuItem.Text = "SDO Editor";
-            this.sDOToolStripMenuItem.Click += new System.EventHandler(this.sDOToolStripMenuItem_Click);
             // 
             // nMTToolStripMenuItem
             // 
@@ -466,13 +490,6 @@
             this.ManualSDOToolStripMenuItem.Text = "SDO DOWNLOAD";
             this.ManualSDOToolStripMenuItem.Click += new System.EventHandler(this.ManualSDOToolStripMenuItem_Click);
             // 
-            // sTARTToolStripMenuItem
-            // 
-            this.sTARTToolStripMenuItem.Name = "sTARTToolStripMenuItem";
-            this.sTARTToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.sTARTToolStripMenuItem.Text = "START";
-            this.sTARTToolStripMenuItem.Click += new System.EventHandler(this.sTARTToolStripMenuItem_Click);
-            // 
             // pDOTESTToolStripMenuItem
             // 
             this.pDOTESTToolStripMenuItem.Name = "pDOTESTToolStripMenuItem";
@@ -494,25 +511,24 @@
             this.stopChargeToolStripMenuItem.Text = "Stop Charge";
             this.stopChargeToolStripMenuItem.Click += new System.EventHandler(this.stopChargeToolStripMenuItem_Click);
             // 
-            // ctrlOnToolStripMenuItem
+            // toolsToolStripMenuItem
             // 
-            this.ctrlOnToolStripMenuItem.Name = "ctrlOnToolStripMenuItem";
-            this.ctrlOnToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.ctrlOnToolStripMenuItem.Text = "Ctrl On";
-            this.ctrlOnToolStripMenuItem.Click += new System.EventHandler(this.ctrlOnToolStripMenuItem_Click);
-            // 
-            // ctrlOffToolStripMenuItem
-            // 
-            this.ctrlOffToolStripMenuItem.Name = "ctrlOffToolStripMenuItem";
-            this.ctrlOffToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.ctrlOffToolStripMenuItem.Text = "Ctrl Off";
-            this.ctrlOffToolStripMenuItem.Click += new System.EventHandler(this.ctrlOffToolStripMenuItem_Click);
+            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // timer1
             // 
             this.timer1.Enabled = true;
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // sDOToolStripMenuItem
+            // 
+            this.sDOToolStripMenuItem.Name = "sDOToolStripMenuItem";
+            this.sDOToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.sDOToolStripMenuItem.Text = "SDO Editor";
+            this.sDOToolStripMenuItem.Click += new System.EventHandler(this.sDOToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -536,6 +552,8 @@
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -563,7 +581,6 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem actionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem sDOToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ManualSDOToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nMTToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem eEPROMResetToolStripMenuItem;
@@ -574,12 +591,9 @@
         private System.Windows.Forms.ToolStripMenuItem flashToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem sDOUPLOADToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem sTARTToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pDOTESTToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem charge100vToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stopChargeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ctrlOnToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ctrlOffToolStripMenuItem;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
@@ -594,6 +608,11 @@
         private System.Windows.Forms.ColumnHeader columnHeader11;
         private System.Windows.Forms.ColumnHeader columnHeader12;
         private System.Windows.Forms.ColumnHeader columnHeader13;
+        private System.Windows.Forms.ToolStripMenuItem loadPluginToolStripMenuItem;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.TextBox textBox_info;
+        private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sDOToolStripMenuItem;
     }
 }
 

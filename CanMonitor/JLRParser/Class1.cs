@@ -11,16 +11,64 @@ using libCanopenSimple;
 namespace PDOParser
 {
 
-    public class PDO : IPDOParser
+    public class PDO : InterfaceService, IPDOParser
     {
         public JLRStatus status;
-        public libCanopen lco;
+        static public libCanopen lco;
 
-        public void setlco(libCanopen lco)
+        public PDO()
         {
-            this.lco = lco;
+            addverb("Start button","Tools", startbutton);
+            addverb("CTRL ON", "Tools", ctrlonbutton);
+            addverb("CTRL OFF", "Tools", ctrloffbutton);
+        }
+
+        public void startbutton(Object sender,EventArgs e)
+        {
+            //0x185 bit0x20
+            byte[] data = new byte[2];
+            data[0] = 0x20 | 0x10 | 0x02;
+            lco.writePDO(0x185, data);
+        }
+        public void ctrlonbutton(Object sender, EventArgs e)
+        {
+            byte[] data = new byte[2];
+            data[0] = 0x04; //on bit 2 off bit 1
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+
+
+            System.Threading.Thread.Sleep(500);
+
+            data[0] = 0x00; //on bit 2 off bit 1
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+        }
+
+        public void ctrloffbutton(Object sender, EventArgs e)
+        {
+            byte[] data = new byte[3];
+            data[0] = 0x02;
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+
+            System.Threading.Thread.Sleep(500);
+            data[0] = 0x00; //on bit 2 off bit 1
+            data[1] = 0x00;
+
+            lco.writePDO(0x182, data);
+        }
+
+
+        public void setlco(libCanopen lcox)
+        {
+            lco = lcox;
             status.setlco(lco);
         }
+
 
         public void registerPDOS(Dictionary<UInt16, Func<byte[], string>> dic)
         {

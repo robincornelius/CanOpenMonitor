@@ -89,31 +89,6 @@ namespace CanMonitor
             listView_emcy.DoubleBuffering(true);
             listView_nmt.DoubleBuffering(true);
 
-            
-           // Assembly assembly = Assembly.LoadFrom("..\\..\\..\\BWPDOParser\\bin\\Debug\\BWPDOParser.dll");
-           /*  Assembly assembly = Assembly.LoadFrom("..\\..\\..\\JLRParser\\bin\\Debug\\JLRParser.dll");
-            
-            Type[] types = assembly.GetExportedTypes();
-
-            for (int i = 0; i < types.Length; i++)
-            {
-                Type type = assembly.GetType(types[i].FullName);
-                if (type.GetInterface("PDOInterface.IPDOParser") != null)
-                {
-                    object obj = Activator.CreateInstance(type);
-                    if (obj != null)
-                    {
-                        ipdo = (IPDOParser)obj;
-                        ipdo.registerPDOS(pdoprocessors);
-                        ipdo.setlco(lco);
-                    }
-                }
- 
-             }
-             */
-
-
-
             interror();
 
             listView1.ListViewItemSorter = null;
@@ -384,12 +359,17 @@ void updatetimer_Tick(object sender, EventArgs e)
 
 
                 int valid = 7;
+                int validsn = 7;
+
 
                 if (n != 0)
                     valid = 8 - (7 - n);
 
+                if (sn != 0)
+                    validsn = 8 - (7 - sn);
 
-                if (payload.cob>=0x580 && payload.cob<=0x600)
+
+            if (payload.cob>=0x580 && payload.cob<=0x600)
                 {
                     string mode = "";
                     string sdoproto = "";
@@ -400,12 +380,12 @@ void updatetimer_Tick(object sender, EventArgs e)
                     {
                         case 0:
                             mode = "upload segment response";
-                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF",valid,c==0?"MORE":"END");
+                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF",validsn,c==0?"MORE":"END");
                           
                             if(sdotransferdata.ContainsKey(payload.cob))
                             {
 
-                                for(int x=1;x<=valid;x++)
+                                for(int x=1;x<=validsn;x++)
                                 {
                                     sdotransferdata[payload.cob].Add(payload.data[x]);
                                 }
@@ -498,7 +478,7 @@ void updatetimer_Tick(object sender, EventArgs e)
                     {
                         case 0:
                             mode = "download segment request";
-                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", valid, c == 0 ? "MORE" : "END");
+                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", validsn, c == 0 ? "MORE" : "END");
 
                             break;
                         case 1:
@@ -885,9 +865,12 @@ void updatetimer_Tick(object sender, EventArgs e)
 
                 if(button_open.Text == "Close")
                 {
+
                     if (sw != null)
                         sw.Close();
                     button_open.Text = "Open";
+
+                    textBox_info.AppendText("PORT CLOSED\r\n");
                     return;
                 }
 
@@ -898,6 +881,8 @@ void updatetimer_Tick(object sender, EventArgs e)
                 }
 
                 string port = comboBox_port.SelectedItem.ToString();
+
+                textBox_info.AppendText("Trying to open port .. "+port+"\r\n");
 
                 if (port == "ipc://can_id0")
                 {
@@ -918,9 +903,12 @@ void updatetimer_Tick(object sender, EventArgs e)
 
                 sw = new StreamWriter("canlog.txt", true);
 
+                textBox_info.AppendText("Success port open\r\n");
+
             }
             catch(Exception ex)
             {
+                textBox_info.AppendText("ERROR opening port "+ex.ToString()+"\r\n");
                 MessageBox.Show("Setup error " + ex.ToString());
 
             }
@@ -1171,39 +1159,69 @@ void updatetimer_Tick(object sender, EventArgs e)
             lco.writePDO(0x214, data);
         }
 
-        private void ctrlOnToolStripMenuItem_Click(object sender, EventArgs e)
+       
+      
+
+        private void loadPluginToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            byte[] data = new byte[2];
-            data[0] = 0x04; //on bit 2 off bit 1
-            data[1] = 0x00;
+            OpenFileDialog ofd = new OpenFileDialog();
 
-            lco.writePDO(0x182, data);
+            ofd.Filter = "Libraries (*.dll)|*.dll";
+            ofd.Multiselect = false;
 
+            if(ofd.ShowDialog()==DialogResult.OK)
+            {
+                textBox_info.AppendText("Attempting to load plugin " + ofd.FileName+"\r\n");
+                try
+                {
+                    Assembly assembly = Assembly.LoadFrom(ofd.FileName);
 
-            System.Threading.Thread.Sleep(500);
-   
-            data[0] = 0x00; //on bit 2 off bit 1
-            data[1] = 0x00;
+                    Type[] types = assembly.GetExportedTypes();
 
-            lco.writePDO(0x182, data);
+                    for (int i = 0; i < types.Length; i++)
+                    {
+                        Type type = assembly.GetType(types[i].FullName);
+                        if (type.GetInterface("PDOInterface.IPDOParser") != null)
+                        {
+                            object obj = Activator.CreateInstance(type);
+                            if (obj != null)
+                            {
+                                ipdo = (IPDOParser)obj;
+                                ipdo.registerPDOS(pdoprocessors);
+                                ipdo.setlco(lco);
 
-        }
+                                textBox_info.AppendText("SUCCESS loading plugin \r\n");
+                            }
+                        }
 
-        private void ctrlOffToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            byte[] data = new byte[3];
-            data[0] = 0x02;
-            data[1] = 0x00;
+                        if (type.GetInterface("PDOInterface.IInterfaceService") != null)
+                        {
+                            object obj = Activator.CreateInstance(type);
+                            if (obj != null)
+                            {
+                                IInterfaceService iss = (IInterfaceService)obj;
+                                IVerb[] verbs = iss.GetVerbs("Tools");
 
-            lco.writePDO(0x182, data);
+                                if (verbs != null)
+                                {
+                                    foreach (IVerb v in verbs)
+                                    {
+                                        ToolStripMenuItem item = new ToolStripMenuItem(v.Name, null, v.Action);
+                                        toolsToolStripMenuItem.DropDownItems.Add(item);
+                                        ;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    textBox_info.AppendText("Failed loading plugi \r\n"+ex.ToString()+"\r\n");
+                    MessageBox.Show("Very unawesome when tryng to load plugin..");
+                }
 
-            System.Threading.Thread.Sleep(500);
-            data[0] = 0x00; //on bit 2 off bit 1
-            data[1] = 0x00;
-
-            lco.writePDO(0x182, data);
-
-
+            }
         }
     }
 
