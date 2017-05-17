@@ -189,6 +189,10 @@ void updatetimer_Tick(object sender, EventArgs e)
                 items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
                 string msg = "";
+
+                if (payload.data.Length != 2)
+                    return;
+
                 switch (payload.data[0])
                 {
                     case 0x01:

@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading;
 using System.IO.Ports;
 using System.Collections.Concurrent;
-using NNanomsg;
-using NNanomsg.Protocols;
+//using NNanomsg;
+//using NNanomsg.Protocols;
 
 
 namespace libCanopenSimple
@@ -108,8 +108,8 @@ namespace libCanopenSimple
     public class libCanopen
     {
         SerialPort serialPort;
-        BusSocket s;
-        NanomsgListener l;
+        //BusSocket s;
+        //NanomsgListener l;
 
         string buf;
         public debuglevel dbglevel = debuglevel.DEBUG_NONE;
@@ -172,12 +172,12 @@ namespace libCanopenSimple
             //serialPort.Open();
             //serialPort.Write(String.Format("C\rS{0}\rO\r", (int)speed));
 
-            s = new BusSocket();
-            l = new NanomsgListener();
+            //s = new BusSocket();
+            //l = new NanomsgListener();
 
-            s.Connect(ipc);
-            l.AddSocket(s);
-            l.ReceivedMessage += L_ReceivedMessage;
+            //s.Connect(ipc);
+            //l.AddSocket(s);
+            //l.ReceivedMessage += L_ReceivedMessage;
 
             System.Threading.Thread t = new System.Threading.Thread(ipclistentask);
             t.Start();
@@ -194,13 +194,14 @@ namespace libCanopenSimple
 
         void ipclistentask()
         {
-            while (true)
+            //while (true)
             {
-                l.Listen(new TimeSpan(0));
-                System.Threading.Thread.Sleep(1);
+                //l.Listen(new TimeSpan(0));
+                //System.Threading.Thread.Sleep(1);
             }
         }
 
+        /*
         private void L_ReceivedMessage(int socketID)
         {
             byte[] payload = s.ReceiveImmediate();
@@ -233,6 +234,7 @@ namespace libCanopenSimple
 
            
         }
+        */
 
 
         public void close()
@@ -304,6 +306,12 @@ namespace libCanopenSimple
         public Action<canpacket> loggercallback_LSS = null;
         public Action<canpacket> loggercallback_TIME = null;
         public Action<canpacket> loggercallback_SYNC = null;
+
+        public delegate void NMTEvent(canpacket p);
+        public event NMTEvent nmtevent;
+
+        public delegate void NMTECEvent(canpacket p);
+        public event NMTECEvent nmtecevent;
 
         bool threadrun = true;
 
@@ -408,12 +416,19 @@ namespace libCanopenSimple
 
                         if (loggercallback_NMTEC != null)
                             loggercallback_NMTEC(cp);
+
+                        if (nmtecevent != null)
+                            nmtecevent(cp);
                     }
 
                     if(cp.cob==000)
                     {
                         if (loggercallback_NMT != null)
                             loggercallback_NMT(cp);
+
+                        if (nmtevent != null)
+                            nmtevent(cp);
+
                     }
                     if (cp.cob == 0x80)
                     {
@@ -564,7 +579,7 @@ namespace libCanopenSimple
                 serialPort.Write(canframe);
             }
 
-            if(ipcisopen)
+           /* if(ipcisopen)
             {
                 byte[] payload = new byte[15];
 
@@ -580,7 +595,7 @@ namespace libCanopenSimple
                 }
 
                 s.Send(payload);
-            }
+            }*/
 
             if(echo==true)
             {

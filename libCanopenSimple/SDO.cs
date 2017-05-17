@@ -249,7 +249,7 @@ namespace libCanopenSimple
 
             int c = 0x01 & cp.data[0]; //More segments to upload?
 
-            Console.WriteLine(string.Format("SCS {0}", SCS));
+            //Console.WriteLine(string.Format("SCS {0}", SCS));
 
             //ERROR abort
             if (SCS == 0x04)
@@ -403,6 +403,8 @@ namespace libCanopenSimple
         public void requestNextSegment(bool toggle)
         {
 
+            timeout = DateTime.Now + new TimeSpan(0, 0, 5);
+
             if (dir == direction.SDO_READ)
             {
                 byte cmd = 0x61;
@@ -444,8 +446,18 @@ namespace libCanopenSimple
                 if(bytecount!=7)
                 {
 
+                    //BYTECOUNT = 8 - (7 - n);
+
+                    //bytecount - 8 = - 7 + N
+
+                    //(BYTECOUNT - 8) + 7 = n
+
                     int n = 7 - bytecount;
+                    //int n = (bytecount - 8 ) +7;
+
                     n = n << 1;
+
+
       
                     cmd |= (byte)n;
 
@@ -455,7 +467,7 @@ namespace libCanopenSimple
 
                 totaldata += (uint)bytecount;
 
-                Console.WriteLine("TX TOTAL DATA is " + totaldata.ToString());
+               // Console.WriteLine("TX TOTAL DATA is " + totaldata.ToString());
 
             }
 

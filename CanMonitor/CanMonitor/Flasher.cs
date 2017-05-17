@@ -15,10 +15,24 @@ namespace CanMonitor
     {
         libCanopen lco;
         IntelHex ih;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        bool busy = false;
+        string filename = "";
+        byte node;
+
         public Flasher(libCanopen lco)
         {
             this.lco = lco;
             InitializeComponent();
+            this.FormClosing += Flasher_FormClosing;
+        }
+
+        private void Flasher_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if(busy)
+            {
+                e.Cancel = true;   
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -27,13 +41,69 @@ namespace CanMonitor
 
             if(ofd.ShowDialog() == DialogResult.OK)
             {
-                ih = new IntelHex();
-                ih.loadhex(ofd.FileName);
 
+                button1.Enabled = false;
+                button_flash.Enabled = false;
+                busy = true;
+
+                ih = new IntelHex();
+                //ih.loadhex(ofd.FileName);
+
+                textBox1.AppendText("** Loading hex file **\r\n");
+
+                filename = ofd.FileName;
+                node = (byte)numericUpDown_node.Value;
+
+                backgroundWorker1 = new BackgroundWorker();
+
+                backgroundWorker1.DoWork +=
+                   new DoWorkEventHandler(backgroundWorker1_DoWork);
+
+                backgroundWorker1.RunWorkerCompleted += BackgroundWorker1_RunWorkerCompleted;
+
+                backgroundWorker1.RunWorkerAsync();
             }
 
 
 
+        }
+
+        private void BackgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+
+            this.Invoke(new MethodInvoker(delegate ()
+            {
+                button1.Enabled = true;
+                button_flash.Enabled = true;
+                busy = false;
+
+                textBox1.AppendText("** Hex file loaded **\r\n");
+
+
+                progressBar1.Minimum = 0;
+                progressBar1.Maximum = ih.maxpageno;
+                progressBar1.Value = 0;
+
+            }));
+
+        }
+
+
+        // This event handler is where the time-consuming work is done.
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            ih.loadhex(filename);
+
+
+        }
+
+
+        // This event handler is where the time-consuming work is done.
+        private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
+        {
+           
         }
 
         private void button_flash_Click(object sender, EventArgs e)
@@ -50,11 +120,50 @@ namespace CanMonitor
             if (ih == null)
                 return;
 
+
+            busy = true;
+
             currentpage = 0;
 
-            nextsdoplease(null);
+            lco.nmtecevent += Lco_nmtecevent;
+
+            textBox1.AppendText("** Sending node reset **\r\n");
+            lco.NMT_ResetNode(node);
+            //backgroundWorker2.RunWorkerAsync();
 
         }
+
+        private void Lco_nmtecevent(canpacket p)
+        {
+            if (!busy)
+                return;
+
+
+           
+
+            if ((p.cob&0x0ff) == node)
+            {
+
+                if (p.len ==1)
+                {
+
+                    if (p.data[0] == 0x00)
+                    {
+                        this.Invoke(new MethodInvoker(delegate ()
+                        {
+                            textBox1.AppendText("** RESET EVENT **\r\n");
+                        }));
+
+                        nextsdoplease(null);
+
+                        lco.nmtecevent -= Lco_nmtecevent; ;
+                    }
+                }
+            }
+        }
+
+     
+        
 
         UInt32 currentpage;
 
@@ -64,26 +173,31 @@ namespace CanMonitor
             if (ih.pages.ContainsKey(currentpage))
             {
 
-                byte[] sdodata = new byte[1024 + 3]; //pagesize + header;
+                byte[] sdodata = new byte[3*1024 + 3]; //pagesize + header;
 
-                byte[] pagebits = BitConverter.GetBytes(currentpage);
+
+                UInt32 pageaddr = currentpage * 2*1024; //awesome
+
+                byte[] pagebits = BitConverter.GetBytes(pageaddr);
 
                 //24 bit page address
-                sdodata[0] = pagebits[0];
+                sdodata[0] = pagebits[0]; //LSB
                 sdodata[1] = pagebits[1];
-                sdodata[2] = pagebits[2];
+                sdodata[2] = pagebits[2]; //c# MSB
 
-                for (int x = 0; x < 1024; x++)
+                for (int x = 0; x < (3*1024); x++)
                 {
                     sdodata[x + 3] = ih.pages[currentpage][x];
                 }
 
                 textBox1.Invoke(new MethodInvoker(delegate ()
                 {
-                    textBox1.AppendText(String.Format("writing page {0}/{1}\r\n", currentpage, ih.maxpageno));
+                    progressBar1.Value = (int)currentpage;
+                    label2.Text = (String.Format("writing page {0}/{1}\r\n", currentpage, ih.maxpageno));
                 }));
 
                 currentpage++;
+                //nextsdoplease(null);
                 lco.SDOwrite((byte)numericUpDown_node.Value, 0x1f50, 0x01, sdodata, nextsdoplease);
             }
             else
@@ -102,7 +216,16 @@ namespace CanMonitor
                 {
                     textBox1.Invoke(new MethodInvoker(delegate ()
                     {
+                        label2.Text = "DONE";
                         textBox1.AppendText("DONE ALL PAGES\r\n");
+                        busy = false;
+                        button1.Enabled = true;
+                        button_flash.Enabled = true;
+
+                        textBox1.AppendText("** booting main program **\r\n");
+
+                        lco.NMT_start(node);
+
                     }));
                 }
              
@@ -110,6 +233,13 @@ namespace CanMonitor
 
 
           
+
+        }
+
+        private void button_run_Click(object sender, EventArgs e)
+        {
+
+            lco.NMT_start(0);
 
         }
     }
