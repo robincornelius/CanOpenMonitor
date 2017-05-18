@@ -146,17 +146,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libCanopenSimple\libCanopenSimple.csproj">
+    <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj">
       <Project>{2fb81add-258f-4135-a9b9-17e2aca2448e}</Project>
       <Name>libCanopenSimple</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\libeds\libEDSsharp\libEDSsharp.csproj">
       <Project>{cc0fa4b1-2bfc-43b3-8c56-b428df2d24e7}</Project>
       <Name>libEDSsharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NNanomsg\NNanomsg\NNanomsg.csproj">
-      <Project>{771786bf-42fa-491e-9fb3-29910f15cc5e}</Project>
-      <Name>NNanomsg</Name>
     </ProjectReference>
     <ProjectReference Include="..\PDOInterface\PDOInterface.csproj">
       <Project>{1f61b56a-0bdc-45f6-8954-cf2550775cbd}</Project>

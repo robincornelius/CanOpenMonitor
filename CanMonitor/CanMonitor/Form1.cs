@@ -79,11 +79,12 @@ namespace CanMonitor
 
             lco.dbglevel = debuglevel.DEBUG_NONE;
 
-            lco.loggercallback_NMT = log_NMT;
-            lco.loggercallback_NMTEC = log_NMTEC;
-            lco.loggercallback_SDO = log_SDO;
-            lco.loggercallback_PDO = log_PDO;
-            lco.loggercallback_EMCY = log_EMCY;
+            lco.nmtecevent += log_NMT;
+            lco.nmtevent += log_NMTEC;
+
+            lco.sdoevent += log_SDO;
+            lco.pdoevent += log_PDO;
+            lco.emcyevent += log_EMCY;
 
             listView1.DoubleBuffering(true);
             listView_emcy.DoubleBuffering(true);
@@ -99,7 +100,7 @@ namespace CanMonitor
 
         }
 
-
+     
         void appendfile(string[] ss)
         {
 

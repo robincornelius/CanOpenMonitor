@@ -17,3 +17,8 @@
 *.cache
 CanMonitor/PluginExample/obj/Debug
 
+/CanMonitor/TestLoader/bin/Debug
+/CanMonitor/TestLoader/obj/Debug
+/libCanopenSimpleold/obj/Debug
+/libCanopenSimpleold/Properties
+/libCanopenSimpleold
