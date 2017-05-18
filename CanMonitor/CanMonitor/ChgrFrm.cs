@@ -13,9 +13,9 @@ namespace CanMonitor
 {
     public partial class ChgrFrm : Form
     {
-        libCanopen lco;
+        libCanopenSimple.libCanopenSimple lco;
 
-        public ChgrFrm(libCanopen lco)
+        public ChgrFrm(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
             InitializeComponent();

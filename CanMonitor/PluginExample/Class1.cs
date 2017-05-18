@@ -13,7 +13,7 @@ namespace PluginExample
     public class PluginExample : InterfaceService, IPDOParser
     {
 
-        static private libCanopen _lco;
+        static private libCanopenSimple.libCanopenSimple _lco;
 
         public PluginExample()
         {
@@ -44,7 +44,7 @@ namespace PluginExample
             return "";
         }
 
-        public void setlco(libCanopen lco)
+        public void setlco(libCanopenSimple.libCanopenSimple lco)
         {
             _lco = lco;
         }

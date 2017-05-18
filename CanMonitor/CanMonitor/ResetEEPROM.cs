@@ -13,9 +13,9 @@ namespace CanMonitor
 {
     public partial class ResetEEPROM : Form
     {
-        private libCanopen lco;
+        private libCanopenSimple.libCanopenSimple lco;
 
-        public ResetEEPROM(libCanopen lco)
+        public ResetEEPROM(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
             InitializeComponent();

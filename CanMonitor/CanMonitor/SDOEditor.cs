@@ -18,13 +18,13 @@ namespace CanMonitor
     {
 
         EDSsharp eds;
-        libCanopen lco;
+        libCanopenSimple.libCanopenSimple lco;
         string filename = null;
         private string appdatafolder;
 
         private List<string> _mru = new List<string>();
 
-        public SDOEditor(libCanopen lco)
+        public SDOEditor(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
             InitializeComponent();

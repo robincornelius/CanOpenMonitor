@@ -13,14 +13,14 @@ namespace CanMonitor
 {
     public partial class Flasher : Form
     {
-        libCanopen lco;
+        libCanopenSimple.libCanopenSimple lco;
         IntelHex ih;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         bool busy = false;
         string filename = "";
         byte node;
 
-        public Flasher(libCanopen lco)
+        public Flasher(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
             InitializeComponent();

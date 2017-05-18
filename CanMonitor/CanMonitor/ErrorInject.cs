@@ -14,9 +14,9 @@ namespace CanMonitor
 {
     public partial class ErrorInject : Form
     {
-        libCanopen lco;
+        libCanopenSimple.libCanopenSimple lco;
 
-        public ErrorInject(libCanopen lco)
+        public ErrorInject(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
             InitializeComponent();

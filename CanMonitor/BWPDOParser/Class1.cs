@@ -10,7 +10,7 @@ namespace PDOParser
    
     public class PDO : IPDOParser
     {
-        public void setlco(libCanopen lco)
+        public void setlco(libCanopenSimple.libCanopenSimple lco)
         {
 
         }

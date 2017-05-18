@@ -15,7 +15,7 @@ namespace JLRParser
 {
     public partial class JLRStatus : Form
     {
-        libCanopen lco;
+        libCanopenSimple.libCanopenSimple lco;
         public JLRStatus()
         {
           
@@ -38,7 +38,7 @@ namespace JLRParser
             
         }
 
-        public void setlco(libCanopen lco)
+        public void setlco(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
         }

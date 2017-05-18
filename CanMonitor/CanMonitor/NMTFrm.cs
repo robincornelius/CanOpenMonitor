@@ -14,9 +14,9 @@ namespace CanMonitor
 {
     public partial class NMTFrm : Form
     {
-        libCanopen lco;
+        libCanopenSimple.libCanopenSimple lco;
 
-        public NMTFrm(libCanopen lco)
+        public NMTFrm(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
             InitializeComponent();

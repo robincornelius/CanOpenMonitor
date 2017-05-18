@@ -18,7 +18,7 @@ namespace CanMonitor
     public partial class Form1 : Form
     {
 
-        private libCanopen lco = new libCanopen();
+        private libCanopenSimple.libCanopenSimple lco = new libCanopenSimple.libCanopenSimple();
         private Dictionary<UInt16, Func<byte[], string>> pdoprocessors = new Dictionary<ushort, Func<byte[], string>>();
         private string appdatafolder;
         IPDOParser ipdo;
@@ -48,10 +48,6 @@ namespace CanMonitor
         Dictionary<UInt16, SNMTState> NMTstate = new Dictionary<ushort, SNMTState>();
         List<SNMTState> dirtyNMTstates = new List<SNMTState>();
 
-        bool NMTstateupdate = false;
-
-        
-
         public Form1()
         {
 
@@ -79,9 +75,8 @@ namespace CanMonitor
 
             lco.dbglevel = debuglevel.DEBUG_NONE;
 
-            lco.nmtecevent += log_NMT;
-            lco.nmtevent += log_NMTEC;
-
+            lco.nmtecevent += log_NMTEC;
+            lco.nmtevent += log_NMT;
             lco.sdoevent += log_SDO;
             lco.pdoevent += log_PDO;
             lco.emcyevent += log_EMCY;
@@ -889,21 +884,12 @@ void updatetimer_Tick(object sender, EventArgs e)
 
                 textBox_info.AppendText("Trying to open port .. "+port+"\r\n");
 
-                if (port == "ipc://can_id0")
-                {
+                int iport = int.Parse(port.Substring(3));
 
-                    lco.open(port);
-                }
-                else
-                {
+                int rate = comboBox_rate.SelectedIndex;
 
-                    int iport = int.Parse(port.Substring(3));
-
-                    int rate = comboBox_rate.SelectedIndex;
-
-                    lco.open(iport, (BUSSPEED)rate);
-                }
-
+                lco.open(iport, (BUSSPEED)rate, "can_usb_win32");
+                
                 button_open.Text = "Close";
 
                 sw = new StreamWriter("canlog.txt", true);
@@ -949,89 +935,6 @@ void updatetimer_Tick(object sender, EventArgs e)
             }
 
         }
-
-        /*
-        private void button_sendsdo_Click(object sender, EventArgs e)
-        {
-
-            UInt16 index = Convert.ToUInt16(textBox_sdoindex.Text,16);
-            byte sub = Convert.ToByte(textBox_sdosub.Text,16);
-            byte node = Convert.ToByte(textBox_node.Text,16);
-            UInt32 udata;
-
-            switch(comboBox_type.SelectedItem.ToString())
-            {
-                case "U8":
-                    {
-                        byte data = Convert.ToByte(textBox_value.Text);
-                        lco.SDOwrite(node, index, sub, data, SDOWriteCallback);
-                    }
-                    break;
-
-                case "U16":
-                    {
-                        UInt16 data = Convert.ToUInt16(textBox_value.Text);
-                        lco.SDOwrite(node, index, sub, data, SDOWriteCallback);
-                    }
-                    break;
-
-                case "U32":
-                    {
-                        UInt32 data = Convert.ToUInt32(textBox_value.Text);
-                        lco.SDOwrite(node, index, sub, data, SDOWriteCallback);
-                    }
-                    break;
-
-                case "Float":
-                    {
-                        
-                        float data = Convert.ToSingle(textBox_value.Text);
-                        lco.SDOwrite(node, index, sub, data, SDOWriteCallback);
-                    }
-                    break;
-
-            }
-
-
-            
-        }
-
-        public void SDOWriteCallback(SDO sdo)
-        {
-
-        }
-         * 
-
-        private void button_eepromreset_Click(object sender, EventArgs e)
-        {
-            byte node = Convert.ToByte(textBox_node.Text, 16);
-
-            lco.SDOwrite(node, 0x1011, 0x01, 0x64616f6c, null);
-            lco.SDOwrite(node, 0x1011, 0x7f, 0x64616f6c, null);
-            lco.SDOwrite(node, 0x1010, 0x01, 0x65766173, null);
-
-        }
-
-        private void button_readAD_Click(object sender, EventArgs e)
-        {
-            byte node = Convert.ToByte(textBox_node.Text, 16);
-
-            lco.SDOread(node,0x6401,0x03,ADcallback);
-
-        }
-
-        private void ADcallback(SDO sdo)
-        {
-
-            textBox_ad.Invoke(new MethodInvoker(delegate
-            {
-                textBox_ad.Text = string.Format("{0:0.00}", (Int16)sdo.expitideddata);
-
-            }));
-
-
-        }
-         * */
 
         private void button_sdo_Click(object sender, EventArgs e)
         {

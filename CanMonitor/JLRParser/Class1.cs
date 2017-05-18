@@ -14,7 +14,7 @@ namespace PDOParser
     public class PDO : InterfaceService, IPDOParser
     {
         public JLRStatus status;
-        static public libCanopen lco;
+        static public libCanopenSimple.libCanopenSimple lco;
 
         public PDO()
         {
@@ -63,7 +63,7 @@ namespace PDOParser
         }
 
 
-        public void setlco(libCanopen lcox)
+        public void setlco(libCanopenSimple.libCanopenSimple lcox)
         {
             lco = lcox;
             status.setlco(lco);
