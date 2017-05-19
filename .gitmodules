@@ -1,9 +1,6 @@
 [submodule "libeds"]
 	path = libeds
 	url = https://github.com/robincornelius/libedssharp.git
-[submodule "NNanomsg"]
-	path = NNanomsg
-	url = git@github.com:robincornelius/NNanomsg.git
 [submodule "libCanOpenSimple2"]
 	path = libCanOpenSimple2
 	url = gitlab@gitlab.hirst-magnetics.com:hirst/libCanOpenSimple.git
