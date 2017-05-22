@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CF6327A4-AD5B-4167-862A-6259CB10BC84}</ProjectGuid>
+    <ProjectGuid>{CF98C68B-CE0C-457C-AE55-4DAD28946CF9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PluginExample</RootNamespace>
-    <AssemblyName>PluginExample</AssemblyName>
+    <RootNamespace>FlashLoader</RootNamespace>
+    <AssemblyName>FlashLoader</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -41,7 +42,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NMTPlugin.cs" />
+    <Compile Include="FlashLoader.cs" />
+    <Compile Include="Flasher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Flasher.Designer.cs">
+      <DependentUpon>Flasher.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IntelHex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +61,11 @@
       <Project>{1f61b56a-0bdc-45f6-8954-cf2550775cbd}</Project>
       <Name>PDOInterface</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Flasher.resx">
+      <DependentUpon>Flasher.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -24,3 +24,6 @@ CanMonitor/PluginExample/obj/Debug
 *.opendb
 *.db
 
+/CanMonitor/FlashLoader/obj/Debug
+/CanMonitor/NMTPlugin/obj/Debug
+/CanMonitor/CanMonitor/*.user

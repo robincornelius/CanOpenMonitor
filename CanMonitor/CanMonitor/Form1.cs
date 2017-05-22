@@ -90,12 +90,12 @@ namespace CanMonitor
             listView1.ListViewItemSorter = null;
 
             updatetimer.Interval = 1000;
-            updatetimer.Tick+=updatetimer_Tick;
-            updatetimer.Enabled =true;
+            updatetimer.Tick += updatetimer_Tick;
+            updatetimer.Enabled = true;
 
         }
 
-     
+
         void appendfile(string[] ss)
         {
 
@@ -112,215 +112,204 @@ namespace CanMonitor
 
         }
 
-void updatetimer_Tick(object sender, EventArgs e)
-{
-
-    if (listitems.Count != 0)
-        lock(listitems)
+        void updatetimer_Tick(object sender, EventArgs e)
         {
-            listView1.BeginUpdate();
 
-            listView1.Items.AddRange(listitems.ToArray());
+            if (listitems.Count != 0)
+                lock (listitems)
+                {
+                    listView1.BeginUpdate();
 
-            listitems.Clear();
+                    listView1.Items.AddRange(listitems.ToArray());
 
-            if (checkbox_autoscroll.Checked && listView1.Items.Count>2)
-                listView1.EnsureVisible(listView1.Items.Count - 1);
+                    listitems.Clear();
 
-           
+                    if (checkbox_autoscroll.Checked && listView1.Items.Count > 2)
+                        listView1.EnsureVisible(listView1.Items.Count - 1);
 
 
-            listView1.EndUpdate();
 
-        }
 
-    lock (NMTstate)
-    {
-        if (dirtyNMTstates.Count>0)
-        {
-            listView_nmt.BeginUpdate();
+                    listView1.EndUpdate();
 
-            foreach(SNMTState state in dirtyNMTstates)
+                }
+
+            lock (NMTstate)
             {
-                if(state.isnew)
+                if (dirtyNMTstates.Count > 0)
                 {
-                    listView_nmt.Items.Add(state.LVI);
-                }
-                else
-                {
-                    state.LVI.SubItems[0].Text = state.lastupdate.ToString();
-                    state.LVI.SubItems[2].Text = state.statemsg;
-                }
+                    listView_nmt.BeginUpdate();
 
+                    foreach (SNMTState state in dirtyNMTstates)
+                    {
+                        if (state.isnew)
+                        {
+                            listView_nmt.Items.Add(state.LVI);
+                        }
+                        else
+                        {
+                            state.LVI.SubItems[0].Text = state.lastupdate.ToString();
+                            state.LVI.SubItems[2].Text = state.statemsg;
+                        }
+
+                    }
+
+                    dirtyNMTstates.Clear();
+
+                    listView_nmt.EndUpdate();
+                }
             }
 
-            dirtyNMTstates.Clear();
-          
-            listView_nmt.EndUpdate();
-        }
-    }
+            if (EMClistitems.Count > 0)
+            {
+                lock (EMClistitems)
+                {
+                    listView_emcy.BeginUpdate();
+                    listView_emcy.Items.AddRange(EMClistitems.ToArray());
+                    EMClistitems.Clear();
+                    listView_emcy.EndUpdate();
+                }
+            }
 
-    if (EMClistitems.Count > 0)
-    {
-        lock (EMClistitems)
-        {
-            listView_emcy.BeginUpdate();
-            listView_emcy.Items.AddRange(EMClistitems.ToArray());
-            EMClistitems.Clear();
-            listView_emcy.EndUpdate();
         }
-    }
-
-}
 
         private void log_NMT(canpacket payload)
         {
-            //listView1.BeginInvoke(new MethodInvoker(delegate
-            //{
-                string[] items = new string[6];
-                items[0] = DateTime.Now.ToString();
-                items[1] = "NMT";
-                items[2] = string.Format("{0:x3}", payload.cob);
-                items[3] = "";
-                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
-                string msg = "";
+            string[] items = new string[6];
+            items[0] = DateTime.Now.ToString();
+            items[1] = "NMT";
+            items[2] = string.Format("{0:x3}", payload.cob);
+            items[3] = "";
+            items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
-                if (payload.data.Length != 2)
-                    return;
+            string msg = "";
 
-                switch (payload.data[0])
-                {
-                    case 0x01:
-                        msg = "Enter operational";
-                        break;
-                    case 0x02:
-                        msg = "Enter stop";
-                        break;
-                    case 0x80:
-                        msg = "Enter pre-operational";
-                        break;
-                    case 0x81:
-                        msg = "Reset node";
-                        break;
-                    case 0x82:
-                        msg = "Reset communications";
-                        break;
+            if (payload.data.Length != 2)
+                return;
 
-                }
+            switch (payload.data[0])
+            {
+                case 0x01:
+                    msg = "Enter operational";
+                    break;
+                case 0x02:
+                    msg = "Enter stop";
+                    break;
+                case 0x80:
+                    msg = "Enter pre-operational";
+                    break;
+                case 0x81:
+                    msg = "Reset node";
+                    break;
+                case 0x82:
+                    msg = "Reset communications";
+                    break;
 
-                if(payload.data[1]==0)
-                {
-                    msg += " - All nodes";
-                }
-                else
-                {
-                    msg += string.Format(" - Node 0x{0:x2}", payload.data[1]);
-                }
+            }
 
-                items[5] = msg;
+            if (payload.data[1] == 0)
+            {
+                msg += " - All nodes";
+            }
+            else
+            {
+                msg += string.Format(" - Node 0x{0:x2}", payload.data[1]);
+            }
 
-                ListViewItem i = new ListViewItem(items);
+            items[5] = msg;
 
-                i.ForeColor = Color.Red;
+            ListViewItem i = new ListViewItem(items);
 
-                //listView1.BeginUpdate();
-                //listView1.Items.Add(i);
-                //listView1.EndUpdate();
-              
-                lock(listitems)
-                    listitems.Add(i);
+            i.ForeColor = Color.Red;
 
-                appendfile(items);
+            lock (listitems)
+                listitems.Add(i);
 
-
-            //}));
-
-           
+            appendfile(items);
 
         }
 
         private void log_NMTEC(canpacket payload)
         {
-            //listView1.BeginInvoke(new MethodInvoker(delegate
-           // {
-                string[] items = new string[6];
-                items[0] = DateTime.Now.ToString();
-                items[1] = "NMTEC";
-                items[2] = string.Format("{0:x3}", payload.cob);
-                items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
-                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
-                string msg = "";
-                switch (payload.data[0])
-                {
-                    case 0:
-                        msg = "BOOT";
-                        break;
-                    case 4:
-                        msg = "STOPPED";
-                        break;
-                    case 5:
-                        msg = "Heart Beat";
+            string[] items = new string[6];
+            items[0] = DateTime.Now.ToString();
+            items[1] = "NMTEC";
+            items[2] = string.Format("{0:x3}", payload.cob);
+            items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
+            items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+
+            string msg = "";
+            switch (payload.data[0])
+            {
+                case 0:
+                    msg = "BOOT";
                     break;
-                    case 0x7f:
-                        msg = "Heart Beat (Pre op)";
+                case 4:
+                    msg = "STOPPED";
+                    break;
+                case 5:
+                    msg = "Heart Beat";
+                    break;
+                case 0x7f:
+                    msg = "Heart Beat (Pre op)";
                     break;
 
-                }
+            }
 
-                items[5] = msg;
+            items[5] = msg;
 
-                ListViewItem i = new ListViewItem(items);
+            ListViewItem i = new ListViewItem(items);
 
-                i.ForeColor = Color.DarkGreen;
+            i.ForeColor = Color.DarkGreen;
 
-                appendfile(items);
+            appendfile(items);
 
-                if (checkBox_heartbeats.Checked == true || payload.data[0] == 0)
+            if (checkBox_heartbeats.Checked == true || payload.data[0] == 0)
+            {
+                lock (listitems)
                 {
-                    lock (listitems)
-                    {
-                        listitems.Add(i);
-                    }
+                    listitems.Add(i);
                 }
+            }
 
-                lock(NMTstate)
+            lock (NMTstate)
+            {
+                byte node = (byte)(payload.cob & 0x0FF);
+
+                if (NMTstate.ContainsKey(node))
                 {
-                    byte node = (byte)(payload.cob & 0x0FF);
-
-                    if(NMTstate.ContainsKey(node))
-                    {
-                        SNMTState s = NMTstate[node];
-                        s.lastupdate = DateTime.Now;
-                        s.dirty = true;
-                        s.state = payload.data[0];
-                        s.isnew = false;
-                        s.statemsg = msg;
-                        NMTstate[node] = s;
-                        dirtyNMTstates.Add(NMTstate[node]);
-                    }
-                    else
-                    {
-                        SNMTState s = new SNMTState();
-                        s.lastupdate = DateTime.Now;
-                        s.dirty = true;
-                        s.state = payload.data[0];
-                        s.statemsg = msg;
-                        string[] ss = new string[3];
-                        ss[0] = DateTime.Now.ToString();
-                        ss[1] = node.ToString();
-                        ss[2] = msg;
-
-                        ListViewItem newitem = new ListViewItem(ss);
-                        s.LVI = newitem;
-                        s.isnew = true;
-
-                        NMTstate.Add(node,s);
-                        dirtyNMTstates.Add(NMTstate[node]);
-                    }
-                                
+                    SNMTState s = NMTstate[node];
+                    s.lastupdate = DateTime.Now;
+                    s.dirty = true;
+                    s.state = payload.data[0];
+                    s.isnew = false;
+                    s.statemsg = msg;
+                    NMTstate[node] = s;
+                    dirtyNMTstates.Add(NMTstate[node]);
                 }
+                else
+                {
+                    SNMTState s = new SNMTState();
+                    s.lastupdate = DateTime.Now;
+                    s.dirty = true;
+                    s.state = payload.data[0];
+                    s.statemsg = msg;
+                    string[] ss = new string[3];
+                    ss[0] = DateTime.Now.ToString();
+                    ss[1] = node.ToString();
+                    ss[2] = msg;
+
+                    ListViewItem newitem = new ListViewItem(ss);
+                    s.LVI = newitem;
+                    s.isnew = true;
+
+                    NMTstate.Add(node, s);
+                    dirtyNMTstates.Add(NMTstate[node]);
+                }
+
+            }
 
 
 
@@ -328,390 +317,368 @@ void updatetimer_Tick(object sender, EventArgs e)
 
         private void log_SDO(canpacket payload)
         {
-//            listView1.BeginInvoke(new MethodInvoker(delegate
-//            {
-                string[] items = new string[6];
-                items[0] = DateTime.Now.ToString();
-                items[1] = "SDO";
-                items[2] = string.Format("{0:x3}", payload.cob);
-                items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
-                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
-                string msg="";
+            string[] items = new string[6];
+            items[0] = DateTime.Now.ToString();
+            items[1] = "SDO";
+            items[2] = string.Format("{0:x3}", payload.cob);
+            items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
+            items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
 
-
-                int SCS = payload.data[0] >> 5; //7-5
-
-                int n = (0x03 & (payload.data[0] >> 2)); //3-2 data size for normal packets
-                int e = (0x01 & (payload.data[0] >> 1)); // expidited flag
-                int s = (payload.data[0] & 0x01); // data size set flag //also in block
-                int c = s;
-       
-                int sn = (0x07 & (payload.data[0] >> 1)); //3-1 data size for segment packets
-                int t = (0x01 & (payload.data[0] >> 4));  //toggle flag
-
-                int cc = (0x01 & (payload.data[0] >> 2));
+            string msg = "";
 
 
+            int SCS = payload.data[0] >> 5; //7-5
 
-                UInt16 index =(UInt16)(payload.data[1] + (payload.data[2] << 8));
-                byte sub = payload.data[3];
+            int n = (0x03 & (payload.data[0] >> 2)); //3-2 data size for normal packets
+            int e = (0x01 & (payload.data[0] >> 1)); // expidited flag
+            int s = (payload.data[0] & 0x01); // data size set flag //also in block
+            int c = s;
 
+            int sn = (0x07 & (payload.data[0] >> 1)); //3-1 data size for segment packets
+            int t = (0x01 & (payload.data[0] >> 4));  //toggle flag
 
-                int valid = 7;
-                int validsn = 7;
-
-
-                if (n != 0)
-                    valid = 8 - (7 - n);
-
-                if (sn != 0)
-                    validsn = 8 - (7 - sn);
+            int cc = (0x01 & (payload.data[0] >> 2));
 
 
-            if (payload.cob>=0x580 && payload.cob<=0x600)
+
+            UInt16 index = (UInt16)(payload.data[1] + (payload.data[2] << 8));
+            byte sub = payload.data[3];
+
+
+            int valid = 7;
+            int validsn = 7;
+
+
+            if (n != 0)
+                valid = 8 - (7 - n);
+
+            if (sn != 0)
+                validsn = 8 - (7 - sn);
+
+
+            if (payload.cob >= 0x580 && payload.cob <= 0x600)
+            {
+                string mode = "";
+                string sdoproto = "";
+
+                string setsize = "";
+
+                switch (SCS)
                 {
-                    string mode = "";
-                    string sdoproto = "";
+                    case 0:
+                        mode = "upload segment response";
+                        sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", validsn, c == 0 ? "MORE" : "END");
 
-                    string setsize = "";
+                        if (sdotransferdata.ContainsKey(payload.cob))
+                        {
 
-                    switch (SCS)
-                    {
-                        case 0:
-                            mode = "upload segment response";
-                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF",validsn,c==0?"MORE":"END");
-                          
-                            if(sdotransferdata.ContainsKey(payload.cob))
+                            for (int x = 1; x <= validsn; x++)
+                            {
+                                sdotransferdata[payload.cob].Add(payload.data[x]);
+                            }
+
+                            if (c == 1)
                             {
 
-                                for(int x=1;x<=validsn;x++)
+                                StringBuilder hex = new StringBuilder(sdotransferdata[payload.cob].Count * 2);
+                                StringBuilder ascii = new StringBuilder(sdotransferdata[payload.cob].Count * 2);
+                                foreach (byte b in sdotransferdata[payload.cob])
                                 {
-                                    sdotransferdata[payload.cob].Add(payload.data[x]);
+                                    hex.AppendFormat("{0:x2} ", b);
+                                    ascii.AppendFormat("{0}", (char)Convert.ToChar(b));
                                 }
 
-                                if (c == 1)
-                                {
+                                sdoproto += "\nDATA = " + hex.ToString() + "(" + ascii + ")";
 
-                                    StringBuilder hex = new StringBuilder(sdotransferdata[payload.cob].Count * 2);
-                                    StringBuilder ascii = new StringBuilder(sdotransferdata[payload.cob].Count * 2);
-                                    foreach (byte b in sdotransferdata[payload.cob])
-                                    {
-                                        hex.AppendFormat("{0:x2} ", b);
-                                        ascii.AppendFormat("{0}", (char)Convert.ToChar(b));
-                                    }
+                                //Console.WriteLine(hex.ToString());
+                                //Console.WriteLine(ascii.ToString());
 
-                                    sdoproto += "\nDATA = "+hex.ToString() +"("+ascii+")";
-
-                                    //Console.WriteLine(hex.ToString());
-                                    //Console.WriteLine(ascii.ToString());
-
-                                    sdotransferdata.Remove(payload.cob);
-                                }
-
+                                sdotransferdata.Remove(payload.cob);
                             }
 
-                            break;
-                        case 1:
-                            mode = "download segment response";
-                            sdoproto = string.Format("{0} {1}", mode, t == 1 ? "TOG ON" : "TOG OFF");
-                            break;
-                        case 2:
-                            mode = "initate upload response";
-                            string nbytes = "";
+                        }
 
-                            if(e==1 && s==1)
-                            {
-                                //n is valid
-                                nbytes = string.Format("Valid bytes = {0}", 4 - n);
-                            }
+                        break;
+                    case 1:
+                        mode = "download segment response";
+                        sdoproto = string.Format("{0} {1}", mode, t == 1 ? "TOG ON" : "TOG OFF");
+                        break;
+                    case 2:
+                        mode = "initate upload response";
+                        string nbytes = "";
 
-                            if(e==0 && s==1)
-                            {
-                                byte[] size = new byte[4];
-                                Array.Copy(payload.data, 4, size, 0, 4);
-                                UInt32 isize = (UInt32)BitConverter.ToUInt32(size, 0);
-                                nbytes = string.Format("Bytes = {0}", isize);
+                        if (e == 1 && s == 1)
+                        {
+                            //n is valid
+                            nbytes = string.Format("Valid bytes = {0}", 4 - n);
+                        }
 
-                                if (sdotransferdata.ContainsKey(payload.cob))
-                                    sdotransferdata.Remove(payload.cob);
-
-                                sdotransferdata.Add(payload.cob, new List<byte>());
-                            }
-
-                            sdoproto = string.Format("{0} {1} {2} 0x{3:x4}/{4:x2}", mode,nbytes,e==1?"Normal":"Expedite", index, sub);
-                            break;
-                        case 3:
-                            mode = "initate download response";
-                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2}", mode, index, sub);
-                            break;
-
-                        case 5:
-                            mode = "Block download response";
-
-                            byte segperblock = payload.data[4];
-                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2} Blksize = {3}", mode, cc == 0 ? "NO SERVER CRC" : "SERVER CRC", index, sub,segperblock);
-
-                            break;
-
-
-                        default:
-                            mode = string.Format("SCS {0}", SCS);
-                            break;
-
-                    }
-
-
-
-                    msg = sdoproto;
-  
-
-                }
-                else
-                {
-                    //Client to server
-
-                    string mode = "";
-                    string sdoproto = "";
-
-                    switch (SCS)
-                    {
-                        case 0:
-                            mode = "download segment request";
-                            sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", validsn, c == 0 ? "MORE" : "END");
-
-                            break;
-                        case 1:
-                            string nbytes = "";
-
-                            if (e == 1 && s == 1)
-                            {
-                                //n is valid
-                                nbytes = string.Format("Valid bytes = {0}", 4 - n);
-                            }
-
-                            if (e == 0 && s == 1)
-                            {
-                                byte[] size2 = new byte[4];
-                                Array.Copy(payload.data, 4, size2, 0, 4);
-                                UInt32 isize2 = (UInt32)BitConverter.ToUInt32(size2, 0);
-                                nbytes = string.Format("Bytes = {0}", isize2);
-                            }
-
-                            mode = "initate download request";
-                            sdoproto = string.Format("{0} {1} {2} 0x{3:x4}/{4:x2}", mode, nbytes, e == 1 ? "Normal" : "Expedite", index, sub);
-                            break;
-                        case 2:
-                            mode = "initate upload request";
-                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2}",mode, index, sub);
-                            break;
-                        case 3:
-                            mode = "upload segment request";
-                            sdoproto = string.Format("{0} {1}", mode, t == 1 ? "TOG ON" : "TOG OFF");
-                            break;
-
-                        case 5:
-                            mode = "Block download";
-                            sdoproto = string.Format("{0}", mode);
-                            break;
-
-                        case 6:
-                            mode = "Initate Block download request";
-
+                        if (e == 0 && s == 1)
+                        {
                             byte[] size = new byte[4];
                             Array.Copy(payload.data, 4, size, 0, 4);
                             UInt32 isize = (UInt32)BitConverter.ToUInt32(size, 0);
+                            nbytes = string.Format("Bytes = {0}", isize);
 
-                            sdoproto = string.Format("{0} 0x{1:x4}/{2:x2} Size = {3}", mode,cc==0?"NO CLIENT CRC":"CLIENT CRC", index, sub,isize);
-                            break;
+                            if (sdotransferdata.ContainsKey(payload.cob))
+                                sdotransferdata.Remove(payload.cob);
+
+                            sdotransferdata.Add(payload.cob, new List<byte>());
+                        }
+
+                        sdoproto = string.Format("{0} {1} {2} 0x{3:x4}/{4:x2}", mode, nbytes, e == 1 ? "Normal" : "Expedite", index, sub);
+                        break;
+                    case 3:
+                        mode = "initate download response";
+                        sdoproto = string.Format("{0} 0x{1:x4}/{2:x2}", mode, index, sub);
+                        break;
+
+                    case 5:
+                        mode = "Block download response";
+
+                        byte segperblock = payload.data[4];
+                        sdoproto = string.Format("{0} 0x{1:x4}/{2:x2} Blksize = {3}", mode, cc == 0 ? "NO SERVER CRC" : "SERVER CRC", index, sub, segperblock);
+
+                        break;
 
 
-                        default:
-                            mode = string.Format("CSC {0}", SCS);
-                            break;
-
-                    }
-
-
-                    msg = sdoproto;
+                    default:
+                        mode = string.Format("SCS {0}", SCS);
+                        break;
 
                 }
 
 
-                if ((payload.data[0] & 0x80) != 0)
+
+                msg = sdoproto;
+
+
+            }
+            else
+            {
+                //Client to server
+
+                string mode = "";
+                string sdoproto = "";
+
+                switch (SCS)
                 {
-                    byte[] errorcode = new byte[4];
-                    errorcode[0] = payload.data[4];
-                    errorcode[1] = payload.data[5];
-                    errorcode[2] = payload.data[6];
-                    errorcode[3] = payload.data[7];
+                    case 0:
+                        mode = "download segment request";
+                        sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", validsn, c == 0 ? "MORE" : "END");
 
-                    UInt32 err = BitConverter.ToUInt32(errorcode, 0);
+                        break;
+                    case 1:
+                        string nbytes = "";
 
-                    if (sdoerrormessages.ContainsKey(err))
-                    {
+                        if (e == 1 && s == 1)
+                        {
+                            //n is valid
+                            nbytes = string.Format("Valid bytes = {0}", 4 - n);
+                        }
 
-                        msg += " " + sdoerrormessages[err];
-                    }
+                        if (e == 0 && s == 1)
+                        {
+                            byte[] size2 = new byte[4];
+                            Array.Copy(payload.data, 4, size2, 0, 4);
+                            UInt32 isize2 = (UInt32)BitConverter.ToUInt32(size2, 0);
+                            nbytes = string.Format("Bytes = {0}", isize2);
+                        }
+
+                        mode = "initate download request";
+                        sdoproto = string.Format("{0} {1} {2} 0x{3:x4}/{4:x2}", mode, nbytes, e == 1 ? "Normal" : "Expedite", index, sub);
+                        break;
+                    case 2:
+                        mode = "initate upload request";
+                        sdoproto = string.Format("{0} 0x{1:x4}/{2:x2}", mode, index, sub);
+                        break;
+                    case 3:
+                        mode = "upload segment request";
+                        sdoproto = string.Format("{0} {1}", mode, t == 1 ? "TOG ON" : "TOG OFF");
+                        break;
+
+                    case 5:
+                        mode = "Block download";
+                        sdoproto = string.Format("{0}", mode);
+                        break;
+
+                    case 6:
+                        mode = "Initate Block download request";
+
+                        byte[] size = new byte[4];
+                        Array.Copy(payload.data, 4, size, 0, 4);
+                        UInt32 isize = (UInt32)BitConverter.ToUInt32(size, 0);
+
+                        sdoproto = string.Format("{0} 0x{1:x4}/{2:x2} Size = {3}", mode, cc == 0 ? "NO CLIENT CRC" : "CLIENT CRC", index, sub, isize);
+                        break;
+
+
+                    default:
+                        mode = string.Format("CSC {0}", SCS);
+                        break;
 
                 }
-                else
+
+
+                msg = sdoproto;
+
+            }
+
+
+            if ((payload.data[0] & 0x80) != 0)
+            {
+                byte[] errorcode = new byte[4];
+                errorcode[0] = payload.data[4];
+                errorcode[1] = payload.data[5];
+                errorcode[2] = payload.data[6];
+                errorcode[3] = payload.data[7];
+
+                UInt32 err = BitConverter.ToUInt32(errorcode, 0);
+
+                if (sdoerrormessages.ContainsKey(err))
                 {
-                    if(ipdo!=null)
-                        msg += " "+ipdo.decodesdo(payload.cob, index, sub, payload.data);
+
+                    msg += " " + sdoerrormessages[err];
                 }
 
-
-                items[5] = msg;
-                appendfile(items);
-
-                ListViewItem i = new ListViewItem(items);
-                
-                if ((payload.data[0] & 0x80) != 0)
-                {
-                    i.BackColor = Color.Orange;                
-                }
-
-               
+            }
+            else
+            {
+                if (ipdo != null)
+                    msg += " " + ipdo.decodesdo(payload.cob, index, sub, payload.data);
+            }
 
 
-                i.ForeColor = Color.DarkBlue;
-  
-                lock(listitems)
-                    listitems.Add(i);
+            items[5] = msg;
+            appendfile(items);
+
+            ListViewItem i = new ListViewItem(items);
+
+            if ((payload.data[0] & 0x80) != 0)
+            {
+                i.BackColor = Color.Orange;
+            }
+
+
+
+
+            i.ForeColor = Color.DarkBlue;
+
+            lock (listitems)
+                listitems.Add(i);
 
         }
 
         private void log_PDO(canpacket[] payloads)
         {
-            //return;
- 
-  //          listView1.BeginInvoke(new MethodInvoker(delegate
-   //         {
+            foreach (canpacket payload in payloads)
+            {
 
-                //listView1.BeginUpdate();
-                
-                foreach (canpacket payload in payloads)
+                string[] items = new string[6];
+                items[0] = DateTime.Now.ToString();
+                items[1] = "PDO";
+                items[2] = string.Format("{0:x3}", payload.cob);
+                items[3] = "";
+                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+
+                if (pdoprocessors.ContainsKey(payload.cob))
                 {
+                    string msg = pdoprocessors[payload.cob](payload.data);
 
-                    string[] items = new string[6];
-                    items[0] = DateTime.Now.ToString();
-                    items[1] = "PDO";
-                    items[2] = string.Format("{0:x3}", payload.cob);
-                    items[3] = "";
-                    items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+                    if (msg == null)
+                        continue;
 
-                    if (pdoprocessors.ContainsKey(payload.cob))
-                    {
-                        string msg = pdoprocessors[payload.cob](payload.data);
-
-                        if (msg == null)
-                            continue;
-
-                        items[5] = msg;
-                    }
-                    else
-                    {
-                        items[5] = string.Format("Len = {0}", payload.len);
-                    }
-
-                    ListViewItem i = new ListViewItem(items);
-
-                    appendfile(items);
-
-
-                    lock(listitems)
-                        listitems.Add(i);
-
-     //               listView1.Items.Add(i);
-                
+                    items[5] = msg;
+                }
+                else
+                {
+                    items[5] = string.Format("Len = {0}", payload.len);
                 }
 
-         }
+                ListViewItem i = new ListViewItem(items);
+
+                appendfile(items);
+
+
+                lock (listitems)
+                    listitems.Add(i);
+            }
+
+        }
 
         private void log_EMCY(canpacket payload)
         {
-           // listView1.BeginInvoke(new MethodInvoker(delegate
-           // {
-                string[] items = new string[6];
-                string[] items2 = new string[5];
+            string[] items = new string[6];
+            string[] items2 = new string[5];
 
-                items[0] = DateTime.Now.ToString();
-                items[1] = "EMCY";
-                items[2] = string.Format("{0:x3}", payload.cob);
-                items[3] = string.Format("{0:x3}", payload.cob - 0x080);
-                items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
-                //items[4] = "EMCY";
+            items[0] = DateTime.Now.ToString();
+            items[1] = "EMCY";
+            items[2] = string.Format("{0:x3}", payload.cob);
+            items[3] = string.Format("{0:x3}", payload.cob - 0x080);
+            items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
+            //items[4] = "EMCY";
 
-                items2[0] = DateTime.Now.ToString();
-                items2[1] = items[2];
-                items2[2] = items[3];
+            items2[0] = DateTime.Now.ToString();
+            items2[1] = items[2];
+            items2[2] = items[3];
 
-                UInt16 code = (UInt16)(payload.data[0] + (payload.data[1]<<8));
-                byte bits = (byte)(payload.data[3]);
-                UInt32 info = (UInt32)(payload.data[4] + (payload.data[5] << 8) + (payload.data[6] << 16) + (payload.data[7] << 24));
+            UInt16 code = (UInt16)(payload.data[0] + (payload.data[1] << 8));
+            byte bits = (byte)(payload.data[3]);
+            UInt32 info = (UInt32)(payload.data[4] + (payload.data[5] << 8) + (payload.data[6] << 16) + (payload.data[7] << 24));
 
 
 
-                if(errcode.ContainsKey(code))
+            if (errcode.ContainsKey(code))
+            {
+
+                string bitinfo;
+
+                if (errbit.ContainsKey(bits))
                 {
-
-                    string bitinfo;
-
-                    if(errbit.ContainsKey(bits))
-                    {
-                        bitinfo = errbit[bits];
-                    }
-                    else
-                    {
-                        bitinfo = string.Format("bits 0x{0:x2}", bits);
-                    }
-
-                    items[5] = string.Format("Error: {0} - {1} info 0x{2:x8}", errcode[code], bitinfo, info);
+                    bitinfo = errbit[bits];
                 }
                 else
                 {
-                    items[5] = string.Format("Error code 0x{0:x4} bits 0x{1:x2} info 0x{2:x8}", code, bits, info);
+                    bitinfo = string.Format("bits 0x{0:x2}", bits);
                 }
 
-                items2[3] = items[4];
+                items[5] = string.Format("Error: {0} - {1} info 0x{2:x8}", errcode[code], bitinfo, info);
+            }
+            else
+            {
+                items[5] = string.Format("Error code 0x{0:x4} bits 0x{1:x2} info 0x{2:x8}", code, bits, info);
+            }
 
-                ListViewItem i = new ListViewItem(items);
-                ListViewItem i2 = new ListViewItem(items2);
+            items2[3] = items[4];
 
-                i.ForeColor = Color.White;
-                i2.ForeColor = Color.White;
+            ListViewItem i = new ListViewItem(items);
+            ListViewItem i2 = new ListViewItem(items2);
 
-                if (code == 0)
-                {
-                    i.BackColor = Color.Green;
-                    i2.BackColor = Color.Green;
+            i.ForeColor = Color.White;
+            i2.ForeColor = Color.White;
 
-                }
-                else
-                {
-                    i.BackColor = Color.Red;
-                    i2.BackColor = Color.Red;
+            if (code == 0)
+            {
+                i.BackColor = Color.Green;
+                i2.BackColor = Color.Green;
 
-                } 
+            }
+            else
+            {
+                i.BackColor = Color.Red;
+                i2.BackColor = Color.Red;
 
-                
+            }
 
- //               listView1.BeginUpdate();
- //               listView1.Items.Add(i);
- //               listView1.EndUpdate();
- //               if (checkbox_autoscroll.Checked)
- //                   listView1.EnsureVisible(listView1.Items.Count - 1);
-            //}));
- 
-              lock(listitems)
-                    listitems.Add(i);
+            lock (listitems)
+                listitems.Add(i);
 
-              appendfile(items);
+            appendfile(items);
 
 
-              lock (EMClistitems)
-                  EMClistitems.Add(i2);
+            lock (EMClistitems)
+                EMClistitems.Add(i2);
 
         }
 
@@ -863,7 +830,7 @@ void updatetimer_Tick(object sender, EventArgs e)
             {
                 lco.close();
 
-                if(button_open.Text == "Close")
+                if (button_open.Text == "Close")
                 {
 
                     if (sw != null)
@@ -874,7 +841,7 @@ void updatetimer_Tick(object sender, EventArgs e)
                     return;
                 }
 
-                if(comboBox_port.SelectedItem==null)
+                if (comboBox_port.SelectedItem == null)
                 {
                     comboBox_port.Text = "";
                     return;
@@ -882,14 +849,14 @@ void updatetimer_Tick(object sender, EventArgs e)
 
                 string port = comboBox_port.SelectedItem.ToString();
 
-                textBox_info.AppendText("Trying to open port .. "+port+"\r\n");
+                textBox_info.AppendText("Trying to open port .. " + port + "\r\n");
 
                 int iport = int.Parse(port.Substring(3));
 
                 int rate = comboBox_rate.SelectedIndex;
 
                 lco.open(iport, (BUSSPEED)rate, "can_usb_win32");
-                
+
                 button_open.Text = "Close";
 
                 sw = new StreamWriter("canlog.txt", true);
@@ -897,9 +864,9 @@ void updatetimer_Tick(object sender, EventArgs e)
                 textBox_info.AppendText("Success port open\r\n");
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                textBox_info.AppendText("ERROR opening port "+ex.ToString()+"\r\n");
+                textBox_info.AppendText("ERROR opening port " + ex.ToString() + "\r\n");
                 MessageBox.Show("Setup error " + ex.ToString());
 
             }
@@ -921,13 +888,13 @@ void updatetimer_Tick(object sender, EventArgs e)
                 listView1.Items.Clear();
             }
 
-            lock(EMClistitems)
+            lock (EMClistitems)
             {
                 EMClistitems.Clear();
                 listView_emcy.Items.Clear();
             }
 
-            lock(dirtyNMTstates)
+            lock (dirtyNMTstates)
             {
                 NMTstate.Clear();
                 dirtyNMTstates.Clear();
@@ -951,7 +918,7 @@ void updatetimer_Tick(object sender, EventArgs e)
         private void eEPROMResetToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ResetEEPROM re = new ResetEEPROM(lco);
-            re.ShowDialog();         
+            re.ShowDialog();
         }
 
         private void quitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -962,7 +929,7 @@ void updatetimer_Tick(object sender, EventArgs e)
         private void comboBox_port_SelectedIndexChanged(object sender, EventArgs e)
         {
             SettingsMgr.settings.options.selectedport = comboBox_port.SelectedItem.ToString();
-            
+
         }
 
         private void comboBox_rate_SelectedIndexChanged(object sender, EventArgs e)
@@ -975,22 +942,16 @@ void updatetimer_Tick(object sender, EventArgs e)
             comboBox_rate.SelectedIndex = SettingsMgr.settings.options.selectedrate;
             comboBox_port.SelectedItem = SettingsMgr.settings.options.selectedport;
 
-           
+
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (checkbox_autoscroll.Checked)
             {
-                if (listView1.Items.Count>1)
+                if (listView1.Items.Count > 1)
                     listView1.EnsureVisible(listView1.Items.Count - 1);
             }
-        }
-
-        private void nMTToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            NMTFrm frm = new NMTFrm(lco);
-            frm.Show();
         }
 
         private void errorInjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1021,7 +982,6 @@ void updatetimer_Tick(object sender, EventArgs e)
             data[5] = 0x00;
             data[6] = 0x00;
             data[7] = 0xfd;
-
 
 
             lco.SDOwrite(0x04, 0x2010, 0x01, data, null);
@@ -1067,8 +1027,111 @@ void updatetimer_Tick(object sender, EventArgs e)
             lco.writePDO(0x214, data);
         }
 
-       
-      
+
+
+        #region pluginloader
+
+        private void loadplugin(String filename)
+        {
+            try
+            {
+
+                Assembly assembly = Assembly.LoadFrom(filename);
+
+                Type[] types = assembly.GetExportedTypes();
+
+                for (int i = 0; i < types.Length; i++)
+                {
+                    object obj = null;
+
+                    Type type = assembly.GetType(types[i].FullName);
+                    if (type.GetInterface("PDOInterface.IPDOParser") != null)
+                    {
+                        obj = Activator.CreateInstance(type);
+                        if (obj != null)
+                        {
+                            ipdo = (IPDOParser)obj;
+                            ipdo.registerPDOS(pdoprocessors);
+                            ipdo.setlco(lco);
+
+                            textBox_info.AppendText("SUCCESS loading plugin \r\n");
+                        }
+
+                    }
+
+                    if (type.GetInterface("PDOInterface.IInterfaceService") != null)
+                    {
+                        if (obj != null && obj is PDOInterface.IInterfaceService)
+                        {
+                            // do nothing use the object to save recreate
+                        }
+                        else
+                        {
+                            obj = Activator.CreateInstance(type);
+                        }
+
+                        if (obj != null)
+                        {
+                            IInterfaceService iss = (IInterfaceService)obj;
+
+                            IVerb[] verbsroot = iss.GetVerbs("_root_");
+
+                            if (verbsroot != null)
+                            {
+                                foreach (IVerb v in verbsroot)
+                                {
+                                    bool found = false;
+                                    foreach (ToolStripItem ii in menuStrip1.Items)
+                                    {
+                                        if (ii.Text == v.Name)
+                                        {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (found == false)
+                                    {
+
+                                        menuStrip1.Items.Add(v.Name);
+                                    }
+
+                                }
+                            }
+
+                            foreach (ToolStripMenuItem ii in menuStrip1.Items)
+                            {
+                                IVerb[] verbs = iss.GetVerbs(ii.Text);
+
+                                if (verbs != null)
+                                {
+                                    foreach (IVerb v in verbs)
+                                    {
+                                        if (v.Name == "---")
+                                        {
+                                            ToolStripSeparator item = new ToolStripSeparator();
+                                            ii.DropDownItems.Add(item);
+                                        }
+                                        else
+                                        {
+                                            ToolStripMenuItem item = new ToolStripMenuItem(v.Name, null, v.Action);
+                                            ii.DropDownItems.Add(item);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                textBox_info.AppendText("Failed loading plugi \r\n" + ex.ToString() + "\r\n");
+                MessageBox.Show("Very unawesome when tryng to load plugin..");
+            }
+        }
+
 
         private void loadPluginToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1077,62 +1140,16 @@ void updatetimer_Tick(object sender, EventArgs e)
             ofd.Filter = "Libraries (*.dll)|*.dll";
             ofd.Multiselect = false;
 
-            if(ofd.ShowDialog()==DialogResult.OK)
+            if (ofd.ShowDialog() == DialogResult.OK)
             {
-                textBox_info.AppendText("Attempting to load plugin " + ofd.FileName+"\r\n");
-                try
-                {
-                    Assembly assembly = Assembly.LoadFrom(ofd.FileName);
-
-                    Type[] types = assembly.GetExportedTypes();
-
-                    for (int i = 0; i < types.Length; i++)
-                    {
-                        Type type = assembly.GetType(types[i].FullName);
-                        if (type.GetInterface("PDOInterface.IPDOParser") != null)
-                        {
-                            object obj = Activator.CreateInstance(type);
-                            if (obj != null)
-                            {
-                                ipdo = (IPDOParser)obj;
-                                ipdo.registerPDOS(pdoprocessors);
-                                ipdo.setlco(lco);
-
-                                textBox_info.AppendText("SUCCESS loading plugin \r\n");
-                            }
-                        }
-
-                        if (type.GetInterface("PDOInterface.IInterfaceService") != null)
-                        {
-                            object obj = Activator.CreateInstance(type);
-                            if (obj != null)
-                            {
-                                IInterfaceService iss = (IInterfaceService)obj;
-                                IVerb[] verbs = iss.GetVerbs("Tools");
-
-                                if (verbs != null)
-                                {
-                                    foreach (IVerb v in verbs)
-                                    {
-                                        ToolStripMenuItem item = new ToolStripMenuItem(v.Name, null, v.Action);
-                                        toolsToolStripMenuItem.DropDownItems.Add(item);
-                                        ;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch(Exception ex)
-                {
-                    textBox_info.AppendText("Failed loading plugi \r\n"+ex.ToString()+"\r\n");
-                    MessageBox.Show("Very unawesome when tryng to load plugin..");
-                }
-
+                textBox_info.AppendText("Attempting to load plugin " + ofd.FileName + "\r\n");
+                loadplugin(ofd.FileName);
             }
         }
     }
 
+
+    #endregion
 
 
     public static class ControlExtensions

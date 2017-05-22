@@ -18,19 +18,38 @@ namespace PluginExample
         public PluginExample()
         {
             addverb("hello", "Tools", sayhello);
+            addverb("New menu", "_root_", null);
+            addverb("HELLO 2", "New menu", sayhello2);
+            addverb("---", "New menu", null);
+            addverb("More", "New menu", sayhello2);
+            addverb("More", "New menu", sayhello3);
+            addverb("More", "File", sayhello3);
 
         }
-
 
         void sayhello(object sender, System.EventArgs e)
         {
             if (_lco == null || !_lco.isopen())
                 return;
 
-
             MessageBox.Show("HELLO WORLD");
             
             _lco.NMT_start();
+
+        }
+
+
+        void sayhello2(object sender, System.EventArgs e)
+        {
+
+            MessageBox.Show("HELLO WORLD 2");
+
+        }
+
+        void sayhello3(object sender, System.EventArgs e)
+        {
+
+            MessageBox.Show("HELLO WORLD 3");
 
         }
 
@@ -48,12 +67,5 @@ namespace PluginExample
         {
             _lco = lco;
         }
-
-
-
-
     }
-
-
-   
 }

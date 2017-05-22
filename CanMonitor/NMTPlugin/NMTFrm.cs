@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using libCanopenSimple;
 
 
-namespace CanMonitor
+namespace NMTPlugin
 {
     public partial class NMTFrm : Form
     {

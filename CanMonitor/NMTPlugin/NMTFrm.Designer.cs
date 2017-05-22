@@ -1,4 +1,4 @@
-﻿namespace CanMonitor
+﻿namespace NMTPlugin
 {
     partial class NMTFrm
     {
