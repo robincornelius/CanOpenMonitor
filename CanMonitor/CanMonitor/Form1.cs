@@ -903,24 +903,6 @@ namespace CanMonitor
 
         }
 
-        private void button_sdo_Click(object sender, EventArgs e)
-        {
-            SDOEditor sdo = new SDOEditor(lco);
-            sdo.Show();
-        }
-
-        private void sDOToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SDOEditor sdo = new SDOEditor(lco);
-            sdo.Show();
-        }
-
-        private void eEPROMResetToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ResetEEPROM re = new ResetEEPROM(lco);
-            re.ShowDialog();
-        }
-
         private void quitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
@@ -954,80 +936,7 @@ namespace CanMonitor
             }
         }
 
-        private void errorInjectToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ErrorInject ei = new ErrorInject(lco);
-            ei.Show();
-
-        }
-
-        private void flashToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Flasher f = new Flasher(lco);
-            f.ShowDialog();
-
-        }
-
-        private void ManualSDOToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-            Encoding u8 = Encoding.UTF8;
-
-            byte[] data = new byte[8];
-            data[0] = 0xfe;
-            data[1] = 18;
-            data[2] = 0x00;
-            data[3] = 0x00;
-            data[4] = 0x00;
-            data[5] = 0x00;
-            data[6] = 0x00;
-            data[7] = 0xfd;
-
-
-            lco.SDOwrite(0x04, 0x2010, 0x01, data, null);
-
-        }
-
-        private void sDOUPLOADToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            lco.SDOread(0x04, 0x2010, 0x02, null);
-        }
-
-        private void sTARTToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //0x185 bit0x20
-            byte[] data = new byte[2];
-            data[0] = 0x20 | 0x10 | 0x02;
-            lco.writePDO(0x185, data);
-        }
-
-        private void pDOTESTToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            byte[] data = new byte[1];
-            data[0] = 0xff;
-            lco.writePDO(0x202, data);
-        }
-
-        private void charge100vToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-            ChgrFrm frm = new ChgrFrm(lco);
-
-            frm.Show();
-
-        }
-
-        private void stopChargeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-            byte[] data = new byte[2];
-            data[0] = 0x00;
-            data[1] = 0x00;
-
-            lco.writePDO(0x214, data);
-        }
-
-
+      
 
         #region pluginloader
 
