@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{25136D69-CB96-4698-97AE-DB6A3A8348B0}</ProjectGuid>
+    <ProjectGuid>{EF68DF58-5102-42FC-9683-4C65095B5E77}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NMTPlugin</RootNamespace>
-    <AssemblyName>NMTPlugin</AssemblyName>
+    <RootNamespace>SDOEditorPlugin</RootNamespace>
+    <AssemblyName>SDOEditorPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -42,19 +42,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NMTPlugin.cs" />
-    <Compile Include="NMTFrm.cs">
+    <Compile Include="Properties\Resource1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource1.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SDOEditorPlugin.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SDOEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NMTFrm.Designer.cs">
-      <DependentUpon>NMTFrm.cs</DependentUpon>
+    <Compile Include="SDOEditor.Designer.cs">
+      <DependentUpon>SDOEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValueEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ValueEditor.Designer.cs">
+      <DependentUpon>ValueEditor.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj">
       <Project>{2fb81add-258f-4135-a9b9-17e2aca2448e}</Project>
       <Name>libCanopenSimple</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libeds\libEDSsharp\libEDSsharp.csproj">
+      <Project>{cc0fa4b1-2bfc-43b3-8c56-b428df2d24e7}</Project>
+      <Name>libEDSsharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\PDOInterface\PDOInterface.csproj">
       <Project>{1f61b56a-0bdc-45f6-8954-cf2550775cbd}</Project>
@@ -62,9 +77,22 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="NMTFrm.resx">
-      <DependentUpon>NMTFrm.cs</DependentUpon>
+    <EmbeddedResource Include="Properties\Resource1.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="SDOEditor.resx">
+      <DependentUpon>SDOEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ValueEditor.resx">
+      <DependentUpon>ValueEditor.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\EventLog_5735.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\GenericVSEditor_9905.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

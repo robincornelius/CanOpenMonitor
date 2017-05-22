@@ -93,6 +93,13 @@ namespace CanMonitor
             updatetimer.Tick += updatetimer_Tick;
             updatetimer.Enabled = true;
 
+
+            loadplugin("plugins\\NMTPlugin.dll");
+            loadplugin("plugins\\SDOEditorPlugin.dll");
+            loadplugin("plugins\\eeprom_plugin.dll");
+            loadplugin("plugins\\FlashLoader.dll");
+
+
         }
 
 

@@ -27,3 +27,6 @@ CanMonitor/PluginExample/obj/Debug
 /CanMonitor/FlashLoader/obj/Debug
 /CanMonitor/NMTPlugin/obj/Debug
 /CanMonitor/CanMonitor/*.user
+/CanMonitor/ChargerTestPlugin/obj/Debug
+/CanMonitor/SDOEditorPlugin/obj/Debug
+/CanMonitor/eeprom_plugin/obj/Debug
