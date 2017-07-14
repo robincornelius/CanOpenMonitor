@@ -31,7 +31,7 @@ namespace DischargeBoardTest
             duration[2] = (UInt32)numericUpDown_duration3.Value;
             duration[3] = (UInt32)numericUpDown_duration4.Value;
             duration[4] = (UInt32)numericUpDown_dualsplit.Value;
-            duration[6] = (UInt32)numericUpDown_pretrig.Value;
+            duration[5] = (UInt32)numericUpDown_pretrig.Value;
 
             lco.SDOwrite(node, 0x2150, 1, duration[0],null);
             lco.SDOwrite(node, 0x2150, 2, duration[1], null);
@@ -88,6 +88,117 @@ namespace DischargeBoardTest
             lco.SDOwrite(node, 0x2152, 2, off, null);
             lco.SDOwrite(node, 0x2152, 3, tmr, null);
 
+        }
+
+        private void button_readall_Click(object sender, EventArgs e)
+        {
+            byte node = (byte)numericUpDown_node.Value;
+
+            lco.SDOread(node, 0x2152, 1, sdo =>
+            {
+                if(sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                this.Invoke(new MethodInvoker(delegate()
+                {
+                    numericUpDown_pwmon.Value = sdo.expitideddata;
+                }));
+            });
+
+            lco.SDOread(node, 0x2152, 2, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_pwmoff.Value = sdo.expitideddata;
+                }));
+            });
+
+            lco.SDOread(node, 0x2152, 3, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_pwmmax.Value = sdo.expitideddata;
+                }));
+            });
+
+
+
+
+
+
+            lco.SDOread(node, 0x2150, 1, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_duration1.Value = sdo.expitideddata;
+                }));
+            });
+
+            lco.SDOread(node, 0x2150, 2, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_duration2.Value = sdo.expitideddata;
+                }));
+            });
+
+            lco.SDOread(node, 0x2150, 3, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_duration3.Value = sdo.expitideddata;
+                }));
+            });
+
+            lco.SDOread(node, 0x2150, 4, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_duration4.Value = sdo.expitideddata;
+                }));
+            });
+
+            lco.SDOread(node, 0x2150, 5, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_dualsplit.Value = sdo.expitideddata;
+                }));
+            });
+
+            lco.SDOread(node, 0x2150, 6, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_pretrig.Value = sdo.expitideddata;
+                }));
+            });
+
+
+            lco.SDOread(node, 0x2151, 1, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    comboBox_mode.SelectedIndex = (int)(sdo.expitideddata - 1);
+                }));
+            });
+
+
+            lco.SDOread(node, 0x2155, 0, sdo =>
+            {
+                if (sdo.state == SDO.SDO_STATE.SDO_FINISHED)
+                    this.Invoke(new MethodInvoker(delegate ()
+                {
+                    numericUpDown_selectedfixture.Value = sdo.expitideddata;
+                }));
+            });
         }
     }
 }

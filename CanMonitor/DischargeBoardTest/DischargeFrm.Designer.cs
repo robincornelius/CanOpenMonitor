@@ -57,6 +57,7 @@
             this.button_setpwm = new System.Windows.Forms.Button();
             this.numericUpDown_pretrig = new System.Windows.Forms.NumericUpDown();
             this.label12 = new System.Windows.Forms.Label();
+            this.button_readall = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_duration1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_duration2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_duration3)).BeginInit();
@@ -485,11 +486,22 @@
             this.label12.TabIndex = 28;
             this.label12.Text = "Pre trigger";
             // 
+            // button_readall
+            // 
+            this.button_readall.Location = new System.Drawing.Point(236, 12);
+            this.button_readall.Name = "button_readall";
+            this.button_readall.Size = new System.Drawing.Size(88, 20);
+            this.button_readall.TabIndex = 29;
+            this.button_readall.Text = "Read all";
+            this.button_readall.UseVisualStyleBackColor = true;
+            this.button_readall.Click += new System.EventHandler(this.button_readall_Click);
+            // 
             // DischargeFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(688, 390);
+            this.Controls.Add(this.button_readall);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.numericUpDown_pretrig);
             this.Controls.Add(this.button_setpwm);
@@ -568,5 +580,6 @@
         private System.Windows.Forms.Button button_setpwm;
         private System.Windows.Forms.NumericUpDown numericUpDown_pretrig;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Button button_readall;
     }
 }
