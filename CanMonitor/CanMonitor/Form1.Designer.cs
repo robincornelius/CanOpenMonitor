@@ -66,6 +66,7 @@
             this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPluginToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.mnuRecentlyUsed = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -391,7 +392,8 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.quitToolStripMenuItem,
-            this.loadPluginToolStripMenuItem});
+            this.loadPluginToolStripMenuItem,
+            this.mnuRecentlyUsed});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -416,6 +418,12 @@
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // mnuRecentlyUsed
+            // 
+            this.mnuRecentlyUsed.Name = "mnuRecentlyUsed";
+            this.mnuRecentlyUsed.Size = new System.Drawing.Size(152, 22);
+            this.mnuRecentlyUsed.Text = "Recent Plugins";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -428,6 +436,7 @@
             this.Name = "Form1";
             this.Text = "CanOpen monitor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
@@ -486,6 +495,7 @@
         private System.Windows.Forms.ToolStripMenuItem loadPluginToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TextBox textBox_info;
+        private System.Windows.Forms.ToolStripMenuItem mnuRecentlyUsed;
     }
 }
 

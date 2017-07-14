@@ -35,6 +35,8 @@ namespace CanMonitor
 
         StreamWriter sw;
 
+        private List<string> _mru = new List<string>();
+
         public struct SNMTState
         {
             public byte state;
@@ -94,10 +96,18 @@ namespace CanMonitor
             updatetimer.Enabled = true;
 
 
-            loadplugin("plugins\\NMTPlugin.dll");
-            loadplugin("plugins\\SDOEditorPlugin.dll");
-            loadplugin("plugins\\eeprom_plugin.dll");
-            loadplugin("plugins\\FlashLoader.dll");
+           //loadplugin("plugins\\NMTPlugin.dll",false);
+           // loadplugin("plugins\\SDOEditorPlugin.dll", false);
+           // loadplugin("plugins\\eeprom_plugin.dll", false);
+           // loadplugin("plugins\\FlashLoader.dll", false);
+
+            var autoloadPath = Path.Combine(appdatafolder, "autoload.txt");
+            string [] autoload = System.IO.File.ReadAllLines(autoloadPath);
+
+            foreach(string plugin in autoload)
+            {
+                loadplugin(plugin, false);
+            }
 
 
         }
@@ -885,6 +895,10 @@ namespace CanMonitor
         {
             SettingsMgr.writeXML(Path.Combine(appdatafolder, "settings.xml"));
             lco.close();
+
+            var mruFilePath = Path.Combine(appdatafolder, "PLUGINMRU.txt");
+            System.IO.File.WriteAllLines(mruFilePath, _mru);
+
         }
 
         private void button_clear_Click(object sender, EventArgs e)
@@ -932,6 +946,12 @@ namespace CanMonitor
             comboBox_port.SelectedItem = SettingsMgr.settings.options.selectedport;
 
 
+            var mruFilePath = Path.Combine(appdatafolder, "PLUGINMRU.txt");
+            if (System.IO.File.Exists(mruFilePath))
+                _mru.AddRange(System.IO.File.ReadAllLines(mruFilePath));
+
+            populateMRU();
+
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -943,12 +963,17 @@ namespace CanMonitor
             }
         }
 
-      
+
 
         #region pluginloader
 
-        private void loadplugin(String filename)
+        List<string> loadedplugins = new List<string>();
+        private void loadplugin(String filename,bool addmru)
         {
+
+            if (loadedplugins.Contains(filename))
+                return;
+
             try
             {
 
@@ -1040,12 +1065,20 @@ namespace CanMonitor
                     }
                 }
 
+                loadedplugins.Add(filename);
+
+                if (addmru)
+                {
+                    addtoMRU(filename);
+                }
             }
             catch (Exception ex)
             {
                 textBox_info.AppendText("Failed loading plugi \r\n" + ex.ToString() + "\r\n");
                 MessageBox.Show("Very unawesome when tryng to load plugin..");
             }
+
+         
         }
 
 
@@ -1059,9 +1092,53 @@ namespace CanMonitor
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 textBox_info.AppendText("Attempting to load plugin " + ofd.FileName + "\r\n");
-                loadplugin(ofd.FileName);
+                loadplugin(ofd.FileName,true);
             }
         }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+
+        }
+
+        private void addtoMRU(string path)
+        {
+            // if it already exists remove it then let it readd itsself
+            // so it will be promoted to the top of the list
+            if (_mru.Contains(path))
+                _mru.Remove(path);
+
+            _mru.Insert(0, path);
+
+            if (_mru.Count > 10)
+                _mru.RemoveAt(10);
+
+            populateMRU();
+
+        }
+
+        private void populateMRU()
+        {
+
+            mnuRecentlyUsed.DropDownItems.Clear();
+
+            foreach (var path in _mru)
+            {
+                var item = new ToolStripMenuItem(path);
+                item.Tag = path;
+                item.Click += OpenRecentFile;
+
+                mnuRecentlyUsed.DropDownItems.Add(item);
+            }
+        }
+
+        void OpenRecentFile(object sender, EventArgs e)
+        {
+            var menuItem = (ToolStripMenuItem)sender;
+            var filepath = (string)menuItem.Tag;
+            loadplugin(filepath,true);
+        }
+
     }
 
 
