@@ -37,6 +37,8 @@ namespace CanMonitor
 
         private List<string> _mru = new List<string>();
 
+        string gitVersion;
+
         public struct SNMTState
         {
             public byte state;
@@ -945,7 +947,22 @@ namespace CanMonitor
             comboBox_rate.SelectedIndex = SettingsMgr.settings.options.selectedrate;
             comboBox_port.SelectedItem = SettingsMgr.settings.options.selectedport;
 
-
+            //read git version string, show in title bar 
+                        //(https://stackoverflow.com/a/15145121)
+            string gitVersion = String.Empty;
+            using (Stream stream = System.Reflection.Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("CanMonitor." + "version.txt"))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                gitVersion = reader.ReadToEnd();
+            }
+            if (gitVersion == "")
+            {
+                gitVersion = "Unknown";
+            }
+            this.Text += " -- " + gitVersion;
+            this.gitVersion = gitVersion;
+            
             var mruFilePath = Path.Combine(appdatafolder, "PLUGINMRU.txt");
             if (System.IO.File.Exists(mruFilePath))
                 _mru.AddRange(System.IO.File.ReadAllLines(mruFilePath));
