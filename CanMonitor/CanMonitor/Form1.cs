@@ -66,7 +66,7 @@ namespace CanMonitor
             InitializeComponent();
 
 
-            comboBox_port.Items.Add("ipc://can_id0");
+            //comboBox_port.Items.Add("ipc://can_id0");
 
             foreach (string portName in System.IO.Ports.SerialPort.GetPortNames())
             {
