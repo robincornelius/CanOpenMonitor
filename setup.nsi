@@ -59,13 +59,14 @@ Section "CanMonitor" Secopeneds ;No components page, name is not important
   ; Put file there
   File canmonitor\bin\Release\*.exe
   File canmonitor\bin\Release\*.dll
+  File canmonitor\GroupBy_284.ico
   
   SetOutPath $INSTDIR\Plugins
   File canmonitor\bin\Release\plugins\*.dll
 
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\CanMonitor"
-  CreateShortCut "$SMPROGRAMS\CanMonitor\CanMonitor.lnk" $INSTDIR\CanMonitor.exe "" $INSTDIR\Index_8287_16x.ico 0
+  CreateShortCut "$SMPROGRAMS\CanMonitor\CanMonitor.lnk" $INSTDIR\CanMonitor.exe "" $INSTDIR\GroupBy_284.ico 0
      
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
