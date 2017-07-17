@@ -878,7 +878,8 @@ namespace CanMonitor
 
                 button_open.Text = "Close";
 
-                sw = new StreamWriter("canlog.txt", true);
+                //fixme make this user selectable from GUI
+                //sw = new StreamWriter("canlog.txt", true);
 
                 textBox_info.AppendText("Success port open\r\n");
 
