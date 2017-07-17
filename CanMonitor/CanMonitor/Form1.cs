@@ -985,14 +985,28 @@ namespace CanMonitor
         #region pluginloader
 
         List<string> loadedplugins = new List<string>();
-        private void loadplugin(String filename,bool addmru)
+        private void loadplugin(String pfilename,bool addmru)
         {
 
-            if (loadedplugins.Contains(filename))
+            if (loadedplugins.Contains(pfilename))
                 return;
 
             try
             {
+
+                string filename = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + "plugins" +  Path.DirectorySeparatorChar + pfilename;
+
+                if(!File.Exists(filename))
+                {
+                    filename = appdatafolder + Path.DirectorySeparatorChar + "plugins" + pfilename;
+
+                    if (!File.Exists(filename))
+                    {
+                        MessageBox.Show(string.Format("Could not find plugin {0}", pfilename));
+                        return;
+                    }
+
+                }
 
                 Assembly assembly = Assembly.LoadFrom(filename);
 
