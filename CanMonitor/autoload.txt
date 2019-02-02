@@ -1,0 +1,2 @@
+NMTPlugin.dll
+ChargerTestPlugin.dll

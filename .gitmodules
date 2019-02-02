@@ -1,0 +1,9 @@
+[submodule "libeds"]
+	path = libeds
+	url = https://github.com/robincornelius/libedssharp.git
+[submodule "libCanOpenSimple2"]
+	path = libCanOpenSimple2
+	url = https://github.com/robincornelius/libCanOpenSimple.git
+[submodule "nanomsg"]
+	path = nanomsg
+	url = https://github.com/nanomsg/nanomsg.git

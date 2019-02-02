@@ -1,0 +1,58 @@
+
+
+
+
+#define PACKED
+#pragma pack(push,1)
+typedef struct  {
+	uint16_t cob_id;	/**< message's ID */
+	uint8_t rtr;		/**< remote transmission request. (0 if not rtr message, 1 if rtr message) */
+	uint8_t len;		/**< message's length (0 to 8) */
+	uint8_t data[8]; /**< message's datas */
+} Message;
+#pragma pack(pop)
+#undef PACKED
+
+
+#include <nn.h>
+#include <bus.h>
+
+int sock;
+
+	sock = nn_socket(AF_SP, NN_BUS);
+	
+	assert(sock >= 0);
+	
+	assert(nn_bind(sock, "ipc://can_id0") >= 0);
+	
+
+void WriteCanPacket(CO_CANtx_t * TxPacket)
+{
+	
+	Message m;
+
+	m.cob_id = TxPacket->ident & 0x0FFF; //0x1705
+	m.len = (TxPacket->ident >> 12);
+	memset(m.data, 0, 8);
+
+	for(int p=0;p<m.len;p++)
+		m.data[p] = TxPacket->data[p];
+
+	m.rtr = 0;
+	printf("SEND TO BUS");
+	int send = nn_send(sock, &m, sizeof(Message), 0);
+}
+
+
+void RxCanPacket()
+{
+
+	//printf("R\n");
+	int recv = nn_recv(sock, &canpacket, sizeof(CO_CANtx_t), NN_DONTWAIT);
+	if (recv >= 0)
+	{
+		printf("RECEIVED FROM BUS %x %x\n", canpacket.ident, canpacket.data[0]);
+		CO_CANinterrupt(CO->CANmodule[0]);
+	}
+
+}
