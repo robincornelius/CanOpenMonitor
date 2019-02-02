@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CanOpen Monitor is a C# application that can connect to a Can USB and decode and log Can Open packets. Plugins are also avaliable to allow interactions with the BUS for sending NMT commands, reading and writing device object dictionaries via SDO.
+CanOpen Monitor is a C# application that can connect via a can interface and decode and log Can Open packets. Plugins are also avaliable to allow interactions with the BUS for sending NMT commands, reading and writing device object dictionaries via SDO.
 
 Plugins can also be added for custom logging to display extra info and decoding info for any PDO or SDO transfers to provide human readable output.
 
@@ -52,7 +52,19 @@ Example - A simple plugin example with miminal functionality.
 Plugins are also really useful for decoding PDO packets where its possible to decode the byte stream and display human readable values with comments as approprate. Also SDO transfers can be intercepted and messages posted to the log window to explain what they are doing.
 
 
+# Drivers
 
+CanOpenMonitor uses libcanopensimple to provide access to the can bus. This supports plugable drivers, the original ones are from CanFestival but currently only ones suitable for a CANUSB (from https://www.can232.com/?page_id=16) are present. Two versions exist for connecting via a COM port or connecting via a FDTI d2xx driver. This should also work with any other devices that use the SLCAN protocol. Not every feature is currently connected. RTR packets and extended packets are not not currently supported and timestamps from the can driver are not yet supported.
+
+Other drivers can be added to the system and the CanFestival ones can be used as a starting point. So that other devices could be supported
+
+
+
+# Help wanted
+
+Linux: - The main app and libcanopensimple are c# and will work find on linux under mono. The drivers need rewriting as they are native c dlls/.so the original canfestival drivers had lots of linux examples that could be used. I do not have time for linux driver writing
+
+Other drivers: If any one has other can hardware that interfaces to PC, i would love to get support added.
 
 
 
