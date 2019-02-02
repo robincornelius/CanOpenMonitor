@@ -71,6 +71,7 @@ Pictures
 --------
 
 ![alt tag](pics/MainWindow.png)
+![alt tag](pics/SDOEditor.png)
 
 
 
