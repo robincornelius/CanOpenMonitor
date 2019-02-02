@@ -71,7 +71,12 @@ Pictures
 --------
 
 ![alt tag](pics/MainWindow.png)
+
+The main window shows all bus activity, color coded with protocol type and decoding from plugins shown in info column.
+
 ![alt tag](pics/SDOEditor.png)
+
+The SDO Editor allows live updating of paramaters in the object dictionary of any node on the bus. Load in the electronic data sheet to see avaiable objects, descriptions and their default value, then click to open the value editor which will send your new values stright to the device :-
 
 
 
