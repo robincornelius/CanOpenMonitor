@@ -36,6 +36,8 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.checkBox_autostart = new System.Windows.Forms.CheckBox();
             this.button_close = new System.Windows.Forms.Button();
+            this.checkBox_limitlines = new System.Windows.Forms.CheckBox();
+            this.textBox_linelimit = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -87,6 +89,8 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.textBox_linelimit);
+            this.groupBox2.Controls.Add(this.checkBox_limitlines);
             this.groupBox2.Controls.Add(this.checkBox_autostart);
             this.groupBox2.Location = new System.Drawing.Point(27, 415);
             this.groupBox2.Name = "groupBox2";
@@ -114,6 +118,24 @@
             this.button_close.Text = "Close";
             this.button_close.UseVisualStyleBackColor = true;
             this.button_close.Click += new System.EventHandler(this.button_close_Click);
+            // 
+            // checkBox_limitlines
+            // 
+            this.checkBox_limitlines.AutoSize = true;
+            this.checkBox_limitlines.Location = new System.Drawing.Point(23, 71);
+            this.checkBox_limitlines.Name = "checkBox_limitlines";
+            this.checkBox_limitlines.Size = new System.Drawing.Size(92, 21);
+            this.checkBox_limitlines.TabIndex = 1;
+            this.checkBox_limitlines.Text = "Limit lines";
+            this.checkBox_limitlines.UseVisualStyleBackColor = true;
+            // 
+            // textBox_linelimit
+            // 
+            this.textBox_linelimit.Location = new System.Drawing.Point(141, 69);
+            this.textBox_linelimit.Name = "textBox_linelimit";
+            this.textBox_linelimit.Size = new System.Drawing.Size(136, 22);
+            this.textBox_linelimit.TabIndex = 2;
+            this.textBox_linelimit.Text = "1000";
             // 
             // Prefs
             // 
@@ -143,5 +165,7 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.CheckBox checkBox_autostart;
         private System.Windows.Forms.Button button_close;
+        private System.Windows.Forms.TextBox textBox_linelimit;
+        private System.Windows.Forms.CheckBox checkBox_limitlines;
     }
 }

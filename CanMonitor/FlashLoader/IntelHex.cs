@@ -1,23 +1,4 @@
-﻿/*
-    This file is part of CanOpenMonitor.
-
-    CanOpenMonitor is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    CanOpenMonitor is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with CanOpenMonitor.  If not, see <http://www.gnu.org/licenses/>.
- 
-    Copyright(c) 2019 Robin Cornelius <robin.cornelius@gmail.com>
-*/
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -115,10 +96,10 @@ namespace FlashLoader
 
                             if (curaddress==0)
                             {
-                                Console.WriteLine("ADDR 0");
+                                //Console.WriteLine("ADDR 0");
 
-                                 Console.WriteLine("MODDING GOTO TO POINT TO BOOTLOADER");
-                                 opcode_num = 0x00040800; //GOTO 0x800 
+                                 //Console.WriteLine("MODDING GOTO TO POINT TO BOOTLOADER");
+                                 //opcode_num = 0x00040800; //GOTO 0x800 
                                
 
                             }

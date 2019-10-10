@@ -70,6 +70,7 @@ Section "CanMonitor" Secopeneds ;No components page, name is not important
   SetOutPath $INSTDIR\Drivers
   File canmonitor\bin\Release\drivers\*.dll
 
+  SetOutPath $INSTDIR
   
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\CanMonitor"

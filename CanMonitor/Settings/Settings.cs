@@ -1,23 +1,4 @@
-﻿/*
-    This file is part of CanOpenMonitor.
-
-    CanOpenMonitor is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    CanOpenMonitor is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with CanOpenMonitor.  If not, see <http://www.gnu.org/licenses/>.
- 
-    Copyright(c) 2019 Robin Cornelius <robin.cornelius@gmail.com>
-*/
-
-using System.Xml;
+﻿using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 using System;
@@ -27,6 +8,14 @@ namespace N_SettingsMgr
 {
     public static class SettingsMgr
     {
+
+        public enum manualbuttontypes
+        {
+            BUTTON_CALIBRATE=1,
+            BUTTON_MAG=2,
+            BUTTON_MEASURE=3,
+
+        }
 
         public static Settings settings = new Settings();
 
@@ -53,6 +42,11 @@ namespace N_SettingsMgr
             serializer.Serialize(writer, settings);
             writer.Close();
         }
+
+
+
+      
+
 
         [XmlRoot(ElementName = "Settings")]
         public class Settings
@@ -83,8 +77,18 @@ namespace N_SettingsMgr
 
             [XmlElement(ElementName = "selectedrate")]
             public int selectedrate { get; set; }
-           
+
+            
+
+
+
+
         }
+
+    
+
+
+
 
     }
 }

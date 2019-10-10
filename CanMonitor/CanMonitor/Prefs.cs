@@ -27,6 +27,9 @@ namespace CanMonitor
 
             checkBox_autostart.Checked = Properties.Settings.Default.autoconnect;
 
+            checkBox_limitlines.Checked = Properties.Settings.Default.limitlines;
+            textBox_linelimit.Text = Properties.Settings.Default.linelimit.ToString();
+
 
             loadplugins();
         }
@@ -117,6 +120,16 @@ namespace CanMonitor
             System.IO.File.WriteAllLines(autoloadPath,active);
 
             Properties.Settings.Default.autoconnect = checkBox_autostart.Checked;
+
+            Properties.Settings.Default.limitlines = checkBox_limitlines.Checked;
+
+
+            int result;
+
+            if (int.TryParse(textBox_linelimit.Text, out result))
+            {
+                Properties.Settings.Default.linelimit = result;
+            }
 
             Properties.Settings.Default.Save();
             this.Close();
