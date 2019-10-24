@@ -1,3 +1,4 @@
 NMTPlugin.dll
 eeprom_plugin.dll
 SDOEditorPlugin.dll
+PDOInjector.dll
