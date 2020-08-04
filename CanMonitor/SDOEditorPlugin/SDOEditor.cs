@@ -36,42 +36,54 @@ namespace SDOEditorPlugin
                 return;
 
             bool isdcf = false;
+            bool isemptydcf = false;
 
-            switch (Path.GetExtension(filename).ToLower())
+            try
             {
-                case ".xml":
+
+                switch (Path.GetExtension(filename).ToLower())
                 {
-                    CanOpenXML coxml = new CanOpenXML();
-                    coxml.readXML(filename);
+                    case ".xml":
+                    {
+                        CanOpenXML coxml = new CanOpenXML();
+                        coxml.readXML(filename);
 
-                    Bridge b = new Bridge();
+                        Bridge b = new Bridge();
 
-                    eds = b.convert(coxml.dev);
-                    eds.xmlfilename = filename;
+                        eds = b.convert(coxml.dev);
+                        eds.xmlfilename = filename;
+                    }
+
+                    break;
+
+                    case ".dcf":
+                    {
+                        isdcf = true;
+                        if (listView1.Items.Count == 0)
+                            isemptydcf = true;
+
+                        eds = new EDSsharp();
+                        eds.Loadfile(filename);
+                        button_writeDCF.Enabled = true;
+
+                    }
+                    break;
+
+                    case ".eds":
+                    {
+                        eds = new EDSsharp();
+                        eds.Loadfile(filename);
+
+                    }
+                    break;
+
+
                 }
-
-                break;
-
-                case ".dcf":
-                {
-                    isdcf = true;
-                    eds = new EDSsharp();
-                    eds.Loadfile(filename);
-                    button_writeDCF.Enabled = true;
-
-                }
-                break;
-
-                case ".eds":
-
-                {
-                    eds = new EDSsharp();
-                    eds.Loadfile(filename);
-
-                }
-                break;
-
-
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(e.ToString());
+                return;
             }
 
             textBox_edsfilename.Text = eds.di.ProductName;
@@ -116,14 +128,14 @@ namespace SDOEditorPlugin
                         if (subod.Subindex == 0)
                             continue;
 
-                        addtolist(subod, isdcf);
+                        addtolist(subod, isdcf,isemptydcf);
                     }
 
                     continue;
 
                 }
 
-                addtolist(tod, isdcf);
+                addtolist(tod, isdcf, isemptydcf);
 
 
             }
@@ -161,56 +173,58 @@ namespace SDOEditorPlugin
             }
         }
 
-        void addtolist(ODentry od, bool dcf)
+        void addtolist(ODentry od, bool dcf,bool isemptydcf)
         {
+
+
+            if (!dcf || isemptydcf)
+            {
+                string[] items = new string[7];
+                items[0] = string.Format("0x{0:x4}", od.Index);
+                items[1] = string.Format("0x{0:x2}", od.Subindex);
+
+                if (od.parent == null)
+                    items[2] = od.parameter_name;
+                else
+                    items[2] = od.parent.parameter_name + " -- " + od.parameter_name;
+
+                if (od.datatype == DataType.UNKNOWN && od.parent != null)
+                {
+                    items[3] = od.parent.datatype.ToString();
+                }
+                else
+                {
+                    items[3] = od.datatype.ToString();
+                }
+
+
+                items[4] = od.defaultvalue;
+
+
+
+                items[5] = "";
+
+                //  items[6] = od.actualvalue;
+
+
+                ListViewItem lvi = new ListViewItem(items);
+
+
+
+                // SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)od.index, (byte)od.subindex, gotit);
+
+                sdocallbackhelper help = new sdocallbackhelper();
+                help.sdo = null;
+                help.od = od;
+                lvi.Tag = help;
+
+                listView1.Items.Add(lvi);
+            }
 
             if (dcf)
             {
                 adddcfvalue(od);
-                return;
             }
-
-            string[] items = new string[7];
-            items[0] = string.Format("0x{0:x4}", od.Index);
-            items[1] = string.Format("0x{0:x2}", od.Subindex);
-
-            if (od.parent == null)
-                items[2] = od.parameter_name;
-            else
-                items[2] = od.parent.parameter_name + " -- " + od.parameter_name;
-
-            if (od.datatype == DataType.UNKNOWN && od.parent != null)
-            {
-                items[3] = od.parent.datatype.ToString();
-            }
-            else
-            {
-                items[3] = od.datatype.ToString();
-            }
-
-
-            items[4] = od.defaultvalue;
-
-
-
-            items[5] = "";
-
-          //  items[6] = od.actualvalue;
-
-
-            ListViewItem lvi = new ListViewItem(items);
-
-
-
-            // SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)od.index, (byte)od.subindex, gotit);
-
-            sdocallbackhelper help = new sdocallbackhelper();
-            help.sdo = null;
-            help.od = od;
-            lvi.Tag = help;
-
-            listView1.Items.Add(lvi);
-
 
         }
 
@@ -244,9 +258,9 @@ namespace SDOEditorPlugin
 
         void testnumber(ListViewItem lvi)
         {
-            int i1, i2;
+            Int64 i1, i2;
 
-            if (int.TryParse(lvi.SubItems[5].Text, out i1) && int.TryParse(lvi.SubItems[4].Text, out i2))
+            if (Int64.TryParse(lvi.SubItems[5].Text, out i1) && Int64.TryParse(lvi.SubItems[4].Text, out i2))
             {
                 if (i1 != i2)
                 {
@@ -311,10 +325,19 @@ namespace SDOEditorPlugin
 
                                         double myDouble = System.BitConverter.ToDouble(h.sdo.databuffer, 0);
                                         lvi.SubItems[5].Text = myDouble.ToString();
+
+                                        //fixme bad test
+                                        if(lvi.SubItems[5].Text!=lvi.SubItems[4].Text)
+                                        {
+                                            lvi.BackColor = Color.Red;
+                                        }
+
                                         break;
 
                                     case DataType.INTEGER8:
                                     {
+                                        testnumber(lvi);
+
                                         byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
                                         byte num = data[0];
                                         lvi.SubItems[5].Text = String.Format("{0}", num);
@@ -323,6 +346,8 @@ namespace SDOEditorPlugin
 
                                     case DataType.INTEGER16:
                                     {
+                                        testnumber(lvi);
+
                                         byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
                                         Int16 num = BitConverter.ToInt16(data, 0);
                                         lvi.SubItems[5].Text = String.Format("{0}", num);
@@ -331,6 +356,9 @@ namespace SDOEditorPlugin
 
                                     case DataType.INTEGER32:
                                     {
+
+                                        testnumber(lvi);
+
                                         byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
                                         Int32 num = BitConverter.ToInt32(data, 0);
                                         lvi.SubItems[5].Text = String.Format("{0}", num);
@@ -351,6 +379,11 @@ namespace SDOEditorPlugin
                                     case DataType.VISIBLE_STRING:
 
                                         lvi.SubItems[5].Text = System.Text.Encoding.UTF8.GetString(h.sdo.databuffer);
+                                        if (lvi.SubItems[5].Text != lvi.SubItems[4].Text)
+                                        {
+                                            lvi.BackColor = Color.Red;
+                                        }
+
 
                                         break;
 
@@ -365,11 +398,20 @@ namespace SDOEditorPlugin
 
                                         lvi.SubItems[5].Text = sb.ToString();
 
+                                        //fixme bad test
+                                        if (lvi.SubItems[5].Text != lvi.SubItems[4].Text)
+                                        {
+                                            lvi.BackColor = Color.Red;
+                                        }
+
+
                                         break;
 
 
                                     case DataType.UNSIGNED64:
                                     {
+                                        testnumber(lvi);
+
                                         UInt64 data = (UInt64)System.BitConverter.ToUInt64(h.sdo.databuffer, 0);
                                         lvi.SubItems[5].Text = String.Format("{0:x}", data);
                                     }
@@ -377,6 +419,8 @@ namespace SDOEditorPlugin
 
                                     case DataType.INTEGER64:
                                     {
+                                        testnumber(lvi);
+
                                         Int64 data = (Int64)System.BitConverter.ToInt64(h.sdo.databuffer, 0);
                                         lvi.SubItems[5].Text = String.Format("{0:x}", data);
                                     }
@@ -387,6 +431,14 @@ namespace SDOEditorPlugin
                                         break;
 
 
+                                }
+
+                                if(lvi.BackColor==Color.Red)
+                                {
+                                    if(h.od.accesstype == EDSsharp.AccessType.ro || h.od.accesstype==EDSsharp.AccessType.@const)
+                                    {
+                                        lvi.BackColor = Color.Yellow;
+                                    }
                                 }
 
                             }
@@ -568,12 +620,19 @@ namespace SDOEditorPlugin
                 return;
             }
 
+            if(numericUpDown_node.Value == 0)
+            {
+                MessageBox.Show("You cannot read from Node 0, please select a node");
+                return;
+            }
+
             listView1.Invoke(new MethodInvoker(delegate
             {
                 button_read.Enabled = false;
                 foreach (ListViewItem lvi in listView1.Items)
                 {
 
+                    lvi.BackColor = Color.White;
                     sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
                     SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
                     help.sdo = sdo;
