@@ -15,7 +15,7 @@ namespace SDOEditorPlugin
         public SDOEditorPlugin()
         {
             addverb("Tools", "_root_", null);
-            addverb("SDO Editor", "Tools", showdlg);
+            addverb("Device OD Editor", "Tools", showdlg);
         }
 
         public void registerPDOS()

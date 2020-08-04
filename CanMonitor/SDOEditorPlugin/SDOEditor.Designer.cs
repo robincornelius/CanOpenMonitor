@@ -112,6 +112,7 @@
             this.columnHeader7});
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView1.FullRowSelect = true;
+            this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(4, 104);
             this.listView1.Margin = new System.Windows.Forms.Padding(4);
             this.listView1.Name = "listView1";
@@ -311,32 +312,32 @@
             // loadEDSXMLToolStripMenuItem
             // 
             this.loadEDSXMLToolStripMenuItem.Name = "loadEDSXMLToolStripMenuItem";
-            this.loadEDSXMLToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
-            this.loadEDSXMLToolStripMenuItem.Text = "Load EDS/XML";
+            this.loadEDSXMLToolStripMenuItem.Size = new System.Drawing.Size(365, 26);
+            this.loadEDSXMLToolStripMenuItem.Text = "Load Datasheet/Device file XDD/EDS/DCF";
             this.loadEDSXMLToolStripMenuItem.Click += new System.EventHandler(this.loadEDSXMLToolStripMenuItem_Click);
             // 
             // saveDifferenceToolStripMenuItem
             // 
             this.saveDifferenceToolStripMenuItem.Name = "saveDifferenceToolStripMenuItem";
-            this.saveDifferenceToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.saveDifferenceToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
             this.saveDifferenceToolStripMenuItem.Text = "Save difference";
             this.saveDifferenceToolStripMenuItem.Click += new System.EventHandler(this.saveDifferenceToolStripMenuItem_Click);
             // 
             // mnuRecentlyUsed
             // 
             this.mnuRecentlyUsed.Name = "mnuRecentlyUsed";
-            this.mnuRecentlyUsed.Size = new System.Drawing.Size(186, 26);
+            this.mnuRecentlyUsed.Size = new System.Drawing.Size(216, 26);
             this.mnuRecentlyUsed.Text = "Recent";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(213, 6);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
             this.closeToolStripMenuItem.Text = "Close";
             // 
             // SDOEditor
@@ -349,7 +350,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "SDOEditor";
-            this.Text = "SDOEditor";
+            this.Text = "Object dictionary browser";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SDOEditor_FormClosed);
             this.Load += new System.EventHandler(this.SDOEditor_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).EndInit();

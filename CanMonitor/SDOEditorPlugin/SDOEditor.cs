@@ -38,6 +38,8 @@ namespace SDOEditorPlugin
             bool isdcf = false;
             bool isemptydcf = false;
 
+            button_writeDCF.Enabled = false;
+
             try
             {
 
@@ -506,7 +508,7 @@ namespace SDOEditorPlugin
                     break;
                 }
 
-
+    
                 case DataType.INTEGER32:
                 {
                     Int32 val = (Int32)new Int32Converter().ConvertFromString(sval);
@@ -649,9 +651,11 @@ namespace SDOEditorPlugin
         private void loadEDSXMLToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog odf = new OpenFileDialog();
-            odf.Filter = "XDD (*.xdd)|*.xdd|XML (*.xml)|*.xml|EDS (*.eds)|*.eds|DCF (*.dcf)|*.dcf";
+            odf.Filter = "All supported files (*.eds;*.xml;*.xdd;*.dcf)|*.eds;*.xml;*.xdd;*.dcf|XML Electronic Data Sheet (*.xdd)|*.xdd|Legacy CanOpenNode project (*.xml)|*.xml|Electronic Datasheet (*.eds)|*.eds|Device Configuration File (*.dcf)|*.dcf";
             if (odf.ShowDialog() == DialogResult.OK)
             {
+
+                button_writeDCF.Enabled = false;
                 loadeds(odf.FileName);
             }
 
@@ -810,6 +814,12 @@ namespace SDOEditorPlugin
         private void button_writeDCF_Click(object sender, EventArgs e)
         {
 
+            if(numericUpDown_node.Value==0)
+            {
+                MessageBox.Show("Cannot write to node 0, please select a valid node");
+                return;
+            }
+
             foreach (ListViewItem lvi in listView1.Items)
             {
 
@@ -831,7 +841,15 @@ namespace SDOEditorPlugin
                     if (dcfstring != "")
                     {
                         sdocallbackhelper h = (sdocallbackhelper)lvi.Tag;
-                        h.sdo = dovalueupdate(h, dcfstring);
+                        try
+                        {
+                            h.sdo = dovalueupdate(h, dcfstring);
+                        }
+                        catch(Exception ex)
+                        {
+                            MessageBox.Show(string.Format("Error writing to 0x{0:x4}/{1:x2} details :-\n{2}", h.od.Index, h.od.Subindex, ex.ToString()));
+                        }
+
                         lvi.Tag = h;
                     }
                 }
