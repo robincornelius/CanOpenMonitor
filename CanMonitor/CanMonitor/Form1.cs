@@ -63,6 +63,8 @@ namespace CanMonitor
         Dictionary<UInt16, SNMTState> NMTstate = new Dictionary<ushort, SNMTState>();
         List<SNMTState> dirtyNMTstates = new List<SNMTState>();
 
+        Timer savetimer;
+
         public Form1()
         {
             lco.connectionevent += Lco_connectionevent;
@@ -168,6 +170,44 @@ namespace CanMonitor
 
             updatetimer.Enabled = true;
 
+            savetimer = new Timer();
+            savetimer.Interval = 10;
+            savetimer.Tick += Savetimer_Tick;
+            savetimer.Enabled = true;
+
+            last = DateTime.Now;
+        }
+
+        DateTime last;
+
+        private void Savetimer_Tick(object sender, EventArgs e)
+        {
+            DateTime now = DateTime.Now;
+
+            if(Properties.Settings.Default.AutoFileLog==true &&  now.Hour != last.Hour)
+            {
+                //Force a save
+
+                string dtstring = now.ToString("dd-MMM-yyyy-HH-mm-ss");
+
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                desktopPath += Path.DirectorySeparatorChar + Properties.Settings.Default.FileLogFolder;
+                dtstring = desktopPath + Path.DirectorySeparatorChar + dtstring;
+
+                if(!Directory.Exists(desktopPath))
+                {
+                    Directory.CreateDirectory(desktopPath);
+                }
+
+
+                dtstring += ".xml";
+                dosave(dtstring);
+            
+                listView1.Items.Clear();
+
+            }
+
+            last = DateTime.Now;
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -1460,33 +1500,105 @@ namespace CanMonitor
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                XElement xeRoot = new XElement("CanOpenMonitor");
-
-                foreach (ListViewItem i in listView1.Items)
-                {
-                    XElement xeRow = new XElement("Packet", new XAttribute("backcol", i.BackColor.Name), new XAttribute("forcol", i.ForeColor.Name));
-                    int x = 0;
-
-                    foreach (ListViewItem.ListViewSubItem subItem in i.SubItems)
-                    {
-                        XElement xeCol = new XElement(listView1.Columns[x].Text);
-                        xeCol.Value = subItem.Text;
-                        xeRow.Add(xeCol);
-                        // To add attributes use XAttributes
-                        x++;
-                    }
-                    xeRoot.Add(xeRow);
-
-                }
-
-                xeRoot.Save(sfd.FileName);
-
+                dosave(sfd.FileName);
             }
 
         }
 
+        private void dosave(string filename)
+        {
+            XElement xeRoot = new XElement("CanOpenMonitor");
+
+            foreach (ListViewItem i in listView1.Items)
+            {
+                XElement xeRow = new XElement("Packet", new XAttribute("backcol", i.BackColor.Name), new XAttribute("forcol", i.ForeColor.Name));
+                int x = 0;
+
+                foreach (ListViewItem.ListViewSubItem subItem in i.SubItems)
+                {
+                    XElement xeCol = new XElement(listView1.Columns[x].Text);
+                    xeCol.Value = subItem.Text;
+                    xeRow.Add(xeCol);
+                    // To add attributes use XAttributes
+                    x++;
+                }
+                xeRoot.Add(xeRow);
+
+            }
+
+            xeRoot.Save(filename);
+
+
+        }
+
+        private void loaddata2()
+        {
+            OpenFileDialog sfd = new OpenFileDialog();
+            sfd.ShowHelp = true;
+            sfd.Filter = "(*.log)|*.log";
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                string[] lines = File.ReadAllLines(sfd.FileName);
+
+                foreach(string line in lines)
+                {
+                    try
+                    {
+
+                        string[] bits = line.Split(',');
+                        UInt16 cob = Convert.ToUInt16(bits[1], 16);
+                        byte len = Convert.ToByte(bits[2], 16);
+                        
+
+                        canpacket[] p = new canpacket[1];
+                        p[0] = new canpacket();
+                        p[0].cob = cob;
+
+
+                        p[0].data = new byte[len];
+                        for(int x=0;x<len;x++)
+                        {
+                            p[0].data[x] = Convert.ToByte(bits[3].Substring(x * 2, 2), 16);
+                        }
+
+                        p[0].len = len;
+
+                        DateTime dt = DateTime.Parse(bits[0]);
+
+                        if (cob < 0x80)
+                            log_NMT(p[0], dt);
+
+                        if (cob >= 0x80 && cob < 0x100)
+                            log_EMCY(p[0], dt);
+
+                        if (cob >= 0x180 && cob < 0x580)
+                            log_PDO(p, dt);
+
+                        if (cob >= 0x580 && cob < 0x700)
+                            log_PDO(p, dt);
+
+                        if (cob >= 0x700)
+                            log_NMTEC(p[0], dt);
+
+
+                    }
+                    catch(Exception e)
+                    {
+
+                    }
+
+                }
+            }
+        }
+
+
         private void loadDataToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+            //loaddata2();
+            return;
+
             OpenFileDialog sfd = new OpenFileDialog();
             sfd.ShowHelp = true;
             sfd.Filter = "(*.xml)|*.xml";

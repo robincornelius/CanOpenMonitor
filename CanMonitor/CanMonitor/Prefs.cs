@@ -30,6 +30,8 @@ namespace CanMonitor
             checkBox_limitlines.Checked = Properties.Settings.Default.limitlines;
             textBox_linelimit.Text = Properties.Settings.Default.linelimit.ToString();
 
+            textBox_filelogfolder.Text = Properties.Settings.Default.FileLogFolder;
+            checkBox_filelog.Checked = Properties.Settings.Default.AutoFileLog;
 
             loadplugins();
         }
@@ -130,6 +132,10 @@ namespace CanMonitor
             {
                 Properties.Settings.Default.linelimit = result;
             }
+
+            Properties.Settings.Default.FileLogFolder = textBox_filelogfolder.Text;
+            Properties.Settings.Default.AutoFileLog = checkBox_filelog.Checked;
+
 
             Properties.Settings.Default.Save();
             this.Close();

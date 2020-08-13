@@ -166,5 +166,29 @@ namespace CanMonitor.Properties {
                 this["showEMCY"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoFileLog {
+            get {
+                return ((bool)(this["AutoFileLog"]));
+            }
+            set {
+                this["AutoFileLog"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("CanMonitorLog")]
+        public string FileLogFolder {
+            get {
+                return ((string)(this["FileLogFolder"]));
+            }
+            set {
+                this["FileLogFolder"] = value;
+            }
+        }
     }
 }

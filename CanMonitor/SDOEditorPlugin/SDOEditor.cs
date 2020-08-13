@@ -36,10 +36,16 @@ namespace SDOEditorPlugin
                 return;
 
             bool isdcf = false;
+            bool isemptydcf = false;
 
-            switch (Path.GetExtension(filename).ToLower())
+            button_writeDCF.Enabled = false;
+
+            try
             {
-                case ".xml":
+
+                switch (Path.GetExtension(filename).ToLower())
+                {
+                    case ".xml":
                     {
                         CanOpenXML coxml = new CanOpenXML();
                         coxml.readXML(filename);
@@ -52,17 +58,20 @@ namespace SDOEditorPlugin
 
                     break;
 
-                case ".dcf":
+                    case ".dcf":
                     {
                         isdcf = true;
+                        if (listView1.Items.Count == 0)
+                            isemptydcf = true;
+
                         eds = new EDSsharp();
                         eds.Loadfile(filename);
+                        button_writeDCF.Enabled = true;
 
                     }
                     break;
 
-                case ".eds":
-
+                    case ".eds":
                     {
                         eds = new EDSsharp();
                         eds.Loadfile(filename);
@@ -71,6 +80,12 @@ namespace SDOEditorPlugin
                     break;
 
 
+                }
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(e.ToString());
+                return;
             }
 
             textBox_edsfilename.Text = eds.di.ProductName;
@@ -80,7 +95,7 @@ namespace SDOEditorPlugin
             //    numericUpDown_node.Value = eds.di.concreteNodeId;
 
             listView1.BeginUpdate();
-            if(!isdcf)
+            if (!isdcf)
                 listView1.Items.Clear();
 
             //           StorageLocation loc = StorageLocation
@@ -115,14 +130,14 @@ namespace SDOEditorPlugin
                         if (subod.Subindex == 0)
                             continue;
 
-                        addtolist(subod, isdcf);
+                        addtolist(subod, isdcf,isemptydcf);
                     }
 
                     continue;
 
                 }
 
-                addtolist(tod, isdcf);
+                addtolist(tod, isdcf, isemptydcf);
 
 
             }
@@ -153,64 +168,66 @@ namespace SDOEditorPlugin
             {
                 sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
 
-                if((help.od.Index == od.Index) && (help.od.Subindex == od.Subindex))
+                if ((help.od.Index == od.Index) && (help.od.Subindex == od.Subindex))
                 {
                     lvi.SubItems[6].Text = od.actualvalue;
                 }
             }
         }
 
-        void addtolist(ODentry od,bool dcf)
+        void addtolist(ODentry od, bool dcf,bool isemptydcf)
         {
 
-            if(dcf)
+
+            if (!dcf || isemptydcf)
+            {
+                string[] items = new string[7];
+                items[0] = string.Format("0x{0:x4}", od.Index);
+                items[1] = string.Format("0x{0:x2}", od.Subindex);
+
+                if (od.parent == null)
+                    items[2] = od.parameter_name;
+                else
+                    items[2] = od.parent.parameter_name + " -- " + od.parameter_name;
+
+                if (od.datatype == DataType.UNKNOWN && od.parent != null)
+                {
+                    items[3] = od.parent.datatype.ToString();
+                }
+                else
+                {
+                    items[3] = od.datatype.ToString();
+                }
+
+
+                items[4] = od.defaultvalue;
+
+
+
+                items[5] = "";
+
+                //  items[6] = od.actualvalue;
+
+
+                ListViewItem lvi = new ListViewItem(items);
+
+
+
+                // SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)od.index, (byte)od.subindex, gotit);
+
+                sdocallbackhelper help = new sdocallbackhelper();
+                help.sdo = null;
+                help.od = od;
+                lvi.Tag = help;
+
+                listView1.Items.Add(lvi);
+            }
+
+            if (dcf)
             {
                 adddcfvalue(od);
-                return;
             }
 
-            string[] items = new string[7];
-            items[0] = string.Format("0x{0:x4}", od.Index);
-            items[1] = string.Format("0x{0:x2}", od.Subindex);
-
-            if(od.parent==null)
-                items[2] = od.parameter_name;
-            else
-                items[2] = od.parent.parameter_name + " -- " + od.parameter_name;
-
-            if (od.datatype == DataType.UNKNOWN && od.parent!=null)
-            {
-                items[3] = od.parent.datatype.ToString();
-            }
-            else
-            {
-                items[3] = od.datatype.ToString();
-            }
-
-            
-            items[4] = od.defaultvalue;
-
-
-
-            items[5] = "";
-
-            items[6] = od.actualvalue;
-
-
-            ListViewItem lvi = new ListViewItem(items);
-
-           
-
-            // SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)od.index, (byte)od.subindex, gotit);
-
-            sdocallbackhelper help = new sdocallbackhelper();
-            help.sdo = null;
-            help.od = od;
-            lvi.Tag = help;
-
-            listView1.Items.Add(lvi);
-
-          
         }
 
         void upsucc(SDO sdo)
@@ -222,7 +239,7 @@ namespace SDOEditorPlugin
             {
                 foreach (ListViewItem lvi in listView1.Items)
                 {
-                   
+
 
                     sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
 
@@ -239,6 +256,19 @@ namespace SDOEditorPlugin
                 }
             }));
 
+        }
+
+        void testnumber(ListViewItem lvi)
+        {
+            Int64 i1, i2;
+
+            if (Int64.TryParse(lvi.SubItems[5].Text, out i1) && Int64.TryParse(lvi.SubItems[4].Text, out i2))
+            {
+                if (i1 != i2)
+                {
+                    lvi.BackColor = Color.Red;
+                }
+            }
         }
 
         void gotit(SDO sdo)
@@ -265,8 +295,8 @@ namespace SDOEditorPlugin
                                 return;
                             }
 
-                        //if (sdo.exp == true)
-                        {
+                            //if (sdo.exp == true)
+                            {
 
                                 DataType meh = h.od.datatype;
                                 if (meh == DataType.UNKNOWN && h.od.parent != null)
@@ -282,10 +312,10 @@ namespace SDOEditorPlugin
                                         float myFloat = System.BitConverter.ToSingle(BitConverter.GetBytes(h.sdo.expitideddata), 0);
                                         lvi.SubItems[5].Text = myFloat.ToString();
 
-                                       float fout;
-                                       if(float.TryParse(lvi.SubItems[4].Text,out fout))
+                                        float fout;
+                                        if (float.TryParse(lvi.SubItems[4].Text, out fout))
                                         {
-                                            if(fout!=myFloat)
+                                            if (fout != myFloat)
                                             {
                                                 lvi.BackColor = Color.Red;
                                             }
@@ -297,33 +327,65 @@ namespace SDOEditorPlugin
 
                                         double myDouble = System.BitConverter.ToDouble(h.sdo.databuffer, 0);
                                         lvi.SubItems[5].Text = myDouble.ToString();
+
+                                        //fixme bad test
+                                        if(lvi.SubItems[5].Text!=lvi.SubItems[4].Text)
+                                        {
+                                            lvi.BackColor = Color.Red;
+                                        }
+
                                         break;
 
                                     case DataType.INTEGER8:
+                                    {
+                                        testnumber(lvi);
+
+                                        byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
+                                        byte num = data[0];
+                                        lvi.SubItems[5].Text = String.Format("{0}", num);
+                                        break;
+                                    }
+
                                     case DataType.INTEGER16:
+                                    {
+                                        testnumber(lvi);
+
+                                        byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
+                                        Int16 num = BitConverter.ToInt16(data, 0);
+                                        lvi.SubItems[5].Text = String.Format("{0}", num);
+                                        break;
+                                    }
+
                                     case DataType.INTEGER32:
+                                    {
+
+                                        testnumber(lvi);
+
+                                        byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
+                                        Int32 num = BitConverter.ToInt32(data, 0);
+                                        lvi.SubItems[5].Text = String.Format("{0}", num);
+                                        break;
+
+                                    }
+
                                     case DataType.UNSIGNED8:
                                     case DataType.UNSIGNED16:
                                     case DataType.UNSIGNED32:
 
-
-                                        int i1, i2;
-
                                         lvi.SubItems[5].Text = String.Format("{0}", h.sdo.expitideddata);
 
-                                        if (int.TryParse(lvi.SubItems[5].Text, out i1) && int.TryParse(lvi.SubItems[4].Text, out i2))
-                                        {
-                                            if(i1!=i2)
-                                            {
-                                                lvi.BackColor = Color.Red;
-                                            }
-                                        }
+                                        testnumber(lvi);
 
                                         break;
 
                                     case DataType.VISIBLE_STRING:
 
                                         lvi.SubItems[5].Text = System.Text.Encoding.UTF8.GetString(h.sdo.databuffer);
+                                        if (lvi.SubItems[5].Text != lvi.SubItems[4].Text)
+                                        {
+                                            lvi.BackColor = Color.Red;
+                                        }
+
 
                                         break;
 
@@ -338,28 +400,47 @@ namespace SDOEditorPlugin
 
                                         lvi.SubItems[5].Text = sb.ToString();
 
+                                        //fixme bad test
+                                        if (lvi.SubItems[5].Text != lvi.SubItems[4].Text)
+                                        {
+                                            lvi.BackColor = Color.Red;
+                                        }
+
+
                                         break;
 
 
                                     case DataType.UNSIGNED64:
-                                        {
-                                            UInt64 data = (UInt64)System.BitConverter.ToUInt64(h.sdo.databuffer, 0);
-                                            lvi.SubItems[5].Text = String.Format("{0:x}", data);
-                                        }
-                                        break;
+                                    {
+                                        testnumber(lvi);
+
+                                        UInt64 data = (UInt64)System.BitConverter.ToUInt64(h.sdo.databuffer, 0);
+                                        lvi.SubItems[5].Text = String.Format("{0:x}", data);
+                                    }
+                                    break;
 
                                     case DataType.INTEGER64:
-                                        {
-                                            Int64 data = (Int64)System.BitConverter.ToInt64(h.sdo.databuffer, 0);
-                                            lvi.SubItems[5].Text = String.Format("{0:x}", data);
-                                        }
-                                        break;
+                                    {
+                                        testnumber(lvi);
+
+                                        Int64 data = (Int64)System.BitConverter.ToInt64(h.sdo.databuffer, 0);
+                                        lvi.SubItems[5].Text = String.Format("{0:x}", data);
+                                    }
+                                    break;
 
                                     default:
                                         lvi.SubItems[5].Text = " **UNSUPPORTED **";
                                         break;
 
 
+                                }
+
+                                if(lvi.BackColor==Color.Red)
+                                {
+                                    if(h.od.accesstype == EDSsharp.AccessType.ro || h.od.accesstype==EDSsharp.AccessType.@const)
+                                    {
+                                        lvi.BackColor = Color.Yellow;
+                                    }
                                 }
 
                             }
@@ -374,7 +455,7 @@ namespace SDOEditorPlugin
 
                 }));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
 
 
@@ -382,13 +463,118 @@ namespace SDOEditorPlugin
 
             return;
 
-            
+
+        }
+
+        private SDO dovalueupdate(sdocallbackhelper h,string sval)
+        {
+            DataType dt = h.od.datatype;
+
+            if (dt == DataType.UNKNOWN && h.od.parent != null)
+                dt = h.od.parent.datatype;
+
+            SDO sdo = null;
+
+            switch (dt)
+            {
+                case DataType.REAL32:
+                {
+
+                    float val = (float)new SingleConverter().ConvertFromString(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                    break;
+                }
+
+                case DataType.REAL64:
+                {
+
+                    double val = (double)new DoubleConverter().ConvertFromString(sval);
+                    byte[] payload = BitConverter.GetBytes(val);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
+                    break;
+                }
+
+                case DataType.INTEGER8:
+                {
+                    sbyte val = (sbyte)new SByteConverter().ConvertFromString(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                    break;
+                }
+
+                case DataType.INTEGER16:
+                {
+                    Int16 val = (Int16)new Int16Converter().ConvertFromString(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                    break;
+                }
+
+    
+                case DataType.INTEGER32:
+                {
+                    Int32 val = (Int32)new Int32Converter().ConvertFromString(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                    break;
+                }
+                case DataType.UNSIGNED8:
+                {
+                    byte val = (byte)new ByteConverter().ConvertFromString(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                    break;
+                }
+                case DataType.UNSIGNED16:
+                {
+                    UInt16 val = (UInt16)new UInt16Converter().ConvertFromString(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                    break;
+                }
+
+                case DataType.UNSIGNED32:
+                {
+                    UInt32 val = (UInt32)new UInt32Converter().ConvertFromString(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                    break;
+                }
+
+                case DataType.INTEGER64:
+                {
+
+                    Int64 val = (Int64)new Int64Converter().ConvertFromString(sval);
+                    byte[] payload = BitConverter.GetBytes(val);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
+                    break;
+                }
+
+                case DataType.UNSIGNED64:
+                {
+
+                    UInt64 val = (UInt64)new UInt64Converter().ConvertFromString(sval);
+                    byte[] payload = BitConverter.GetBytes(val);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
+                    break;
+                }
+
+                case DataType.VISIBLE_STRING:
+                {
+
+                    byte[] payload = Encoding.ASCII.GetBytes(sval);
+                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
+                    break;
+                }
+
+
+                default:
+
+                    break;
+            }
+
+            return sdo;
+
         }
 
         private void listView1_DoubleClick(object sender, EventArgs e)
         {
 
-            if(listView1.SelectedItems.Count==0)
+            if (listView1.SelectedItems.Count == 0)
                 return;
 
             if (!lco.isopen())
@@ -397,7 +583,7 @@ namespace SDOEditorPlugin
                 return;
             }
 
-         
+
 
             sdocallbackhelper h = (sdocallbackhelper)listView1.SelectedItems[0].Tag;
             ValueEditor ve = new ValueEditor(h.od, listView1.SelectedItems[0].SubItems[5].Text);
@@ -405,233 +591,26 @@ namespace SDOEditorPlugin
             if (h.od.StorageLocation == "ROM")
             {
                 MessageBox.Show("Should not edit ROM objects");
-                
+
             }
 
             ve.UpdateValue += delegate (string s)
             {
-
-                DataType dt = h.od.datatype;
-
-                if (dt == DataType.UNKNOWN && h.od.parent != null)
-                    dt = h.od.parent.datatype;
-
-                SDO sdo = null;
-
-
-                switch (dt)
-                {
-                    case DataType.REAL32:
-                        {
-
-                            float val = (float)new SingleConverter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                            break;
-                        }
-
-                    case DataType.REAL64:
-                        {
-
-                            double val = (double)new DoubleConverter().ConvertFromString(ve.newvalue);
-                            byte[] payload = BitConverter.GetBytes(val);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                            break;
-                        }
-
-                    case DataType.INTEGER8:
-                        {
-                            sbyte val = (sbyte)new SByteConverter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                            break;
-                        }
-
-                    case DataType.INTEGER16:
-                        {
-                            Int16 val = (Int16)new Int16Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                            break;
-                        }
-
-
-                    case DataType.INTEGER32:
-                        {
-                            Int32 val = (Int32)new Int32Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                            break;
-                        }
-                    case DataType.UNSIGNED8:
-                        {
-                            byte val = (byte)new ByteConverter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                            break;
-                        }
-                    case DataType.UNSIGNED16:
-                        {
-                            UInt16 val = (UInt16)new UInt16Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                            break;
-                        }
-
-                    case DataType.UNSIGNED32:
-                        {
-                            UInt32 val = (UInt32)new UInt32Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                            break;
-                        }
-
-                    case DataType.INTEGER64:
-                        {
-
-                            Int64 val = (Int64)new Int64Converter().ConvertFromString(ve.newvalue);
-                            byte[] payload = BitConverter.GetBytes(val);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                            break;
-                        }
-
-                    case DataType.UNSIGNED64:
-                        {
-
-                            UInt64 val = (UInt64)new UInt64Converter().ConvertFromString(ve.newvalue);
-                            byte[] payload = BitConverter.GetBytes(val);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                            break;
-                        }
-
-                    case DataType.VISIBLE_STRING:
-                        {
-
-                            byte[] payload = Encoding.ASCII.GetBytes(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                            break;
-                        }
-
-
-
-                    default:
-
-                        break;
-                }
-
-                h.sdo = sdo;
+                h.sdo = dovalueupdate(h, s);
                 listView1.SelectedItems[0].Tag = h;
-
             };
 
 
             //SDO sdo = null;
-            if(ve.ShowDialog()==DialogResult.OK)
+            if (ve.ShowDialog() == DialogResult.OK)
             {
-
-                /*
-                DataType dt = h.od.datatype;
-
-                if (dt == DataType.UNKNOWN && h.od.parent != null)
-                    dt = h.od.parent.datatype;
-
-                switch (dt)
-                {
-                    case DataType.REAL32:
-                        {
-                            
-                            float val = (float)new SingleConverter().ConvertFromString(ve.newvalue);
-                            sdo=lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
-                            break;
-                        }
-
-                    case DataType.REAL64:
-                        {
-
-                            double val = (double)new DoubleConverter().ConvertFromString(ve.newvalue);
-                            byte[] payload = BitConverter.GetBytes(val);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
-                            break;
-                        }
-
-                    case DataType.INTEGER8:
-                        {
-                            sbyte val = (sbyte)new SByteConverter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
-                            break;
-                        }
-
-                    case DataType.INTEGER16:
-                        {
-                            Int16 val = (Int16)new Int16Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
-                            break;
-                        }
-                 
-
-                    case DataType.INTEGER32:
-                        {
-                            Int32 val = (Int32)new Int32Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
-                            break;
-                        }
-                    case DataType.UNSIGNED8:
-                        {
-                            byte val = (byte)new ByteConverter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
-                            break;
-                        }
-                    case DataType.UNSIGNED16:
-                        {
-                            UInt16 val = (UInt16)new UInt16Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
-                            break;
-                        }
-                    
-                    case DataType.UNSIGNED32:
-                        {
-                            UInt32 val = (UInt32)new UInt32Converter().ConvertFromString(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, val, upsucc);
-                            break;
-                        }
-
-                    case DataType.INTEGER64:
-                        {
-
-                            Int64 val = (Int64)new Int64Converter().ConvertFromString(ve.newvalue);
-                            byte[] payload = BitConverter.GetBytes(val);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
-                            break;
-                        }
-
-                    case DataType.UNSIGNED64:                        {
-
-                            UInt64 val = (UInt64)new UInt64Converter().ConvertFromString(ve.newvalue);
-                            byte[] payload = BitConverter.GetBytes(val);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
-                            break;
-                        }
-
-                    case DataType.VISIBLE_STRING:
-                        {
-
-                            byte [] payload = Encoding.ASCII.GetBytes(ve.newvalue);
-                            sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.index, (byte)h.od.subindex, payload, upsucc);
-                            break;
-                        }
-
-
-
-                    default:
-
-                        break;
-                }
-                */
-
-//                h.sdo = sdo;
-//                listView1.SelectedItems[0].Tag = h;
-
-                
 
             }
         }
 
         private void Ve_UpdateValue(string value)
         {
-           
+
         }
 
         private void button_read_Click(object sender, EventArgs e)
@@ -642,13 +621,20 @@ namespace SDOEditorPlugin
                 MessageBox.Show("CAN not open");
                 return;
             }
-                
+
+            if(numericUpDown_node.Value == 0)
+            {
+                MessageBox.Show("You cannot read from Node 0, please select a node");
+                return;
+            }
+
             listView1.Invoke(new MethodInvoker(delegate
             {
                 button_read.Enabled = false;
                 foreach (ListViewItem lvi in listView1.Items)
                 {
-                    
+
+                    lvi.BackColor = Color.White;
                     sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
                     SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
                     help.sdo = sdo;
@@ -665,12 +651,14 @@ namespace SDOEditorPlugin
         private void loadEDSXMLToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog odf = new OpenFileDialog();
-            odf.Filter = "XML (*.xml)|*.xml|EDS (*.eds)|*.eds|DCF (*.dcf)|*.dcf";
+            odf.Filter = "All supported files (*.eds;*.xml;*.xdd;*.dcf)|*.eds;*.xml;*.xdd;*.dcf|XML Electronic Data Sheet (*.xdd)|*.xdd|Legacy CanOpenNode project (*.xml)|*.xml|Electronic Datasheet (*.eds)|*.eds|Device Configuration File (*.dcf)|*.dcf";
             if (odf.ShowDialog() == DialogResult.OK)
             {
+
+                button_writeDCF.Enabled = false;
                 loadeds(odf.FileName);
             }
-           
+
         }
 
         void OpenRecentFile(object sender, EventArgs e)
@@ -715,14 +703,16 @@ namespace SDOEditorPlugin
                 switch (Path.GetExtension(path))
                 {
                     case ".xml":
+                    case ".xdd":
                         item.Image = Properties.Resource1.GenericVSEditor_9905;
                         break;
+
                     case ".eds":
                         item.Image = Properties.Resource1.EventLog_5735;
                         break;
 
-                        
-                  
+
+
                 }
 
                 mnuRecentlyUsed.DropDownItems.Add(item);
@@ -764,24 +754,20 @@ namespace SDOEditorPlugin
             if (odf.ShowDialog() == DialogResult.OK)
             {
 
-              //  System.IO.StreamWriter file = new System.IO.StreamWriter(odf.FileName);
-
-                //file.WriteLine("Object\tSub Index\tName\tDefault\tCurrent\t");
-
                 foreach (ListViewItem lvi in listView1.Items)
                 {
-                    
+
                     string index = lvi.SubItems[0].Text;
                     string sub = lvi.SubItems[1].Text;
                     string name = lvi.SubItems[2].Text;
 
 
                     sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
-                    
+
                     string defaultstring = help.od.defaultvalue;
                     string currentstring = help.od.actualvalue;
-                   
-                    UInt16 key = Convert.ToUInt16(index,16);
+
+                    UInt16 key = Convert.ToUInt16(index, 16);
                     UInt16 subi = Convert.ToUInt16(sub, 16);
 
                     if (subi == 0)
@@ -791,13 +777,13 @@ namespace SDOEditorPlugin
                     else
                     {
                         ODentry subod = eds.ods[key].Getsubobject(subi);
-                        if(subod!=null)
+                        if (subod != null)
                         {
                             subod.actualvalue = currentstring;
                         }
                     }
 
-                   // file.WriteLine(string.Format("{0}\t{1}\t{2}\t{3}\t{4}",index,sub,name,defaultstring,currentstring));
+                    // file.WriteLine(string.Format("{0}\t{1}\t{2}\t{3}\t{4}",index,sub,name,defaultstring,currentstring));
                 }
 
                 eds.Savefile(odf.FileName, InfoSection.Filetype.File_DCF);
@@ -828,8 +814,46 @@ namespace SDOEditorPlugin
         private void button_writeDCF_Click(object sender, EventArgs e)
         {
 
+            if(numericUpDown_node.Value==0)
+            {
+                MessageBox.Show("Cannot write to node 0, please select a valid node");
+                return;
+            }
 
+            foreach (ListViewItem lvi in listView1.Items)
+            {
+
+                string index = lvi.SubItems[0].Text;
+                string sub = lvi.SubItems[1].Text;
+                string name = lvi.SubItems[2].Text;
+
+                UInt16 key = Convert.ToUInt16(index, 16);
+                byte subi = Convert.ToByte(sub, 16);
+
+                sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
+
+                string edsstring = help.od.defaultvalue; //the eds value
+                string actualstring = lvi.SubItems[5].Text;  // the dcf value
+                string dcfstring = lvi.SubItems[6].Text;
+
+                if(actualstring!=dcfstring )
+                {
+                    if (dcfstring != "")
+                    {
+                        sdocallbackhelper h = (sdocallbackhelper)lvi.Tag;
+                        try
+                        {
+                            h.sdo = dovalueupdate(h, dcfstring);
+                        }
+                        catch(Exception ex)
+                        {
+                            MessageBox.Show(string.Format("Error writing to 0x{0:x4}/{1:x2} details :-\n{2}", h.od.Index, h.od.Subindex, ex.ToString()));
+                        }
+
+                        lvi.Tag = h;
+                    }
+                }
+            }
         }
     }
-
 }
