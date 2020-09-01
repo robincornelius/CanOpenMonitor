@@ -350,7 +350,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "SDOEditor";
-            this.Text = "Object dictionary browser";
+            this.Text = "Device OD Editor";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SDOEditor_FormClosed);
             this.Load += new System.EventHandler(this.SDOEditor_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).EndInit();
