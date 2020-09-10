@@ -1597,7 +1597,7 @@ namespace CanMonitor
         {
 
             //loaddata2();
-            return;
+           // return;
 
             OpenFileDialog sfd = new OpenFileDialog();
             sfd.ShowHelp = true;
