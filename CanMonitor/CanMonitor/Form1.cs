@@ -1704,7 +1704,14 @@ namespace CanMonitor
 
             foreach (string s in drivers)
             {
-                lco.enumerate(s);
+                try
+                {
+                    lco.enumerate(s);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show($"{s}\n{ex.Message}", "Failed to load driver", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             foreach (KeyValuePair<string, List<string>> kvp in lco.ports)
