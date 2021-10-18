@@ -15,6 +15,7 @@ using System.IO;
 using System.Xml.Linq;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
+using System.Globalization;
 
 namespace CanMonitor
 {
@@ -67,6 +68,13 @@ namespace CanMonitor
 
         public Form1()
         {
+
+
+           // DateTime.Parse("07/14/2021 14:42:18",);
+
+
+         
+
             lco.connectionevent += Lco_connectionevent;
 
             try
@@ -93,10 +101,12 @@ namespace CanMonitor
 
 
 
+            textBox_info.AppendText("Searching for drivers...");
             string[] founddrivers = Directory.GetFiles("drivers\\","*.dll");
 
             foreach(string driver in founddrivers)
-            { 
+            {
+                textBox_info.AppendText(string.Format("Found driver {0}", driver));
                 drivers.Add(driver.Substring(0, driver.Length - 4));
             }
 
@@ -890,7 +900,7 @@ namespace CanMonitor
                 items[5] = string.Format("Error code 0x{0:x4} bits 0x{1:x2} info 0x{2:x8}", code, bits, info);
             }
 
-            items2[3] = items[4];
+            items2[3] = items[5];
 
             ListViewItem i = new ListViewItem(items);
             ListViewItem i2 = new ListViewItem(items2);
@@ -1648,7 +1658,9 @@ namespace CanMonitor
                         p[0].data = b;
                         p[0].len = (byte)b.Length;
 
-                        DateTime dt = DateTime.Now;// DateTime.Parse(bits[0]);
+                        //DateTime dt = DateTime.Parse(bits[0]);
+
+                        DateTime dt = DateTime.ParseExact(bits[0], "MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
 
                         switch (bits[1])
                         {
@@ -1702,8 +1714,12 @@ namespace CanMonitor
             comboBox_port.Items.Clear();
 
 
+            textBox_info.AppendText("Enumerating ports....");
+
             foreach (string s in drivers)
             {
+                textBox_info.AppendText(String.Format("Attempting to enumerate with driver {0}",s));
+
                 lco.enumerate(s);
             }
 
@@ -1713,6 +1729,8 @@ namespace CanMonitor
 
                 foreach (string s in ps)
                 {
+
+                    textBox_info.AppendText(string.Format("Found port {0}", s));
 
                     driverport dp = new driverport();
                     dp.port = s;
@@ -1734,7 +1752,7 @@ namespace CanMonitor
         {
             if (this.WindowState == FormWindowState.Minimized)
             {
-                Hide();
+               // Hide();
                 notifyIcon1.Visible = true;
 
                 notifyIcon1.BalloonTipText = "Can monitor is still running";

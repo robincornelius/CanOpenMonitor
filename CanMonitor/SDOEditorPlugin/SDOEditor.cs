@@ -24,10 +24,37 @@ namespace SDOEditorPlugin
 
         private List<string> _mru = new List<string>();
 
+        Timer refreshtimer = new Timer();
+
+
         public SDOEditor(libCanopenSimple.libCanopenSimple lco)
         {
             this.lco = lco;
             InitializeComponent();
+            refreshtimer.Tick += Refreshtimer_Tick;
+        }
+
+        private void Refreshtimer_Tick(object sender, EventArgs e)
+        {
+
+            if (button_read.Enabled == false)
+                return;
+
+            listView1.Invoke(new MethodInvoker(delegate
+            {
+                button_read.Enabled = false;
+                foreach (ListViewItem lvi in listView1.Items)
+                {
+
+                    lvi.BackColor = Color.White;
+                    sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
+                    SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
+                    help.sdo = sdo;
+                    lvi.Tag = help;
+
+                }
+
+            }));
         }
 
         private void loadeds(string filename)
@@ -45,6 +72,20 @@ namespace SDOEditorPlugin
 
                 switch (Path.GetExtension(filename).ToLower())
                 {
+                    case ".xdd":
+                    {
+                        CanOpenXDD xdd = new CanOpenXDD();
+
+                        xdd.readXML(filename);
+
+                        Bridge b = new Bridge();
+                        eds = xdd.convert(xdd.dev);
+                        
+                        eds.xmlfilename = filename;
+                    }
+
+                    break;
+
                     case ".xml":
                     {
                         CanOpenXML coxml = new CanOpenXML();
@@ -88,7 +129,8 @@ namespace SDOEditorPlugin
                 return;
             }
 
-            textBox_edsfilename.Text = eds.di.ProductName;
+            if(eds!=null)
+               textBox_edsfilename.Text = eds.di.ProductName;
 
 
             //if (eds.di.concreteNodeId >= numericUpDown_node.Minimum && eds.di.concreteNodeId <= numericUpDown_node.Maximum)
@@ -427,6 +469,14 @@ namespace SDOEditorPlugin
                                         lvi.SubItems[5].Text = String.Format("{0:x}", data);
                                     }
                                     break;
+
+                                    case DataType.BOOLEAN:
+                                    {
+                                            lvi.SubItems[5].Text = String.Format("{0}", h.sdo.expitideddata);
+                                            testnumber(lvi);
+                                    }
+                                    break;
+
 
                                     default:
                                         lvi.SubItems[5].Text = " **UNSUPPORTED **";
@@ -854,6 +904,38 @@ namespace SDOEditorPlugin
                     }
                 }
             }
+        }
+
+        private void checkBox_autorefresh_CheckedChanged(object sender, EventArgs e)
+        {
+            if(checkBox_autorefresh.Checked==true)
+            {
+                refreshtimer.Interval = (int)numericUpDown_refreshtime.Value*1000;
+                refreshtimer.Enabled = true;
+            }
+            else
+            {
+                refreshtimer.Enabled = false;
+            }
+
+        }
+
+        private void button_addcustom_Click(object sender, EventArgs e)
+        {
+            List<ListViewItem> lvi2 = new List<ListViewItem>();
+
+            foreach(ListViewItem lvi in listView1.SelectedItems)
+            {
+                lvi2.Add(lvi);
+            }
+
+            listView1.Items.Clear();
+
+            foreach(ListViewItem lvi in lvi2)
+            {
+                listView1.Items.Add(lvi);
+            }
+
         }
     }
 }

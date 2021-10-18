@@ -57,10 +57,14 @@
             this.mnuRecentlyUsed = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkBox_autorefresh = new System.Windows.Forms.CheckBox();
+            this.numericUpDown_refreshtime = new System.Windows.Forms.NumericUpDown();
+            this.button_addcustom = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_refreshtime)).BeginInit();
             this.SuspendLayout();
             // 
             // textBox_edsfilename
@@ -183,6 +187,9 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button_addcustom);
+            this.panel1.Controls.Add(this.numericUpDown_refreshtime);
+            this.panel1.Controls.Add(this.checkBox_autorefresh);
             this.panel1.Controls.Add(this.button_writeDCF);
             this.panel1.Controls.Add(this.button_flush_queue);
             this.panel1.Controls.Add(this.label_sdo_queue_size);
@@ -319,26 +326,63 @@
             // saveDifferenceToolStripMenuItem
             // 
             this.saveDifferenceToolStripMenuItem.Name = "saveDifferenceToolStripMenuItem";
-            this.saveDifferenceToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.saveDifferenceToolStripMenuItem.Size = new System.Drawing.Size(365, 26);
             this.saveDifferenceToolStripMenuItem.Text = "Save difference";
             this.saveDifferenceToolStripMenuItem.Click += new System.EventHandler(this.saveDifferenceToolStripMenuItem_Click);
             // 
             // mnuRecentlyUsed
             // 
             this.mnuRecentlyUsed.Name = "mnuRecentlyUsed";
-            this.mnuRecentlyUsed.Size = new System.Drawing.Size(216, 26);
+            this.mnuRecentlyUsed.Size = new System.Drawing.Size(365, 26);
             this.mnuRecentlyUsed.Text = "Recent";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(213, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(362, 6);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(365, 26);
             this.closeToolStripMenuItem.Text = "Close";
+            // 
+            // checkBox_autorefresh
+            // 
+            this.checkBox_autorefresh.AutoSize = true;
+            this.checkBox_autorefresh.Checked = true;
+            this.checkBox_autorefresh.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_autorefresh.Location = new System.Drawing.Point(1220, 15);
+            this.checkBox_autorefresh.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBox_autorefresh.Name = "checkBox_autorefresh";
+            this.checkBox_autorefresh.Size = new System.Drawing.Size(108, 21);
+            this.checkBox_autorefresh.TabIndex = 14;
+            this.checkBox_autorefresh.Text = "Auto refresh";
+            this.checkBox_autorefresh.UseVisualStyleBackColor = true;
+            this.checkBox_autorefresh.CheckedChanged += new System.EventHandler(this.checkBox_autorefresh_CheckedChanged);
+            // 
+            // numericUpDown_refreshtime
+            // 
+            this.numericUpDown_refreshtime.Location = new System.Drawing.Point(1221, 51);
+            this.numericUpDown_refreshtime.Name = "numericUpDown_refreshtime";
+            this.numericUpDown_refreshtime.Size = new System.Drawing.Size(106, 22);
+            this.numericUpDown_refreshtime.TabIndex = 15;
+            this.numericUpDown_refreshtime.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            // 
+            // button_addcustom
+            // 
+            this.button_addcustom.Location = new System.Drawing.Point(788, 15);
+            this.button_addcustom.Margin = new System.Windows.Forms.Padding(4);
+            this.button_addcustom.Name = "button_addcustom";
+            this.button_addcustom.Size = new System.Drawing.Size(129, 60);
+            this.button_addcustom.TabIndex = 16;
+            this.button_addcustom.Text = "Add selection to custom";
+            this.button_addcustom.UseVisualStyleBackColor = true;
+            this.button_addcustom.Click += new System.EventHandler(this.button_addcustom_Click);
             // 
             // SDOEditor
             // 
@@ -359,6 +403,7 @@
             this.panel1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_refreshtime)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -395,5 +440,8 @@
         private System.Windows.Forms.Label label_sdo_queue_size;
         private System.Windows.Forms.ColumnHeader columnHeader7;
         private System.Windows.Forms.Button button_writeDCF;
+        private System.Windows.Forms.NumericUpDown numericUpDown_refreshtime;
+        private System.Windows.Forms.CheckBox checkBox_autorefresh;
+        private System.Windows.Forms.Button button_addcustom;
     }
 }
