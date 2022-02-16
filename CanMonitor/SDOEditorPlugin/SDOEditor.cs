@@ -136,6 +136,16 @@ namespace SDOEditorPlugin
             //if (eds.di.concreteNodeId >= numericUpDown_node.Minimum && eds.di.concreteNodeId <= numericUpDown_node.Maximum)
             //    numericUpDown_node.Value = eds.di.concreteNodeId;
 
+            updatetable(isdcf,isemptydcf);
+
+
+            this.filename = filename;
+            addtoMRU(filename);
+        }
+
+        private void updatetable(bool isdcf=false,bool isemptydcf=false)
+        {
+
             listView1.BeginUpdate();
             if (!isdcf)
                 listView1.Items.Clear();
@@ -172,7 +182,7 @@ namespace SDOEditorPlugin
                         if (subod.Subindex == 0)
                             continue;
 
-                        addtolist(subod, isdcf,isemptydcf);
+                        addtolist(subod, isdcf, isemptydcf);
                     }
 
                     continue;
@@ -186,8 +196,8 @@ namespace SDOEditorPlugin
 
             listView1.EndUpdate();
 
-            this.filename = filename;
-            addtoMRU(filename);
+
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -277,26 +287,28 @@ namespace SDOEditorPlugin
 
             //button_read_Click(null, null);
 
-            listView1.Invoke(new MethodInvoker(delegate
-            {
-                foreach (ListViewItem lvi in listView1.Items)
+           
+                listView1.BeginInvoke(new MethodInvoker(delegate
                 {
+                    foreach (ListViewItem lvi in listView1.Items)
+                    {
 
 
-                    sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
+                        sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
 
-                    if (help.sdo != sdo)
-                        continue;
+                        if (help.sdo != sdo)
+                            continue;
 
-                    sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
-                    help.sdo = sdo;
-                    lvi.Tag = help;
+                        sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
+                        help.sdo = sdo;
+                        lvi.Tag = help;
 
-                    break;
+                        break;
 
 
-                }
-            }));
+                    }
+                }));
+            
 
         }
 
@@ -640,7 +652,7 @@ namespace SDOEditorPlugin
 
             if (h.od.StorageLocation == "ROM")
             {
-                MessageBox.Show("Should not edit ROM objects");
+               // MessageBox.Show("Should not edit ROM objects");
 
             }
 
@@ -935,6 +947,123 @@ namespace SDOEditorPlugin
             {
                 listView1.Items.Add(lvi);
             }
+
+        }
+
+        ushort scanindex = 0x1000;
+        byte scansub = 0x00;
+        byte maxsub = 0;
+        ODentry parentval = null;
+
+        private void button_scan_Click(object sender, EventArgs e)
+        {
+
+            scanindex = 0x1018;
+            scansub = 0x00;
+            maxsub = 0;
+            parentval = null;
+
+            eds = new EDSsharp();
+
+
+            lco.SDOread((byte)numericUpDown_node.Value, scanindex, scansub, scansomplete);
+
+     
+        }
+
+        private void scansomplete(SDO obj)
+        {
+
+            //Console.WriteLine(obj.ToString());
+
+            if(obj.state== SDO.SDO_STATE.SDO_FINISHED)
+            {
+
+              
+
+                    Console.WriteLine($"FOUND OBJECT {scanindex:x4}/{scansub:x2} length {obj.returnlen}");
+                    ODentry val = new ODentry($"Object {scanindex:x4}", scanindex, 0);
+
+                    switch (obj.returnlen)
+                    {
+                        case 32:
+                            val.datatype = DataType.UNSIGNED32;
+                            break;
+                        case 24:
+                            val.datatype = DataType.UNSIGNED24;
+                            break;
+                        case 16:
+                            val.datatype = DataType.UNSIGNED16;
+                            break;
+                        case 8:
+                            val.datatype = DataType.UNSIGNED8;
+
+
+                            if (scansub==0 && obj.expitideddata != 0 )
+                            {
+                                maxsub = (byte) obj.expitideddata;
+                                //it might have sub objects
+                                parentval = val;
+                               
+                            }
+
+
+                            break;
+                        default:
+                            break;
+                    }
+
+                    val.defaultvalue = obj.expitideddata.ToString();
+                    
+                    
+                    if(scansub==0)
+                        eds.ods.Add(scanindex, val);
+                    else
+                    {
+                        parentval.objecttype = ObjectType.REC; //we don't know!!
+                        parentval.addsubobject(scansub, val); 
+
+                    }
+
+
+
+            }
+
+            if(obj.state==SDO.SDO_STATE.SDO_ERROR)
+            {
+                if (obj.expitideddata != 0x06020000)
+                {
+                    Console.WriteLine($"ERROR READING OBJECT {scanindex:x4}/{scansub:x2} error {obj.expitideddata:x8}");
+                }
+            
+                  
+            }
+
+
+
+            if (scansub < maxsub)
+            {
+                scansub++;
+            }
+            else
+            {
+                maxsub = 0;
+                scansub = 0;
+                scanindex++;
+            }
+
+            if (scanindex < 0x9999)
+                lco.SDOread((byte)numericUpDown_node.Value, scanindex, scansub, scansomplete);
+            else
+            {
+                listView1.Invoke(new MethodInvoker(delegate
+                {
+                    updatetable();
+                }));
+
+            }
+
+
 
         }
     }
