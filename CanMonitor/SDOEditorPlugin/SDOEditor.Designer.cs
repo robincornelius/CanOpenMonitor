@@ -43,6 +43,7 @@
             this.button_read = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button_scan = new System.Windows.Forms.Button();
             this.button_addcustom = new System.Windows.Forms.Button();
             this.numericUpDown_refreshtime = new System.Windows.Forms.NumericUpDown();
             this.checkBox_autorefresh = new System.Windows.Forms.CheckBox();
@@ -60,7 +61,6 @@
             this.mnuRecentlyUsed = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.button_scan = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -204,6 +204,16 @@
             this.panel1.TabIndex = 6;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
+            // button_scan
+            // 
+            this.button_scan.Location = new System.Drawing.Point(466, 53);
+            this.button_scan.Name = "button_scan";
+            this.button_scan.Size = new System.Drawing.Size(97, 23);
+            this.button_scan.TabIndex = 17;
+            this.button_scan.Text = "Scan";
+            this.button_scan.UseVisualStyleBackColor = true;
+            this.button_scan.Click += new System.EventHandler(this.button_scan_Click);
+            // 
             // button_addcustom
             // 
             this.button_addcustom.Location = new System.Drawing.Point(591, 12);
@@ -217,7 +227,7 @@
             // numericUpDown_refreshtime
             // 
             this.numericUpDown_refreshtime.Location = new System.Drawing.Point(916, 41);
-            this.numericUpDown_refreshtime.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.numericUpDown_refreshtime.Margin = new System.Windows.Forms.Padding(2);
             this.numericUpDown_refreshtime.Name = "numericUpDown_refreshtime";
             this.numericUpDown_refreshtime.Size = new System.Drawing.Size(80, 20);
             this.numericUpDown_refreshtime.TabIndex = 15;
@@ -254,7 +264,7 @@
             // button_flush_queue
             // 
             this.button_flush_queue.Location = new System.Drawing.Point(466, 3);
-            this.button_flush_queue.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button_flush_queue.Margin = new System.Windows.Forms.Padding(2);
             this.button_flush_queue.Name = "button_flush_queue";
             this.button_flush_queue.Size = new System.Drawing.Size(97, 26);
             this.button_flush_queue.TabIndex = 12;
@@ -308,6 +318,7 @@
             this.comboBoxtype.FormattingEnabled = true;
             this.comboBoxtype.Items.AddRange(new object[] {
             "EEPROM",
+            "PERSIST_COMM",
             "RAM",
             "ROM",
             "ALL"});
@@ -371,16 +382,6 @@
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
             this.closeToolStripMenuItem.Size = new System.Drawing.Size(292, 22);
             this.closeToolStripMenuItem.Text = "Close";
-            // 
-            // button_scan
-            // 
-            this.button_scan.Location = new System.Drawing.Point(466, 53);
-            this.button_scan.Name = "button_scan";
-            this.button_scan.Size = new System.Drawing.Size(97, 23);
-            this.button_scan.TabIndex = 17;
-            this.button_scan.Text = "Scan";
-            this.button_scan.UseVisualStyleBackColor = true;
-            this.button_scan.Click += new System.EventHandler(this.button_scan_Click);
             // 
             // SDOEditor
             // 
