@@ -16,14 +16,13 @@ namespace CanMonitor
 
         private string appdatafolder;
         private string assemblyfolder;
-        public Prefs()
+        public Prefs(string _appdatafolder, string _assemblyfolder)
         {
             InitializeComponent();
 
-            string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            appdatafolder = Path.Combine(folder, "CanMonitor");
+            this.appdatafolder = _appdatafolder;
+            this.assemblyfolder = _assemblyfolder;
 
-            assemblyfolder = AppDomain.CurrentDomain.BaseDirectory;
 
             checkBox_autostart.Checked = Properties.Settings.Default.autoconnect;
 

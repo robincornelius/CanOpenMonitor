@@ -16,6 +16,7 @@ using System.Xml.Linq;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Globalization;
+using PFMMeasurementService.Models.Devices.Buses;
 
 namespace CanMonitor
 {
@@ -51,6 +52,9 @@ namespace CanMonitor
 
         string gitVersion;
 
+        IComPortManagerInterface cpm = null;
+
+
         public struct SNMTState
         {
             public byte state;
@@ -72,8 +76,10 @@ namespace CanMonitor
 
            // DateTime.Parse("07/14/2021 14:42:18",);
 
+            cpm = new ComPortManagerModel(); ;
 
          
+
 
             lco.connectionevent += Lco_connectionevent;
 
@@ -83,6 +89,11 @@ namespace CanMonitor
                 appdatafolder = Path.Combine(folder, "CanMonitor");
 
                 assemblyfolder = AppDomain.CurrentDomain.BaseDirectory;
+
+                if(!Directory.Exists(appdatafolder))
+                {
+                    Directory.CreateDirectory(appdatafolder);
+                }
 
                 SettingsMgr.readXML(Path.Combine(appdatafolder, "settings.xml"));
             }
@@ -150,14 +161,17 @@ namespace CanMonitor
                 }
             }
 
-            autoloadPath = Path.Combine(appdatafolder, "autoload.txt");
-            if (File.Exists(autoloadPath))
+            if (appdatafolder != assemblyfolder)
             {
-                string[] autoload = System.IO.File.ReadAllLines(autoloadPath);
-
-                foreach (string plugin in autoload)
+                autoloadPath = Path.Combine(appdatafolder, "autoload.txt");
+                if (File.Exists(autoloadPath))
                 {
-                    loadplugin(plugin, false);
+                    string[] autoload = System.IO.File.ReadAllLines(autoloadPath);
+
+                    foreach (string plugin in autoload)
+                    {
+                        loadplugin(plugin, false);
+                    }
                 }
             }
 
@@ -1105,7 +1119,19 @@ namespace CanMonitor
                 textBox_info.AppendText(String.Format("Trying to open port {0} using driver {1} \r\n", dp.port,dp.driver));
 
                 int rate = comboBox_rate.SelectedIndex;
-                lco.open(dp.port, (BUSSPEED)rate, dp.driver);
+
+
+                string port = dp.port;
+
+                if(dp.port.Contains("USB"))
+                {
+                    sComPortModel s = cpm.requestSerialPortById(dp.VID, dp.PID, "", "");
+                    s.DeviceConnected += S_DeviceConnected;
+                    s.DeviceDisconnected += S_DeviceDisconnected;
+                    port = s.port;
+                }
+
+                lco.open(port, (BUSSPEED)rate, dp.driver);
 
                 if (lco.isopen())
                 {
@@ -1119,6 +1145,18 @@ namespace CanMonitor
                     Properties.Settings.Default.lastport = dp.port;
                     Properties.Settings.Default.lastdriver = dp.driver;
                     Properties.Settings.Default.Save();
+
+
+
+                   
+                    foreach(KeyValuePair<string,object> kvp in plugins)
+                    {
+
+
+                        IInterfaceService iis = (IInterfaceService)kvp.Value;
+                        iis.setlco(lco);
+                    }
+
 
                 }
                 else
@@ -1137,8 +1175,39 @@ namespace CanMonitor
             button_open.Enabled = true;
         }
 
+        private void S_DeviceDisconnected(object sender, EventArgs e)
+        {
+            comboBox_rate.Invoke(new MethodInvoker(delegate
+            {
 
-  
+                if (lco.isopen())
+                    lco.close();
+
+                button_open.Text = "Open";
+
+            }));
+        }
+
+        private void S_DeviceConnected(object sender, EventArgs e)
+        {
+
+            comboBox_rate.Invoke(new MethodInvoker(delegate
+            {
+
+                sComPortModel s = (sComPortModel)sender;
+                int rate = comboBox_rate.SelectedIndex;
+
+                lco.close();
+
+                //FIXME hardcoded driver
+                lco.open(s.port, (BUSSPEED)rate, "drivers\\can_canusb_win32");
+
+                button_open.Text = "Close";
+                textBox_info.AppendText("Success port open\r\n");
+
+            }));
+
+        }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -1191,6 +1260,9 @@ namespace CanMonitor
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+
+
             comboBox_rate.SelectedIndex = SettingsMgr.settings.options.selectedrate;
             comboBox_port.SelectedItem = SettingsMgr.settings.options.selectedport;
 
@@ -1241,6 +1313,7 @@ namespace CanMonitor
                 {
                     IInterfaceService iis = (IInterfaceService)plugins[pfilename];
                     iis.deregisterplugin();
+                    
                 }
                 catch (Exception e)
                 {
@@ -1435,7 +1508,7 @@ namespace CanMonitor
             catch (Exception ex)
             {
                 textBox_info.AppendText("Failed loading plugi \r\n" + ex.ToString() + "\r\n");
-                MessageBox.Show("Error loading plugin :"+pfilename);
+                //MessageBox.Show("Error loading plugin :"+pfilename);
             }
 
 
@@ -1714,13 +1787,20 @@ namespace CanMonitor
             comboBox_port.Items.Clear();
 
 
-            textBox_info.AppendText("Enumerating ports....");
+            textBox_info.AppendText("Enumerating ports....\r\n");
 
             foreach (string s in drivers)
             {
-                textBox_info.AppendText(String.Format("Attempting to enumerate with driver {0}",s));
+                textBox_info.AppendText(String.Format("Attempting to enumerate with driver {0}\r\n",s));
 
-                lco.enumerate(s);
+                try
+                {
+                    lco.enumerate(s);
+                }
+                catch(Exception e)
+                {
+                    textBox_info.AppendText(e.ToString()+"\r\n");
+                }
             }
 
             foreach (KeyValuePair<string, List<string>> kvp in lco.ports)
@@ -1740,11 +1820,34 @@ namespace CanMonitor
                 }
             }
 
+
+            List<sComPortModel> psx = cpm.GetPorts();
+
+            foreach(sComPortModel p in psx)
+            {
+
+                driverport dp = new driverport();
+                dp.port = string.Format($"USB/VID_{p.vid}/PID_{p.pid}");
+                dp.PID = p.pid;
+                dp.VID = p.vid;
+                dp.driver= "drivers\\can_canusb_win32";
+                comboBox_port.Items.Add(dp);
+
+                //dp.driver = kvp.Key;
+
+
+            }
+
+
+
+
+
         }
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Prefs p = new Prefs();
+            
+            Prefs p = new Prefs(appdatafolder,assemblyfolder);
             p.ShowDialog();
         }
 
@@ -1823,6 +1926,8 @@ namespace CanMonitor
     {
         public string driver;
         public string port;
+        public string VID;
+        public string PID;
 
         public override string ToString()
         {
