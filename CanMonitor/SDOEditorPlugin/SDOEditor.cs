@@ -74,15 +74,29 @@ namespace SDOEditorPlugin
                 {
                     case ".xdd":
                     {
-                        CanOpenXDD xdd = new CanOpenXDD();
 
-                        xdd.readXML(filename);
+                            CanOpenXDD_1_1 xdd = new CanOpenXDD_1_1();
+                            eds = xdd.ReadXML(filename);
+                          
 
-                        Bridge b = new Bridge();
-                        eds = xdd.convert(xdd.dev);
-                        
-                        eds.xmlfilename = filename;
-                    }
+                                if(eds==null)
+                                {
+                                    CanOpenXDD xdd2 = new CanOpenXDD();
+                                    xdd2.readXML(filename);
+
+                                    Bridge b = new Bridge();
+                                    eds = xdd2.convert(xdd2.dev);
+                                }
+  
+
+
+                     
+                            /*   
+                          
+
+                            eds.xmlfilename = filename;
+                            */
+                        }
 
                     break;
 
@@ -159,23 +173,23 @@ namespace SDOEditorPlugin
 
                 if (comboBoxtype.SelectedItem.ToString() != "ALL")
                 {
-                    if (comboBoxtype.SelectedItem.ToString() == "EEPROM" && (tod.StorageLocation.ToUpper() != "EEPROM"))
+                    if (comboBoxtype.SelectedItem.ToString() == "EEPROM" && (tod.prop.CO_storageGroup.ToUpper() != "EEPROM"))
                         continue;
-                    if (comboBoxtype.SelectedItem.ToString() == "ROM" && (tod.StorageLocation.ToUpper() != "ROM"))
+                    if (comboBoxtype.SelectedItem.ToString() == "ROM" && (tod.prop.CO_storageGroup.ToUpper() != "ROM"))
                         continue;
-                    if (comboBoxtype.SelectedItem.ToString() == "RAM" && (tod.StorageLocation.ToUpper() != "RAM"))
+                    if (comboBoxtype.SelectedItem.ToString() == "RAM" && (tod.prop.CO_storageGroup.ToUpper() != "RAM"))
                         continue;
 
                 }
 
 
-                if (tod.Disabled == true)
+                if (tod.prop.CO_disabled == true)
                     continue;
 
                 if (tod.Index < 0x2000 && checkBox_useronly.Checked == true)
                     continue;
 
-                if (tod.objecttype == ObjectType.ARRAY || tod.objecttype == ObjectType.REC)
+                if (tod.objecttype == ObjectType.ARRAY || tod.objecttype == ObjectType.RECORD)
                 {
                     foreach (ODentry subod in tod.subobjects.Values)
                     {
@@ -490,6 +504,29 @@ namespace SDOEditorPlugin
                                     break;
 
 
+                                    case DataType.DOMAIN:
+
+
+                                        // Console.WriteLine(sdo.ToString());
+
+                                        lvi.SubItems[5].Text = String.Format("Domain Len = {0}", h.sdo.databuffer.Length);
+
+                                        
+
+                                        StreamWriter file = new StreamWriter(string.Format("DOMAIN_{0}-{1}.txt",h.sdo.index,h.sdo.subindex));
+
+                                        for(int p=0;p<h.sdo.databuffer.Length;p++)
+                                        {
+                                            file.WriteLine(h.sdo.databuffer[p].ToString());
+                                        }
+                                        
+
+                                        file.Close();
+
+
+                                        break;
+
+
                                     default:
                                         lvi.SubItems[5].Text = " **UNSUPPORTED **";
                                         break;
@@ -650,7 +687,7 @@ namespace SDOEditorPlugin
             sdocallbackhelper h = (sdocallbackhelper)listView1.SelectedItems[0].Tag;
             ValueEditor ve = new ValueEditor(h.od, listView1.SelectedItems[0].SubItems[5].Text);
 
-            if (h.od.StorageLocation == "ROM")
+            if (h.od.prop.CO_storageGroup == "ROM")
             {
                // MessageBox.Show("Should not edit ROM objects");
 
@@ -1020,7 +1057,7 @@ namespace SDOEditorPlugin
                         eds.ods.Add(scanindex, val);
                     else
                     {
-                        parentval.objecttype = ObjectType.REC; //we don't know!!
+                        parentval.objecttype = ObjectType.RECORD; //we don't know!!
                         parentval.addsubobject(scansub, val); 
 
                     }
