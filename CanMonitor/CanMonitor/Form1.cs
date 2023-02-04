@@ -17,6 +17,7 @@ using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Globalization;
 using PFMMeasurementService.Models.Devices.Buses;
+using System.Text.RegularExpressions;
 
 namespace CanMonitor
 {
@@ -70,16 +71,16 @@ namespace CanMonitor
 
         Timer savetimer;
 
+        string dateTimePattern;
+
         public Form1()
         {
-
-
-           // DateTime.Parse("07/14/2021 14:42:18",);
+            // Set up a localized time format including milliseconds
+            dateTimePattern = $"{DateTimeFormatInfo.CurrentInfo.ShortDatePattern} {DateTimeFormatInfo.CurrentInfo.LongTimePattern}" ;
+            string millisecondFormat = $"{NumberFormatInfo.CurrentInfo.NumberDecimalSeparator}fff";
+            dateTimePattern = Regex.Replace(dateTimePattern, "(:ss|:s)", $"$1{millisecondFormat}");
 
             cpm = new ComPortManagerModel(); ;
-
-         
-
 
             lco.connectionevent += Lco_connectionevent;
 
@@ -319,7 +320,7 @@ namespace CanMonitor
                         }
                         else
                         {
-                            state.LVI.SubItems[0].Text = state.lastupdate.ToString();
+                            state.LVI.SubItems[0].Text = state.lastupdate.ToString(dateTimePattern);
                             state.LVI.SubItems[2].Text = state.statemsg;
                         }
 
@@ -362,7 +363,7 @@ namespace CanMonitor
                 return;
 
             string[] items = new string[6];
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            items[0] = dt.ToString(dateTimePattern);
             items[1] = "NMT";
             items[2] = string.Format("{0:x3}", payload.cob);
             items[3] = "";
@@ -421,7 +422,7 @@ namespace CanMonitor
             
 
             string[] items = new string[6];
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            items[0] = dt.ToString(dateTimePattern);
             items[1] = "NMTEC";
             items[2] = string.Format("{0:x3}", payload.cob);
             items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
@@ -484,7 +485,7 @@ namespace CanMonitor
                     s.state = payload.data[0];
                     s.statemsg = msg;
                     string[] ss = new string[3];
-                    ss[0] = DateTime.Now.ToString();
+                    ss[0] = DateTime.Now.ToString(dateTimePattern);
                     ss[1] = string.Format("0x{0:x2} ({1})", node, node);
                     ss[2] = msg;
 
@@ -509,7 +510,7 @@ namespace CanMonitor
                 return;
 
             string[] items = new string[6];
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            items[0] = dt.ToString(dateTimePattern);
             items[1] = "SDO";
             items[2] = string.Format("{0:x3}", payload.cob);
 
@@ -827,7 +828,7 @@ namespace CanMonitor
             {
 
                 string[] items = new string[6];
-                items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
+                items[0] = dt.ToString(dateTimePattern);
                 items[1] = "PDO";
                 items[2] = string.Format("{0:x3}", payload.cob);
                 items[3] = "";
@@ -876,14 +877,14 @@ namespace CanMonitor
             string[] items = new string[6];
             string[] items2 = new string[5];
 
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            items[0] = dt.ToString(dateTimePattern);
             items[1] = "EMCY";
             items[2] = string.Format("{0:x3}", payload.cob);
             items[3] = string.Format("{0:x3}", payload.cob - 0x080);
             items[4] = BitConverter.ToString(payload.data).Replace("-", string.Empty);
             //items[4] = "EMCY";
 
-            items2[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            items2[0] = dt.ToString(dateTimePattern);
             items2[1] = items[2];
             items2[2] = items[3];
 
@@ -1595,12 +1596,18 @@ namespace CanMonitor
             foreach (ListViewItem i in listView1.Items)
             {
                 XElement xeRow = new XElement("Packet", new XAttribute("backcol", i.BackColor.Name), new XAttribute("forcol", i.ForeColor.Name));
-                int x = 0;
 
+
+                int x = 0;
                 foreach (ListViewItem.ListViewSubItem subItem in i.SubItems)
                 {
                     XElement xeCol = new XElement(listView1.Columns[x].Text);
                     xeCol.Value = subItem.Text;
+                    if (x == 0)
+                    {
+                        DateTime dt = DateTime.ParseExact(xeCol.Value, dateTimePattern, CultureInfo.InvariantCulture);
+                        xeCol.Value = dt.ToString("O", CultureInfo.InvariantCulture);
+                    }
                     xeRow.Add(xeCol);
                     // To add attributes use XAttributes
                     x++;
@@ -1617,7 +1624,6 @@ namespace CanMonitor
         private void loaddata2()
         {
             OpenFileDialog sfd = new OpenFileDialog();
-            sfd.ShowHelp = true;
             sfd.Filter = "(*.log)|*.log";
 
             if (sfd.ShowDialog() == DialogResult.OK)
@@ -1680,20 +1686,19 @@ namespace CanMonitor
         {
 
             //loaddata2();
-           // return;
+            // return;
 
-            OpenFileDialog sfd = new OpenFileDialog();
-            sfd.ShowHelp = true;
-            sfd.Filter = "(*.xml)|*.xml";
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "(*.xml)|*.xml";
 
             try
             {
-                if (sfd.ShowDialog() == DialogResult.OK)
+                if (ofd.ShowDialog() == DialogResult.OK)
                 {
 
                     listView1.Items.Clear();
 
-                    XElement xeRoot = XElement.Load(sfd.FileName);
+                    XElement xeRoot = XElement.Load(ofd.FileName);
                     XName Packet = XName.Get("Packet");
 
 
@@ -1731,10 +1736,17 @@ namespace CanMonitor
                         p[0].data = b;
                         p[0].len = (byte)b.Length;
 
-                        //DateTime dt = DateTime.Parse(bits[0]);
-
-                        DateTime dt = DateTime.ParseExact(bits[0], "MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
-
+                        DateTime dt;
+                        try
+                        {
+                            dt = DateTime.ParseExact(bits[0], "O", CultureInfo.InvariantCulture);
+                        }
+                        catch(FormatException)
+                        {
+                            // If parsing fails, try legacy date format
+                            dt = DateTime.ParseExact(bits[0], "MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
+                        }
+ 
                         switch (bits[1])
                         {
                             case "PDO":
