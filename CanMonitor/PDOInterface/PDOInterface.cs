@@ -14,8 +14,6 @@ namespace PDOInterface
         void registerPDOS();
         string decodesdo(int node, int index, int sub, byte[] payload);
 
-        void endsdo(int node, int index, int sub, byte[] payload);
-
         void setlco(libCanopenSimple.libCanopenSimple lco);
 
     }

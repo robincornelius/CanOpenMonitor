@@ -1,6 +1,6 @@
 ﻿namespace CanMonitor
 {
-    partial class Form1
+    partial class CanLogForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CanLogForm));
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.checkBox_showEMCY = new System.Windows.Forms.CheckBox();
@@ -81,6 +81,9 @@
             this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -91,6 +94,9 @@
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.menuStrip1.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -111,33 +117,22 @@
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.checkBox_showEMCY);
-            this.splitContainer1.Panel1.Controls.Add(this.checkBox_showNMTEC);
-            this.splitContainer1.Panel1.Controls.Add(this.checkBox_showNMT);
-            this.splitContainer1.Panel1.Controls.Add(this.checkBox_showSDO);
-            this.splitContainer1.Panel1.Controls.Add(this.checkBox_showPDO);
-            this.splitContainer1.Panel1.Controls.Add(this.button_refresh);
-            this.splitContainer1.Panel1.Controls.Add(this.checkBox_heartbeats);
-            this.splitContainer1.Panel1.Controls.Add(this.button_open);
-            this.splitContainer1.Panel1.Controls.Add(this.comboBox_rate);
-            this.splitContainer1.Panel1.Controls.Add(this.label3);
-            this.splitContainer1.Panel1.Controls.Add(this.comboBox_port);
-            this.splitContainer1.Panel1.Controls.Add(this.label2);
-            this.splitContainer1.Panel1.Controls.Add(this.checkbox_autoscroll);
-            this.splitContainer1.Panel1.Controls.Add(this.button_clear);
+            this.splitContainer1.Panel1.Controls.Add(this.groupBox3);
+            this.splitContainer1.Panel1.Controls.Add(this.groupBox2);
+            this.splitContainer1.Panel1.Controls.Add(this.groupBox1);
             this.splitContainer1.Panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer1_Panel1_Paint);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer1.Size = new System.Drawing.Size(1098, 674);
-            this.splitContainer1.SplitterDistance = 67;
+            this.splitContainer1.SplitterDistance = 78;
             this.splitContainer1.TabIndex = 1;
             // 
             // checkBox_showEMCY
             // 
             this.checkBox_showEMCY.AutoSize = true;
-            this.checkBox_showEMCY.Location = new System.Drawing.Point(800, 48);
+            this.checkBox_showEMCY.Location = new System.Drawing.Point(116, 51);
             this.checkBox_showEMCY.Name = "checkBox_showEMCY";
             this.checkBox_showEMCY.Size = new System.Drawing.Size(56, 17);
             this.checkBox_showEMCY.TabIndex = 10;
@@ -148,7 +143,7 @@
             // checkBox_showNMTEC
             // 
             this.checkBox_showNMTEC.AutoSize = true;
-            this.checkBox_showNMTEC.Location = new System.Drawing.Point(800, 29);
+            this.checkBox_showNMTEC.Location = new System.Drawing.Point(116, 34);
             this.checkBox_showNMTEC.Name = "checkBox_showNMTEC";
             this.checkBox_showNMTEC.Size = new System.Drawing.Size(64, 17);
             this.checkBox_showNMTEC.TabIndex = 9;
@@ -159,7 +154,7 @@
             // checkBox_showNMT
             // 
             this.checkBox_showNMT.AutoSize = true;
-            this.checkBox_showNMT.Location = new System.Drawing.Point(800, 6);
+            this.checkBox_showNMT.Location = new System.Drawing.Point(116, 16);
             this.checkBox_showNMT.Name = "checkBox_showNMT";
             this.checkBox_showNMT.Size = new System.Drawing.Size(50, 17);
             this.checkBox_showNMT.TabIndex = 8;
@@ -170,7 +165,7 @@
             // checkBox_showSDO
             // 
             this.checkBox_showSDO.AutoSize = true;
-            this.checkBox_showSDO.Location = new System.Drawing.Point(707, 47);
+            this.checkBox_showSDO.Location = new System.Drawing.Point(23, 53);
             this.checkBox_showSDO.Name = "checkBox_showSDO";
             this.checkBox_showSDO.Size = new System.Drawing.Size(49, 17);
             this.checkBox_showSDO.TabIndex = 7;
@@ -181,7 +176,7 @@
             // checkBox_showPDO
             // 
             this.checkBox_showPDO.AutoSize = true;
-            this.checkBox_showPDO.Location = new System.Drawing.Point(707, 24);
+            this.checkBox_showPDO.Location = new System.Drawing.Point(23, 35);
             this.checkBox_showPDO.Name = "checkBox_showPDO";
             this.checkBox_showPDO.Size = new System.Drawing.Size(49, 17);
             this.checkBox_showPDO.TabIndex = 6;
@@ -192,19 +187,19 @@
             // button_refresh
             // 
             this.button_refresh.Image = ((System.Drawing.Image)(resources.GetObject("button_refresh.Image")));
-            this.button_refresh.Location = new System.Drawing.Point(148, 11);
+            this.button_refresh.Location = new System.Drawing.Point(275, 12);
             this.button_refresh.Margin = new System.Windows.Forms.Padding(2);
             this.button_refresh.Name = "button_refresh";
-            this.button_refresh.Size = new System.Drawing.Size(24, 24);
+            this.button_refresh.Size = new System.Drawing.Size(79, 24);
             this.button_refresh.TabIndex = 5;
-            this.button_refresh.Text = "R";
+            this.button_refresh.Text = "Reload";
             this.button_refresh.UseVisualStyleBackColor = true;
             this.button_refresh.Click += new System.EventHandler(this.button_refresh_Click);
             // 
             // checkBox_heartbeats
             // 
             this.checkBox_heartbeats.AutoSize = true;
-            this.checkBox_heartbeats.Location = new System.Drawing.Point(707, 6);
+            this.checkBox_heartbeats.Location = new System.Drawing.Point(23, 17);
             this.checkBox_heartbeats.Name = "checkBox_heartbeats";
             this.checkBox_heartbeats.Size = new System.Drawing.Size(78, 17);
             this.checkBox_heartbeats.TabIndex = 4;
@@ -214,12 +209,14 @@
             // 
             // button_open
             // 
-            this.button_open.Location = new System.Drawing.Point(352, 13);
+            this.button_open.BackColor = System.Drawing.Color.Lime;
+            this.button_open.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_open.Location = new System.Drawing.Point(248, 43);
             this.button_open.Name = "button_open";
             this.button_open.Size = new System.Drawing.Size(106, 23);
             this.button_open.TabIndex = 3;
             this.button_open.Text = "Open";
-            this.button_open.UseVisualStyleBackColor = true;
+            this.button_open.UseVisualStyleBackColor = false;
             this.button_open.Click += new System.EventHandler(this.button_open_Click);
             // 
             // comboBox_rate
@@ -235,7 +232,7 @@
             "500Kbit",
             "800Kbit",
             "1Mbit"});
-            this.comboBox_rate.Location = new System.Drawing.Point(224, 15);
+            this.comboBox_rate.Location = new System.Drawing.Point(57, 42);
             this.comboBox_rate.Name = "comboBox_rate";
             this.comboBox_rate.Size = new System.Drawing.Size(109, 21);
             this.comboBox_rate.TabIndex = 2;
@@ -244,7 +241,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(181, 18);
+            this.label3.Location = new System.Drawing.Point(12, 46);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(37, 13);
             this.label3.TabIndex = 1;
@@ -253,16 +250,16 @@
             // comboBox_port
             // 
             this.comboBox_port.FormattingEnabled = true;
-            this.comboBox_port.Location = new System.Drawing.Point(35, 15);
+            this.comboBox_port.Location = new System.Drawing.Point(58, 13);
             this.comboBox_port.Name = "comboBox_port";
-            this.comboBox_port.Size = new System.Drawing.Size(109, 21);
+            this.comboBox_port.Size = new System.Drawing.Size(212, 21);
             this.comboBox_port.TabIndex = 0;
             this.comboBox_port.SelectedIndexChanged += new System.EventHandler(this.comboBox_port_SelectedIndexChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(4, 18);
+            this.label2.Location = new System.Drawing.Point(11, 19);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(26, 13);
             this.label2.TabIndex = 0;
@@ -273,16 +270,17 @@
             this.checkbox_autoscroll.AutoSize = true;
             this.checkbox_autoscroll.Checked = true;
             this.checkbox_autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkbox_autoscroll.Location = new System.Drawing.Point(464, 19);
+            this.checkbox_autoscroll.Location = new System.Drawing.Point(21, 51);
             this.checkbox_autoscroll.Name = "checkbox_autoscroll";
             this.checkbox_autoscroll.Size = new System.Drawing.Size(72, 17);
             this.checkbox_autoscroll.TabIndex = 0;
             this.checkbox_autoscroll.Text = "Autoscroll";
             this.checkbox_autoscroll.UseVisualStyleBackColor = true;
+            this.checkbox_autoscroll.CheckedChanged += new System.EventHandler(this.checkbox_autoscroll_CheckedChanged);
             // 
             // button_clear
             // 
-            this.button_clear.Location = new System.Drawing.Point(542, 13);
+            this.button_clear.Location = new System.Drawing.Point(18, 19);
             this.button_clear.Name = "button_clear";
             this.button_clear.Size = new System.Drawing.Size(75, 23);
             this.button_clear.TabIndex = 1;
@@ -300,7 +298,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1098, 603);
+            this.tabControl1.Size = new System.Drawing.Size(1098, 592);
             this.tabControl1.TabIndex = 1;
             // 
             // tabPage1
@@ -309,7 +307,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1090, 577);
+            this.tabPage1.Size = new System.Drawing.Size(1090, 566);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Monitor";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -327,7 +325,7 @@
             this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(3, 3);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1084, 571);
+            this.listView1.Size = new System.Drawing.Size(1084, 560);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -567,7 +565,51 @@
             this.notifyIcon1.Visible = true;
             this.notifyIcon1.DoubleClick += new System.EventHandler(this.notifyIcon1_DoubleClick);
             // 
-            // Form1
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.checkBox_showNMT);
+            this.groupBox1.Controls.Add(this.checkBox_showEMCY);
+            this.groupBox1.Controls.Add(this.checkBox_heartbeats);
+            this.groupBox1.Controls.Add(this.checkBox_showNMTEC);
+            this.groupBox1.Controls.Add(this.checkBox_showPDO);
+            this.groupBox1.Controls.Add(this.checkBox_showSDO);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.groupBox1.Location = new System.Drawing.Point(906, 0);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(192, 78);
+            this.groupBox1.TabIndex = 11;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Packet Filters";
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.button_refresh);
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Controls.Add(this.comboBox_port);
+            this.groupBox2.Controls.Add(this.button_open);
+            this.groupBox2.Controls.Add(this.label3);
+            this.groupBox2.Controls.Add(this.comboBox_rate);
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Left;
+            this.groupBox2.Location = new System.Drawing.Point(0, 0);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(366, 78);
+            this.groupBox2.TabIndex = 12;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Can Device";
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.button_clear);
+            this.groupBox3.Controls.Add(this.checkbox_autoscroll);
+            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Left;
+            this.groupBox3.Location = new System.Drawing.Point(366, 0);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(270, 78);
+            this.groupBox3.TabIndex = 13;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "View Options";
+            // 
+            // CanLogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -577,14 +619,13 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Name = "Form1";
+            this.Name = "CanLogForm";
             this.Text = "CanOpen monitor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
@@ -596,6 +637,12 @@
             this.tabPage4.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -654,6 +701,9 @@
         private System.Windows.Forms.CheckBox checkBox_showEMCY;
         private System.Windows.Forms.CheckBox checkBox_showNMTEC;
         private System.Windows.Forms.CheckBox checkBox_showNMT;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBox3;
     }
 }
 

@@ -17,11 +17,11 @@ using System.Xml.Linq;
 
 namespace CanMonitor
 {
-    public partial class Form1 : Form
+    public partial class CanLogForm : Form
     {
 
         private libCanopenSimple.libCanopenSimple lco = new libCanopenSimple.libCanopenSimple();
-      
+
 
         private Dictionary<UInt16, Func<byte[], string>> pdoprocessors = new Dictionary<ushort, Func<byte[], string>>();
         private string appdatafolder;
@@ -67,15 +67,15 @@ namespace CanMonitor
 
         Timer savetimer;
 
-        public Form1()
+        public CanLogForm()
         {
 
 
-           // DateTime.Parse("07/14/2021 14:42:18",);
+            // DateTime.Parse("07/14/2021 14:42:18",);
 
             cpm = new ComPortManagerModel(); ;
 
-         
+
 
 
             lco.connectionevent += Lco_connectionevent;
@@ -87,7 +87,7 @@ namespace CanMonitor
 
                 assemblyfolder = AppDomain.CurrentDomain.BaseDirectory;
 
-                if(!Directory.Exists(appdatafolder))
+                if (!Directory.Exists(appdatafolder))
                 {
                     Directory.CreateDirectory(appdatafolder);
                 }
@@ -110,9 +110,9 @@ namespace CanMonitor
 
 
             textBox_info.AppendText("Searching for drivers...");
-            string[] founddrivers = Directory.GetFiles("drivers\\","*.dll");
+            string[] founddrivers = Directory.GetFiles("drivers\\", "*.dll");
 
-            foreach(string driver in founddrivers)
+            foreach (string driver in founddrivers)
             {
                 textBox_info.AppendText(string.Format("Found driver {0}", driver));
                 drivers.Add(driver.Substring(0, driver.Length - 4));
@@ -143,7 +143,7 @@ namespace CanMonitor
 
             updatetimer.Interval = 1000;
             updatetimer.Tick += updatetimer_Tick;
-         
+
 
             updatetimer_Tick(null, new EventArgs());
 
@@ -178,7 +178,7 @@ namespace CanMonitor
             //select last used port
             foreach (driverport dp in comboBox_port.Items)
             {
-                
+
                 if (dp.port == Properties.Settings.Default.lastport)
                 {
                     comboBox_port.SelectedItem = dp;
@@ -205,7 +205,7 @@ namespace CanMonitor
         {
             DateTime now = DateTime.Now;
 
-            if(Properties.Settings.Default.AutoFileLog==true &&  now.Hour != last.Hour)
+            if (Properties.Settings.Default.AutoFileLog == true && now.Hour != last.Hour)
             {
                 //Force a save
 
@@ -215,7 +215,7 @@ namespace CanMonitor
                 desktopPath += Path.DirectorySeparatorChar + Properties.Settings.Default.FileLogFolder;
                 dtstring = desktopPath + Path.DirectorySeparatorChar + dtstring;
 
-                if(!Directory.Exists(desktopPath))
+                if (!Directory.Exists(desktopPath))
                 {
                     Directory.CreateDirectory(desktopPath);
                 }
@@ -223,7 +223,7 @@ namespace CanMonitor
 
                 dtstring += ".xml";
                 dosave(dtstring);
-            
+
                 listView1.Items.Clear();
 
             }
@@ -242,12 +242,12 @@ namespace CanMonitor
 
         private void Lco_connectionevent(object sender, EventArgs e)
         {
-           //invoked when the underlying libcanopensimple opens or closes a driver conenction
-           //send this message to all plugins that care
+            //invoked when the underlying libcanopensimple opens or closes a driver conenction
+            //send this message to all plugins that care
 
-            foreach(KeyValuePair<string,object> kvp in plugins)
+            foreach (KeyValuePair<string, object> kvp in plugins)
             {
-               // if (o is IInterfaceService)
+                // if (o is IInterfaceService)
                 {
                     IInterfaceService iis = (IInterfaceService)kvp.Value;
                     iis.DriverStateChange((ConnectionChangedEventArgs)e);
@@ -345,7 +345,6 @@ namespace CanMonitor
 
                     listView1.EndUpdate();
 
-
                     listView_emcy.EndUpdate();
                 }
             }
@@ -355,8 +354,7 @@ namespace CanMonitor
         private void log_NMT(canpacket payload, DateTime dt)
         {
 
-            if (!checkBox_showNMT.Checked)
-                return;
+
 
             string[] items = new string[6];
             items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
@@ -401,12 +399,16 @@ namespace CanMonitor
 
             items[5] = msg;
 
-            ListViewItem i = new ListViewItem(items);
+            if (checkBox_showNMT.Checked)
+            {
 
-            i.ForeColor = Color.Red;
+                ListViewItem i = new ListViewItem(items);
 
-            lock (listitems)
-                listitems.Add(i);
+                i.ForeColor = Color.Red;
+
+                lock (listitems)
+                    listitems.Add(i);
+            }
 
             appendfile(items);
 
@@ -415,7 +417,7 @@ namespace CanMonitor
         private void log_NMTEC(canpacket payload, DateTime dt)
         {
 
-            
+
 
             string[] items = new string[6];
             items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
@@ -502,8 +504,6 @@ namespace CanMonitor
         private void log_SDO(canpacket payload, DateTime dt)
         {
 
-            if (!checkBox_showSDO.Checked)
-                return;
 
             string[] items = new string[6];
             items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff");
@@ -566,7 +566,7 @@ namespace CanMonitor
                         mode = "upload segment response";
                         sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", validsn, c == 0 ? "MORE" : "END");
 
-                        if(c==1)
+                        if (c == 1)
                         {
                             //ipdo.endsdo(payload.cob, index, sub, null);
                             //END
@@ -591,14 +591,14 @@ namespace CanMonitor
                                     ascii.AppendFormat("{0}", (char)Convert.ToChar(b));
                                 }
 
-                              //  textBox_info.Invoke(new MethodInvoker(delegate
-                              //  {
-                              //      textBox_info.AppendText(String.Format("SDO UPLOAD COMPLETE for cob 0x{0:x3}\r\n", payload.cob))
-                              //
-                              //      textBox_info.AppendText(hex.ToString() + "\r\n");
-                               //     textBox_info.AppendText(ascii.ToString() + "\r\n\r\n");
-                               //
-//                                }));
+                                //  textBox_info.Invoke(new MethodInvoker(delegate
+                                //  {
+                                //      textBox_info.AppendText(String.Format("SDO UPLOAD COMPLETE for cob 0x{0:x3}\r\n", payload.cob))
+                                //
+                                //      textBox_info.AppendText(hex.ToString() + "\r\n");
+                                //     textBox_info.AppendText(ascii.ToString() + "\r\n\r\n");
+                                //
+                                //                                }));
                             }
 
                         }
@@ -697,13 +697,13 @@ namespace CanMonitor
 
                                 //sdoproto += "\nDATA = " + hex.ToString() + "(" + ascii + ")";
 
-                              /*  textBox_info.Invoke(new MethodInvoker(delegate
-                                {
-                                    textBox_info.AppendText(String.Format("SDO DOWNLOAD COMPLETE for cob 0x{0:x3}\n", payload.cob));
+                                /*  textBox_info.Invoke(new MethodInvoker(delegate
+                                  {
+                                      textBox_info.AppendText(String.Format("SDO DOWNLOAD COMPLETE for cob 0x{0:x3}\n", payload.cob));
 
-                                    textBox_info.AppendText(hex.ToString() + "\n");
-                                    textBox_info.AppendText(ascii.ToString() + "\n");
-                                }));*/
+                                      textBox_info.AppendText(hex.ToString() + "\n");
+                                      textBox_info.AppendText(ascii.ToString() + "\n");
+                                  }));*/
 
 
                                 //Console.WriteLine(hex.ToString());
@@ -805,27 +805,27 @@ namespace CanMonitor
             items[5] = msg;
             appendfile(items);
 
-            ListViewItem i = new ListViewItem(items);
 
-            if ((payload.data[0] & 0x80) != 0)
+            if (checkBox_showSDO.Checked)
             {
-                i.BackColor = Color.Orange;
+                ListViewItem i = new ListViewItem(items);
+
+                if ((payload.data[0] & 0x80) != 0)
+                {
+                    i.BackColor = Color.Orange;
+                }
+
+                i.ForeColor = Color.DarkBlue;
+
+                lock (listitems)
+                    listitems.Add(i);
             }
-
-
-
-
-            i.ForeColor = Color.DarkBlue;
-
-            lock (listitems)
-                listitems.Add(i);
 
         }
 
         private void log_PDO(canpacket[] payloads, DateTime dt)
         {
-            if (!checkBox_showPDO.Checked)
-                return;
+
 
             foreach (canpacket payload in payloads)
             {
@@ -844,7 +844,7 @@ namespace CanMonitor
                     {
                         msg = pdoprocessors[payload.cob](payload.data);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         msg += "!! DECODE EXCEPTION !!";
                     }
@@ -864,13 +864,15 @@ namespace CanMonitor
                     items[5] = string.Format("Len = {0}", payload.len);
                 }
 
-                ListViewItem i = new ListViewItem(items);
+                if (checkBox_showPDO.Checked)
+                {
+                    ListViewItem i = new ListViewItem(items);
+
+                    lock (listitems)
+                        listitems.Add(i);
+                }
 
                 appendfile(items);
-
-
-                lock (listitems)
-                    listitems.Add(i);
             }
 
         }
@@ -894,8 +896,6 @@ namespace CanMonitor
             UInt16 code = (UInt16)(payload.data[0] + (payload.data[1] << 8));
             byte bits = (byte)(payload.data[3]);
             UInt32 info = (UInt32)(payload.data[4] + (payload.data[5] << 8) + (payload.data[6] << 16) + (payload.data[7] << 24));
-
-
 
             if (errcode.ContainsKey(code))
             {
@@ -943,13 +943,13 @@ namespace CanMonitor
             {
                 lock (listitems)
                     listitems.Add(i);
+
             }
-
-            appendfile(items);
-
 
             lock (EMClistitems)
                 EMClistitems.Add(i2);
+
+            appendfile(items);
 
         }
 
@@ -1104,8 +1104,11 @@ namespace CanMonitor
                 if (button_open.Text == "Close")
                 {
 
+
                     if (sw != null)
                         sw.Close();
+
+                    button_open.BackColor = Color.Green;
                     button_open.Text = "Open";
 
                     textBox_info.AppendText("PORT CLOSED\r\n");
@@ -1120,14 +1123,14 @@ namespace CanMonitor
 
                 driverport dp = (driverport)comboBox_port.SelectedItem;
 
-                textBox_info.AppendText(String.Format("Trying to open port {0} using driver {1} \r\n", dp.port,dp.driver));
+                textBox_info.AppendText(String.Format("Trying to open port {0} using driver {1} \r\n", dp.port, dp.driver));
 
                 int rate = comboBox_rate.SelectedIndex;
 
 
                 string port = dp.port;
 
-                if(dp.port.Contains("USB"))
+                if (dp.port.Contains("USB"))
                 {
                     sComPortModel s = cpm.requestSerialPortById(dp.VID, dp.PID, "", "");
                     s.DeviceConnected += S_DeviceConnected;
@@ -1140,7 +1143,7 @@ namespace CanMonitor
                 if (lco.isopen())
                 {
                     button_open.Text = "Close";
-
+                    button_open.BackColor = Color.Red;
                     //fixme make this user selectable from GUI
                     //sw = new StreamWriter("canlog.txt", true);
 
@@ -1150,22 +1153,17 @@ namespace CanMonitor
                     Properties.Settings.Default.lastdriver = dp.driver;
                     Properties.Settings.Default.Save();
 
-
-
-                   
-                    foreach(KeyValuePair<string,object> kvp in plugins)
+                    foreach (KeyValuePair<string, object> kvp in plugins)
                     {
-
-
                         IInterfaceService iis = (IInterfaceService)kvp.Value;
                         iis.setlco(lco);
                     }
-
 
                 }
                 else
                 {
                     button_open.Text = "Open";
+                    button_open.BackColor = Color.Green;
                     textBox_info.AppendText("ERROR opening port\r\n");
                 }
             }
@@ -1317,7 +1315,7 @@ namespace CanMonitor
                 {
                     IInterfaceService iis = (IInterfaceService)plugins[pfilename];
                     iis.deregisterplugin();
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -1340,17 +1338,17 @@ namespace CanMonitor
                 {
 
                     filename = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + "plugins" + Path.DirectorySeparatorChar + pfilename;
+                    if (!File.Exists(filename))
+                        filename = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + "privateplugins" + Path.DirectorySeparatorChar + pfilename;
+                    if (!File.Exists(filename))
+                        filename = appdatafolder + Path.DirectorySeparatorChar + "plugins" + pfilename;
+                    if (!File.Exists(filename))
+                        filename = appdatafolder + Path.DirectorySeparatorChar + "privateplugins" + pfilename;
 
                     if (!File.Exists(filename))
                     {
-                        filename = appdatafolder + Path.DirectorySeparatorChar + "plugins" + pfilename;
-
-                        if (!File.Exists(filename))
-                        {
-                            MessageBox.Show(string.Format("Could not find plugin {0}", pfilename));
-                            return;
-                        }
-
+                        MessageBox.Show(string.Format("Could not find plugin {0}", pfilename));
+                        return;
                     }
                 }
 
@@ -1628,7 +1626,7 @@ namespace CanMonitor
             {
                 string[] lines = File.ReadAllLines(sfd.FileName);
 
-                foreach(string line in lines)
+                foreach (string line in lines)
                 {
                     try
                     {
@@ -1636,7 +1634,7 @@ namespace CanMonitor
                         string[] bits = line.Split(',');
                         UInt16 cob = Convert.ToUInt16(bits[1], 16);
                         byte len = Convert.ToByte(bits[2], 16);
-                        
+
 
                         canpacket[] p = new canpacket[1];
                         p[0] = new canpacket();
@@ -1644,7 +1642,7 @@ namespace CanMonitor
 
 
                         p[0].data = new byte[len];
-                        for(int x=0;x<len;x++)
+                        for (int x = 0; x < len; x++)
                         {
                             p[0].data[x] = Convert.ToByte(bits[3].Substring(x * 2, 2), 16);
                         }
@@ -1670,7 +1668,7 @@ namespace CanMonitor
 
 
                     }
-                    catch(Exception e)
+                    catch (Exception)
                     {
 
                     }
@@ -1684,7 +1682,7 @@ namespace CanMonitor
         {
 
             //loaddata2();
-           // return;
+            // return;
 
             OpenFileDialog sfd = new OpenFileDialog();
             sfd.ShowHelp = true;
@@ -1795,15 +1793,15 @@ namespace CanMonitor
 
             foreach (string s in drivers)
             {
-                textBox_info.AppendText(String.Format("Attempting to enumerate with driver {0}\r\n",s));
+                textBox_info.AppendText(String.Format("Attempting to enumerate with driver {0}\r\n", s));
 
                 try
                 {
                     lco.enumerate(s);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
-                    textBox_info.AppendText(e.ToString()+"\r\n");
+                    textBox_info.AppendText(e.ToString() + "\r\n");
                 }
             }
 
@@ -1817,7 +1815,7 @@ namespace CanMonitor
                     textBox_info.AppendText(string.Format("Found port {0}", s));
 
                     driverport dp = new driverport();
-                  
+
 
 
                     string theportnum = Regex.Match(s, @"\d+").Value;
@@ -1825,9 +1823,9 @@ namespace CanMonitor
 
                     string s2 = s;
 
-                    if(x>9)
+                    if (x > 9)
                     {
-                        s2 = string.Format(@"\\\\.\\"+"COM{0}", x);
+                        s2 = string.Format(@"\\\\.\\" + "COM{0}", x);
                     }
 
                     dp.port = s2;
@@ -1840,14 +1838,14 @@ namespace CanMonitor
 
             List<sComPortModel> psx = cpm.GetPorts();
 
-            foreach(sComPortModel p in psx)
+            foreach (sComPortModel p in psx)
             {
 
                 driverport dp = new driverport();
                 dp.port = string.Format($"USB/VID_{p.vid}/PID_{p.pid}");
                 dp.PID = p.pid;
                 dp.VID = p.vid;
-                dp.driver= "drivers\\can_canusb_win32";
+                dp.driver = "drivers\\can_canusb_win32";
                 comboBox_port.Items.Add(dp);
 
                 //dp.driver = kvp.Key;
@@ -1863,8 +1861,8 @@ namespace CanMonitor
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
-            Prefs p = new Prefs(appdatafolder,assemblyfolder);
+
+            Prefs p = new Prefs(appdatafolder, assemblyfolder);
             p.ShowDialog();
         }
 
@@ -1872,7 +1870,7 @@ namespace CanMonitor
         {
             if (this.WindowState == FormWindowState.Minimized)
             {
-               // Hide();
+                // Hide();
                 notifyIcon1.Visible = true;
 
                 notifyIcon1.BalloonTipText = "Can monitor is still running";
@@ -1924,6 +1922,11 @@ namespace CanMonitor
         {
             Properties.Settings.Default.showEMCY = checkBox_showEMCY.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        private void checkbox_autoscroll_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 

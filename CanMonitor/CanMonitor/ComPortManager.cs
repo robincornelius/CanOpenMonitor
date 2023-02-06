@@ -186,7 +186,7 @@ namespace PFMMeasurementService.Models.Devices.Buses
                 watcherDepart.Start();
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //handle1 exception
             }

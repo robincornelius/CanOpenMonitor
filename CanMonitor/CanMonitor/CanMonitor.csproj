@@ -87,11 +87,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComPortManager.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="CanLogForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="CanLogForm.Designer.cs">
+      <DependentUpon>CanLogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="IComportManager.cs" />
     <Compile Include="IDeviceModel.cs" />
@@ -103,8 +103,8 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="CanLogForm.resx">
+      <DependentUpon>CanLogForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Prefs.resx">
       <DependentUpon>Prefs.cs</DependentUpon>

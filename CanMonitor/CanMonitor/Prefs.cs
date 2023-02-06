@@ -35,42 +35,34 @@ namespace CanMonitor
             loadplugins();
         }
 
+        string[] autoloadfixed = new string[0];
+        string[] autoload = new string[0];
         public void loadplugins()
         {
 
             listView_plugins.Items.Clear();
 
-
             string autoloadPath = Path.Combine(appdatafolder, "autoload.txt");
             string autoloadFixedPath = Path.Combine(assemblyfolder, "autoload.txt");
 
-            string[] autoload;
             if (File.Exists(autoloadPath))
             {
                 autoload = System.IO.File.ReadAllLines(autoloadPath);
             }
-            else
-            {
-                autoload = new string[0];
-            }
 
-            string[] autoloadfixed;
             if (File.Exists(autoloadFixedPath))
             {
                 autoloadfixed = System.IO.File.ReadAllLines(autoloadFixedPath);
             }
-            else
-            {
-                autoloadfixed = new string[0];
-            }
 
+            adddrivers(Directory.GetFiles(Path.Combine(assemblyfolder, "plugins"), "*.dll"));
+            adddrivers(Directory.GetFiles(Path.Combine(assemblyfolder, "privateplugins"), "*.dll"));
 
-            string pluginpath = Path.Combine(assemblyfolder, "plugins");
-            
-            string[] founddrivers = Directory.GetFiles(pluginpath, "*.dll");
+        }
 
-
-            foreach(string driver in founddrivers)
+        private void adddrivers(string[] founddrivers)
+        {
+            foreach (string driver in founddrivers)
             {
 
                 ListViewItem i = new ListViewItem();
@@ -83,18 +75,17 @@ namespace CanMonitor
                 if (autoloadfixed.Contains(driver))
                     continue;
 
-                i.SubItems.Add(new ListViewItem.ListViewSubItem(i,drivername));
+                i.SubItems.Add(new ListViewItem.ListViewSubItem(i, drivername));
 
                 if (autoload.Contains(drivername))
                 {
                     i.Checked = true;
                 }
 
+
                 listView_plugins.Items.Add(i);
 
             }
-
-
         }
 
         private void groupBox1_Enter(object sender, EventArgs e)
@@ -109,7 +100,7 @@ namespace CanMonitor
 
             foreach (ListViewItem i in listView_plugins.Items)
             {
-                if(i.Checked==true)
+                if (i.Checked == true)
                 {
                     active.Add(i.SubItems[1].Text);
                 }
@@ -118,7 +109,7 @@ namespace CanMonitor
 
             string autoloadPath = Path.Combine(appdatafolder, "autoload.txt");
 
-            System.IO.File.WriteAllLines(autoloadPath,active);
+            System.IO.File.WriteAllLines(autoloadPath, active);
 
             Properties.Settings.Default.autoconnect = checkBox_autostart.Checked;
 
