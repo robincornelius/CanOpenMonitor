@@ -193,7 +193,7 @@
             // 
             this.button_refresh.Image = ((System.Drawing.Image)(resources.GetObject("button_refresh.Image")));
             this.button_refresh.Location = new System.Drawing.Point(148, 11);
-            this.button_refresh.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button_refresh.Margin = new System.Windows.Forms.Padding(2);
             this.button_refresh.Name = "button_refresh";
             this.button_refresh.Size = new System.Drawing.Size(24, 24);
             this.button_refresh.TabIndex = 5;
@@ -308,7 +308,7 @@
             this.tabPage1.Controls.Add(this.listView1);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(1090, 577);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Monitor";
@@ -366,8 +366,8 @@
             this.tabPage2.Controls.Add(this.listView_nmt);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage2.Size = new System.Drawing.Size(1090, 578);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(1090, 577);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "NMT";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -382,7 +382,7 @@
             this.listView_nmt.HideSelection = false;
             this.listView_nmt.Location = new System.Drawing.Point(3, 3);
             this.listView_nmt.Name = "listView_nmt";
-            this.listView_nmt.Size = new System.Drawing.Size(1084, 572);
+            this.listView_nmt.Size = new System.Drawing.Size(1084, 571);
             this.listView_nmt.TabIndex = 0;
             this.listView_nmt.UseCompatibleStateImageBehavior = false;
             this.listView_nmt.View = System.Windows.Forms.View.Details;
@@ -406,7 +406,7 @@
             this.tabPage3.Controls.Add(this.listView_emcy);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(1090, 578);
+            this.tabPage3.Size = new System.Drawing.Size(1090, 577);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Emergency";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -422,7 +422,7 @@
             this.listView_emcy.HideSelection = false;
             this.listView_emcy.Location = new System.Drawing.Point(0, 0);
             this.listView_emcy.Name = "listView_emcy";
-            this.listView_emcy.Size = new System.Drawing.Size(1090, 578);
+            this.listView_emcy.Size = new System.Drawing.Size(1090, 577);
             this.listView_emcy.TabIndex = 0;
             this.listView_emcy.UseCompatibleStateImageBehavior = false;
             this.listView_emcy.View = System.Windows.Forms.View.Details;
@@ -452,8 +452,8 @@
             this.tabPage4.Controls.Add(this.textBox_info);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage4.Size = new System.Drawing.Size(1090, 578);
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(1090, 577);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Info";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -466,7 +466,7 @@
             this.textBox_info.Name = "textBox_info";
             this.textBox_info.ReadOnly = true;
             this.textBox_info.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox_info.Size = new System.Drawing.Size(1084, 572);
+            this.textBox_info.Size = new System.Drawing.Size(1084, 571);
             this.textBox_info.TabIndex = 0;
             // 
             // menuStrip1

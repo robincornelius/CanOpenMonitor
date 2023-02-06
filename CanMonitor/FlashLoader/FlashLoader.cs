@@ -26,6 +26,11 @@ namespace FlashLoader
             return "";
         }
 
+        public void endsdo(int node, int index, int sub, byte[] payload)
+        {
+
+        }
+
         public void showdlg(object sender, System.EventArgs e)
         {
 

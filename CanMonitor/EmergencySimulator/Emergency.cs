@@ -22,6 +22,10 @@ namespace EmergencySimulator
             return "";
         }
 
+        public void endsdo(int node, int index, int sub, byte[] payload)
+        {
+
+        }
         public void registerPDOS()
         {
 

@@ -26,6 +26,11 @@ namespace PluginExample
 
         }
 
+        public void endsdo(int node, int index, int sub, byte[] payload)
+        {
+
+        }
+
         void sayhello(object sender, System.EventArgs e)
         {
             if (_lco == null || !_lco.isopen())

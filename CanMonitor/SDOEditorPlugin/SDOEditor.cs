@@ -513,15 +513,15 @@ namespace SDOEditorPlugin
 
                                         
 
-                                        StreamWriter file = new StreamWriter(string.Format("DOMAIN_{0}-{1}.txt",h.sdo.index,h.sdo.subindex));
+                                 //       StreamWriter file = new StreamWriter(string.Format("DOMAIN_{0}-{1}.txt",h.sdo.index,h.sdo.subindex));
 
-                                        for(int p=0;p<h.sdo.databuffer.Length;p++)
-                                        {
-                                            file.WriteLine(h.sdo.databuffer[p].ToString());
-                                        }
+                                 //       for(int p=0;p<h.sdo.databuffer.Length;p++)
+                                 //       {
+                                 //           file.WriteLine(h.sdo.databuffer[p].ToString());
+                                 //       }
                                         
 
-                                        file.Close();
+                                 //       file.Close();
 
 
                                         break;
@@ -658,6 +658,15 @@ namespace SDOEditorPlugin
                     byte[] payload = Encoding.ASCII.GetBytes(sval);
                     sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
                     break;
+                }
+
+                case DataType.BOOLEAN:
+                {
+
+                        byte val = (byte)new ByteConverter().ConvertFromString(sval);
+                        sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
+                        
+                        break;
                 }
 
 

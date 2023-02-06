@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using libCanopenSimple;
-using System.Reflection;
-using PDOInterface;
-using N_SettingsMgr;
-using System.IO;
-using System.Xml.Linq;
+﻿using libCanopenSimple;
 using Microsoft.CSharp;
-using System.CodeDom.Compiler;
-using System.Globalization;
+using N_SettingsMgr;
+using PDOInterface;
 using PFMMeasurementService.Models.Devices.Buses;
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace CanMonitor
 {
@@ -569,6 +566,12 @@ namespace CanMonitor
                         mode = "upload segment response";
                         sdoproto = string.Format("{0} {1} Valid bytes = {2} {3}", mode, t == 1 ? "TOG ON" : "TOG OFF", validsn, c == 0 ? "MORE" : "END");
 
+                        if(c==1)
+                        {
+                            //ipdo.endsdo(payload.cob, index, sub, null);
+                            //END
+                        }
+
                         if (sdotransferdata.ContainsKey(payload.cob))
                         {
 
@@ -588,14 +591,14 @@ namespace CanMonitor
                                     ascii.AppendFormat("{0}", (char)Convert.ToChar(b));
                                 }
 
-                                textBox_info.Invoke(new MethodInvoker(delegate
-                                {
-                                    textBox_info.AppendText(String.Format("SDO UPLOAD COMPLETE for cob 0x{0:x3}\r\n", payload.cob));
-
-                                    textBox_info.AppendText(hex.ToString() + "\r\n");
-                                    textBox_info.AppendText(ascii.ToString() + "\r\n\r\n");
-
-                                }));
+                              //  textBox_info.Invoke(new MethodInvoker(delegate
+                              //  {
+                              //      textBox_info.AppendText(String.Format("SDO UPLOAD COMPLETE for cob 0x{0:x3}\r\n", payload.cob))
+                              //
+                              //      textBox_info.AppendText(hex.ToString() + "\r\n");
+                               //     textBox_info.AppendText(ascii.ToString() + "\r\n\r\n");
+                               //
+//                                }));
                             }
 
                         }
@@ -694,13 +697,13 @@ namespace CanMonitor
 
                                 //sdoproto += "\nDATA = " + hex.ToString() + "(" + ascii + ")";
 
-                                textBox_info.Invoke(new MethodInvoker(delegate
+                              /*  textBox_info.Invoke(new MethodInvoker(delegate
                                 {
                                     textBox_info.AppendText(String.Format("SDO DOWNLOAD COMPLETE for cob 0x{0:x3}\n", payload.cob));
 
                                     textBox_info.AppendText(hex.ToString() + "\n");
                                     textBox_info.AppendText(ascii.ToString() + "\n");
-                                }));
+                                }));*/
 
 
                                 //Console.WriteLine(hex.ToString());
@@ -788,6 +791,7 @@ namespace CanMonitor
                 {
 
                     msg += " " + sdoerrormessages[err];
+
                 }
 
             }
@@ -1813,7 +1817,20 @@ namespace CanMonitor
                     textBox_info.AppendText(string.Format("Found port {0}", s));
 
                     driverport dp = new driverport();
-                    dp.port = s;
+                  
+
+
+                    string theportnum = Regex.Match(s, @"\d+").Value;
+                    int x = Int32.Parse(theportnum);
+
+                    string s2 = s;
+
+                    if(x>9)
+                    {
+                        s2 = string.Format(@"\\\\.\\"+"COM{0}", x);
+                    }
+
+                    dp.port = s2;
                     dp.driver = kvp.Key;
 
                     comboBox_port.Items.Add(dp);

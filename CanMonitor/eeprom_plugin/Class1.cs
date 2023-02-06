@@ -20,6 +20,10 @@ namespace eeprom_plugin
         {
 
         }
+        public void endsdo(int node, int index, int sub, byte[] payload)
+        {
+
+        }
 
         public string decodesdo(int node, int index, int sub, byte[] payload)
         {

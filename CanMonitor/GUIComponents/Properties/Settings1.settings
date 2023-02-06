@@ -1,0 +1,36 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="JLRParser.Properties" GeneratedClassName="Settings1">
+  <Profiles />
+  <Settings>
+    <Setting Name="SQLHost" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">localhost</Value>
+    </Setting>
+    <Setting Name="SQLUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">robin</Value>
+    </Setting>
+    <Setting Name="SQLPassword" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">password</Value>
+    </Setting>
+    <Setting Name="SQLTable" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Results</Value>
+    </Setting>
+    <Setting Name="SQLDatabase" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">JLR</Value>
+    </Setting>
+    <Setting Name="USBID" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">USB\VID_1FBB&amp;PID_3800</Value>
+    </Setting>
+    <Setting Name="BarcodeAcceptanceFilter" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UseBarcodes" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="JEDUFilter" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="JEDUTooling" Type="System.String" Scope="User">
+      <Value Profile="(Default)">JEDU- Rotor</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

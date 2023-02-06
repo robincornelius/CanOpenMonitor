@@ -21,6 +21,11 @@ namespace NanomsgBridge
             lcobridge.SendPacket(p, true);
         }
 
+        public void endsdo(int node, int index, int sub, byte[] payload)
+        {
+
+        }
+
         private void Lcobridge_packetevent(canpacket p, DateTime dt)
         {
             _lco.SendPacket(p, true);
