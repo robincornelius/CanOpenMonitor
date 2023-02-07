@@ -74,9 +74,7 @@ namespace CanMonitor
             // DateTime.Parse("07/14/2021 14:42:18",);
 
             cpm = new ComPortManagerModel(); ;
-
-
-
+            cpm.DeviceListChanged += Cpm_DeviceListChanged;
 
             lco.connectionevent += Lco_connectionevent;
 
@@ -109,12 +107,12 @@ namespace CanMonitor
 
 
 
-            textBox_info.AppendText("Searching for drivers...");
+            textBox_info.AppendText("Searching for drivers...\r\n\r\n");
             string[] founddrivers = Directory.GetFiles("drivers\\", "*.dll");
 
             foreach (string driver in founddrivers)
             {
-                textBox_info.AppendText(string.Format("Found driver {0}", driver));
+                textBox_info.AppendText(string.Format("Found driver {0}\r\n", driver));
                 drivers.Add(driver.Substring(0, driver.Length - 4));
             }
 
@@ -197,6 +195,11 @@ namespace CanMonitor
             savetimer.Enabled = true;
 
             last = DateTime.Now;
+        }
+
+        private void Cpm_DeviceListChanged(object sender, EventArgs e)
+        {
+            enumerateports();
         }
 
         DateTime last;
@@ -1151,6 +1154,9 @@ namespace CanMonitor
 
                     Properties.Settings.Default.lastport = dp.port;
                     Properties.Settings.Default.lastdriver = dp.driver;
+                    Properties.Settings.Default.lastrate = comboBox_rate.Text;
+
+
                     Properties.Settings.Default.Save();
 
                     foreach (KeyValuePair<string, object> kvp in plugins)
@@ -1788,8 +1794,7 @@ namespace CanMonitor
             comboBox_port.Text = "";
             comboBox_port.Items.Clear();
 
-
-            textBox_info.AppendText("Enumerating ports....\r\n");
+            textBox_info.AppendText("\r\nEnumerating ports....\r\n\r\n");
 
             foreach (string s in drivers)
             {
@@ -1805,58 +1810,40 @@ namespace CanMonitor
                 }
             }
 
+            textBox_info.AppendText("\r\n");
+
             foreach (KeyValuePair<string, List<string>> kvp in lco.ports)
             {
                 List<string> ps = kvp.Value;
 
+
+                textBox_info.AppendText($"Driver {kvp.Key} has {kvp.Value.Count} ports\r\n");
+
                 foreach (string s in ps)
                 {
-
-                    textBox_info.AppendText(string.Format("Found port {0}", s));
-
+                    textBox_info.AppendText(string.Format("Found port {0}\r\n", s));
                     driverport dp = new driverport();
-
-
-
-                    string theportnum = Regex.Match(s, @"\d+").Value;
-                    int x = Int32.Parse(theportnum);
-
-                    string s2 = s;
-
-                    if (x > 9)
-                    {
-                        s2 = string.Format(@"\\\\.\\" + "COM{0}", x);
-                    }
-
-                    dp.port = s2;
+                    dp.port = s;
                     dp.driver = kvp.Key;
-
                     comboBox_port.Items.Add(dp);
                 }
+
+                textBox_info.AppendText("\r\n");
             }
 
+            textBox_info.AppendText("\r\n");
 
             List<sComPortModel> psx = cpm.GetPorts();
 
             foreach (sComPortModel p in psx)
             {
-
                 driverport dp = new driverport();
                 dp.port = string.Format($"USB/VID_{p.vid}/PID_{p.pid}");
                 dp.PID = p.pid;
                 dp.VID = p.vid;
                 dp.driver = "drivers\\can_canusb_win32";
                 comboBox_port.Items.Add(dp);
-
-                //dp.driver = kvp.Key;
-
-
             }
-
-
-
-
-
         }
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)

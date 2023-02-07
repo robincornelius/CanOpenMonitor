@@ -12,7 +12,7 @@ using System.Text;
 namespace PFMMeasurementService.Models.Devices.Buses
 {
 
-    public class sComPortModel : IDeviceModel // custom struct with our desired values
+    public class sComPortModel
     {
         public string name;
         public string vid;
@@ -40,35 +40,21 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
             if (present)
             {
-                //Log.ForContext<sComPortModel>().Information("onConnect device {Device} present. Callback is {CallbackSet}",
-                 //   name, DeviceConnected is null ? "SET" : "NULL");
                 DeviceConnected?.Invoke(this, new EventArgs());
             }
             else
             {
-                //Log.ForContext<sComPortModel>().Warning("onConnect device {Device} not present", name);
             }
         }
 
-        string IDeviceModel.Path { get { return wmipath; } }
-
-        string IDeviceModel.Name { get { return name; } }
-
-        bool IDeviceModel.isOk { get { return connected; } }
-
-        void IDeviceModel.Init()
-        {
-
-        }
     }
 
     public class ComPortManagerModel : IComPortManagerInterface, IDisposable
     {
-       // private readonly ILogger<ComPortManagerModel> _logger;
 
-        //private IStatusModel _statusModel;
+        public event EventHandler<EventArgs> DeviceListChanged;
+
         private readonly dynamic _status;
-       // private List<DeviceStatus> _deviceStatus = new List<DeviceStatus>();
 
         private const string vidPattern = @"VID_([0-9A-F]{4})";
         private const string pidPattern = @"PID_([0-9A-F]{4})";
@@ -82,21 +68,11 @@ namespace PFMMeasurementService.Models.Devices.Buses
         readonly Guid ClassUSBSerial = new Guid("4d36e978-e325-11ce-bfc1-08002be10318");
         readonly Guid ClassUSBSerialFTDIMode = new Guid("36fc9e60-c465-11cf-8056-444553540000");
         readonly Guid ClassUSB = new Guid("a503e2d3-a031-49dc-b684-c99085dbfe92");
-        readonly Guid ClassUSB2 = new Guid("88bae032-5a81-49f0-bc3d-a4ff138216d6"); //Tic motors
-        readonly Guid ClassDataCapture = new Guid("{745dd1a8-fca4-4659-9df2-954176705158}");
 
         Dictionary<string, EventHandler> portStatusChanged = new Dictionary<string, EventHandler>();
 
         public ComPortManagerModel()
         {
-           // _logger = logger;
-
-           // _logger.LogInformation("ComPortManager start");
-
-           // _statusModel = statusModel;
-           // _status = statusModel.Hardware;
-           // _status.CanBus = _deviceStatus;
-
             ports = EnumerateSerialPorts();
             initWatcher();
         }
@@ -110,7 +86,7 @@ namespace PFMMeasurementService.Models.Devices.Buses
         {
 
             using (var searcher = new ManagementObjectSearcher("root\\CIMV2",
-                string.Format("SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{{{0}}}\" OR ClassGuid=\"{{{1}}}\" OR ClassGuid=\"{{{2}}}\" OR ClassGuid=\"{{{3}}}\" ", ClassUSBSerial, ClassUSB, ClassUSB2, ClassDataCapture)))
+                string.Format($"SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{{{0}}}\" OR ClassGuid=\"{{{1}}}\" ", ClassUSBSerial, ClassUSB)))
             {
                 var ports = searcher.Get().Cast<ManagementBaseObject>().ToList();
 
@@ -124,12 +100,8 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
                 foreach (var p in allports)
                 {
-
                   //  _logger.LogInformation($"ComPortManager found serial port : {p.name} {p.description} PID={p.vid} VID={p.pid}");
                 }
-
-
-
 
                 return allports;
             }
@@ -147,25 +119,12 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
         private void updateDeviceStatus()
         {
-         //   lock (_statusModel)
-         //   {
-          //      _deviceStatus.Clear();
-          //      foreach (sComPortModel p in ports)
-          //      {
-          //          DeviceStatus ds = new DeviceStatus(p, _logger);
-          //          _deviceStatus.Add(ds);
-          //      }
-          //  }
         }
 
         private void initWatcher()
         {
-            //WMIEvent wEvent = new WMIEvent();
-
             WqlEventQuery query;
             ManagementOperationObserver observer = new ManagementOperationObserver();
-
-            //ManagementScope scope = new ManagementScope("root\\CIMV2");
 
             var scope = new ManagementScope("root\\CIMV2") { Options = { EnablePrivileges = true } };
             const string plugInSql = "SELECT * FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_PnPEntity'";
@@ -193,12 +152,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
         }
 
-        private void Watcher_EventArrived(object sender, EventArrivedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-
         private sComPortModel adddeviceToManagementTable(ManagementBaseObject TargetInstanceObject)
         {
             try
@@ -212,15 +165,8 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
                 //TODO add extended support for FTDI matching etc....
 
-                //"FTDIBUS\\VID_0403+PID_6001+FTVSZYKLA\\0000"
-
                 Match mSer = Regex.Match(vid, "FTDIBUS\\\\VID_[0-9A-Z]*.PID_[0-9A-Z]*.([A-Z0-9]*)", RegexOptions.IgnoreCase);
-
                 Match mSer2 = Regex.Match(vid, "USB\\\\VID_[0-9A-Z]*.PID_[0-9A-Z]*\\\\([A-Z0-9]*)", RegexOptions.IgnoreCase);
-
-                //USB\VID_1FFB&PID_00CB\00317582
-
-
 
                 lock (ports)
                 {
@@ -243,7 +189,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
                             }
                         }
 
-
                         if (port.description == null)
                         {
                             if (mVID.Success && mPID.Success)
@@ -262,7 +207,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
                                     return port;
                                 }
                             }
-
                         }
 
                     }
@@ -295,7 +239,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Error getting management info: {Message}", ex.Message);
                 return null;
             }
         }
@@ -339,7 +282,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
                     {
                         port.present = false;
                         port.onDisconnect();
-                        // ports.Remove(port);
                         break;
                     }
                 }
@@ -355,17 +297,16 @@ namespace PFMMeasurementService.Models.Devices.Buses
                 ManagementBaseObject TargetInstanceObject = (ManagementBaseObject)TargetInstanceData.Value;
                 if (TargetInstanceObject != null)
                 {
-
-
                     string deviceId = TargetInstanceObject.Properties["DeviceId"].Value.ToString();
                     var description = TargetInstanceObject.Properties["Description"].Value.ToString();
 
                     adddeviceToManagementTable(TargetInstanceObject);
-                    //_logger.LogInformation("USB Device arrival {Description} {DeviceId}", description, deviceId);
                     updateDeviceStatus();
 
                 }
             }
+
+            DeviceListChanged?.Invoke(this,Arguments);
         }
 
         private void OnUsbDisconnected(object Sender, EventArrivedEventArgs Arguments)
@@ -384,8 +325,9 @@ namespace PFMMeasurementService.Models.Devices.Buses
                     updateDeviceStatus();
                 }
             }
-        }
 
+            DeviceListChanged?.Invoke(this, Arguments);
+        }
 
         public sComPortModel requestSerialPortById(string vid, string pid, string ser, string portname = null)
         {
@@ -436,11 +378,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
         }
 
-        public void SerialPortStatusChangedEvent(EventHandler e, string portname)
-        {
-            portStatusChanged.Add(portname, e);
-        }
-
         #region IDisposable
 
         private bool _disposed = false;
@@ -464,7 +401,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
         }
 
         #endregion
-
 
     }
 

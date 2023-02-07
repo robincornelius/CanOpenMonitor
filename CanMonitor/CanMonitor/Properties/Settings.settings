@@ -44,5 +44,8 @@
     <Setting Name="FileLogFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">CanMonitorLog</Value>
     </Setting>
+    <Setting Name="lastrate" Type="System.String" Scope="User">
+      <Value Profile="(Default)">500Kbit</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

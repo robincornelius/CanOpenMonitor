@@ -94,7 +94,6 @@
       <DependentUpon>CanLogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="IComportManager.cs" />
-    <Compile Include="IDeviceModel.cs" />
     <Compile Include="Prefs.cs">
       <SubType>Form</SubType>
     </Compile>

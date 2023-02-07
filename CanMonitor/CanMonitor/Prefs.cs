@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace CanMonitor
 {
@@ -16,6 +12,12 @@ namespace CanMonitor
 
         private string appdatafolder;
         private string assemblyfolder;
+
+        // The path to the key where Windows looks for startup applications
+        RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        static string MyApp = "CanMonitor";
+
+
         public Prefs(string _appdatafolder, string _assemblyfolder)
         {
             InitializeComponent();
@@ -31,6 +33,22 @@ namespace CanMonitor
 
             textBox_filelogfolder.Text = Properties.Settings.Default.FileLogFolder;
             checkBox_filelog.Checked = Properties.Settings.Default.AutoFileLog;
+
+
+            if (rkApp.GetValue(MyApp) == null)
+            {
+                // The value doesn't exist, the application is not set to run at startup
+                checkBox_startwithwindows.Checked = false;
+            }
+            else
+            {
+                // The value exists, the application is set to run at startup
+                checkBox_startwithwindows.Checked = true;
+            }
+
+            textBox_lastpport.Text = Properties.Settings.Default.lastport;
+            textBox_rate.Text = Properties.Settings.Default.lastrate;
+
 
             loadplugins();
         }
@@ -70,6 +88,9 @@ namespace CanMonitor
                 string drivername = Path.GetFileName(driver);
 
                 if (drivername.ToLower() == "pdointerface.dll")
+                    continue;
+
+                if (drivername.ToLower() == "guicomponents.dll")
                     continue;
 
                 if (autoloadfixed.Contains(driver))
@@ -128,6 +149,19 @@ namespace CanMonitor
 
 
             Properties.Settings.Default.Save();
+
+            if (checkBox_startwithwindows.Checked)
+            {
+                // Add the value in the registry so that the application runs at startup
+                rkApp.SetValue(MyApp, Application.ExecutablePath);
+            }
+            else
+            {
+                // Remove the value from the registry so that the application doesn't start
+                rkApp.DeleteValue(MyApp, false);
+            }
+
+
             this.Close();
 
         }
@@ -135,6 +169,21 @@ namespace CanMonitor
         private void button_close_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void textBox_filelogfolder_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox_filelog_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

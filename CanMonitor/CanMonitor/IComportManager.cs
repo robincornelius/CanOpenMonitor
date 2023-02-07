@@ -10,11 +10,9 @@ namespace PFMMeasurementService.Models.Devices.Buses
     {
         sComPortModel requestSerialPortById(string vid, string pid, string ser, string portname);
 
-        void SerialPortStatusChangedEvent(EventHandler e, string portname);
-
         List<sComPortModel> GetPorts();
 
-
+        event EventHandler<EventArgs> DeviceListChanged;
 
     }
 }
