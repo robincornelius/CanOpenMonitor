@@ -74,7 +74,9 @@ namespace CanMonitor
             }
 
             adddrivers(Directory.GetFiles(Path.Combine(assemblyfolder, "plugins"), "*.dll"));
-            adddrivers(Directory.GetFiles(Path.Combine(assemblyfolder, "privateplugins"), "*.dll"));
+
+            if(Directory.Exists(Path.Combine(assemblyfolder, "privateplugins")))
+                adddrivers(Directory.GetFiles(Path.Combine(assemblyfolder, "privateplugins"), "*.dll"));
 
         }
 
