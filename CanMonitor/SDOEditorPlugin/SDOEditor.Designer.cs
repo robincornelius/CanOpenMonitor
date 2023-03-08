@@ -88,6 +88,11 @@
             // 
             this.numericUpDown_node.Hexadecimal = true;
             this.numericUpDown_node.Location = new System.Drawing.Point(56, 36);
+            this.numericUpDown_node.Maximum = new decimal(new int[] {
+            127,
+            0,
+            0,
+            0});
             this.numericUpDown_node.Name = "numericUpDown_node";
             this.numericUpDown_node.Size = new System.Drawing.Size(93, 20);
             this.numericUpDown_node.TabIndex = 3;
