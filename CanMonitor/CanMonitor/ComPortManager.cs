@@ -86,7 +86,7 @@ namespace PFMMeasurementService.Models.Devices.Buses
         {
 
             using (var searcher = new ManagementObjectSearcher("root\\CIMV2",
-                string.Format($"SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{{{0}}}\" OR ClassGuid=\"{{{1}}}\" ", ClassUSBSerial, ClassUSB)))
+                string.Format("SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{{{0}}}\" OR ClassGuid=\"{{{1}}}\" ", ClassUSBSerial, ClassUSB)))
             {
                 var ports = searcher.Get().Cast<ManagementBaseObject>().ToList();
 

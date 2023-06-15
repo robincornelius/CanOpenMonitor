@@ -1791,59 +1791,68 @@ namespace CanMonitor
 
         private void enumerateports()
         {
-            comboBox_port.Text = "";
-            comboBox_port.Items.Clear();
 
-            textBox_info.AppendText("\r\nEnumerating ports....\r\n\r\n");
+            if (this.IsHandleCreated == false)
+                return;
 
-            foreach (string s in drivers)
+            this.Invoke(new MethodInvoker(delegate ()
             {
-                textBox_info.AppendText(String.Format("Attempting to enumerate with driver {0}\r\n", s));
 
-                try
+                comboBox_port.Text = "";
+                comboBox_port.Items.Clear();
+
+                textBox_info.AppendText("\r\nEnumerating ports....\r\n\r\n");
+
+                foreach (string s in drivers)
                 {
-                    lco.enumerate(s);
-                }
-                catch (Exception e)
-                {
-                    textBox_info.AppendText(e.ToString() + "\r\n");
-                }
-            }
+                    textBox_info.AppendText(String.Format("Attempting to enumerate with driver {0}\r\n", s));
 
-            textBox_info.AppendText("\r\n");
-
-            foreach (KeyValuePair<string, List<string>> kvp in lco.ports)
-            {
-                List<string> ps = kvp.Value;
-
-
-                textBox_info.AppendText($"Driver {kvp.Key} has {kvp.Value.Count} ports\r\n");
-
-                foreach (string s in ps)
-                {
-                    textBox_info.AppendText(string.Format("Found port {0}\r\n", s));
-                    driverport dp = new driverport();
-                    dp.port = s;
-                    dp.driver = kvp.Key;
-                    comboBox_port.Items.Add(dp);
+                    try
+                    {
+                        lco.enumerate(s);
+                    }
+                    catch (Exception e)
+                    {
+                        textBox_info.AppendText(e.ToString() + "\r\n");
+                    }
                 }
 
                 textBox_info.AppendText("\r\n");
-            }
 
-            textBox_info.AppendText("\r\n");
+                foreach (KeyValuePair<string, List<string>> kvp in lco.ports)
+                {
+                    List<string> ps = kvp.Value;
 
-            List<sComPortModel> psx = cpm.GetPorts();
 
-            foreach (sComPortModel p in psx)
-            {
-                driverport dp = new driverport();
-                dp.port = string.Format($"USB/VID_{p.vid}/PID_{p.pid}");
-                dp.PID = p.pid;
-                dp.VID = p.vid;
-                dp.driver = "drivers\\can_canusb_win32";
-                comboBox_port.Items.Add(dp);
-            }
+                    textBox_info.AppendText($"Driver {kvp.Key} has {kvp.Value.Count} ports\r\n");
+
+                    foreach (string s in ps)
+                    {
+                        textBox_info.AppendText(string.Format("Found port {0}\r\n", s));
+                        driverport dp = new driverport();
+                        dp.port = s;
+                        dp.driver = kvp.Key;
+                        comboBox_port.Items.Add(dp);
+                    }
+
+                    textBox_info.AppendText("\r\n");
+                }
+
+                textBox_info.AppendText("\r\n");
+
+                List<sComPortModel> psx = cpm.GetPorts();
+
+                foreach (sComPortModel p in psx)
+                {
+                    driverport dp = new driverport();
+                    dp.port = string.Format($"USB/VID_{p.vid}/PID_{p.pid}");
+                    dp.PID = p.pid;
+                    dp.VID = p.vid;
+                    dp.driver = "drivers\\can_canusb_win32";
+                    comboBox_port.Items.Add(dp);
+                }
+            }));
+
         }
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)

@@ -17,6 +17,8 @@ namespace SDOEditorPlugin
         public delegate void OnUpdateValue(string value);
         public event OnUpdateValue UpdateValue;
 
+        ODentry tod;
+
         public string newvalue;
         public ValueEditor(ODentry od,string currentval)
         {
@@ -31,6 +33,26 @@ namespace SDOEditorPlugin
             label_name.Text = od.parameter_name;
             textBox_desc.Text = od.Description;
             textBox_current.Text = currentval;
+
+            tod = od;
+
+            updatestring();
+
+        }
+
+        private void updatestring()
+        {
+            if (tod == null)
+                return;
+
+            if(tod.datatype == DataType.VISIBLE_STRING)
+            {
+                label_length.Text = String.Format("{0}/{1}", textBox_current.Text.Length,tod.defaultvalue.Length);
+            }
+            else
+            {
+                label_length.Text = "";
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -72,6 +94,12 @@ namespace SDOEditorPlugin
             textBox_current.Text = val.ToString();
 
             UpdateValue?.Invoke(textBox_current.Text);
+        }
+
+        private void textBox_current_TextChanged(object sender, EventArgs e)
+        {
+            updatestring();
+                
         }
     }
 }
