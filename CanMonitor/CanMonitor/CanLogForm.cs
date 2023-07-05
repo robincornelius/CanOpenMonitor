@@ -199,7 +199,7 @@ namespace CanMonitor
 
         private void Cpm_DeviceListChanged(object sender, EventArgs e)
         {
-            enumerateports();
+           // enumerateports();
         }
 
         DateTime last;
