@@ -47,7 +47,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="eeprom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResetEEPROM.cs">
       <SubType>Form</SubType>
@@ -60,6 +60,10 @@
     <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj">
       <Project>{2fb81add-258f-4135-a9b9-17e2aca2448e}</Project>
       <Name>libCanopenSimple</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GUIComponents\GUIComponents.csproj">
+      <Project>{35368bb9-3ac0-4c7e-8df2-11594e341421}</Project>
+      <Name>GUIComponents</Name>
     </ProjectReference>
     <ProjectReference Include="..\PDOInterface\PDOInterface.csproj">
       <Project>{1f61b56a-0bdc-45f6-8954-cf2550775cbd}</Project>

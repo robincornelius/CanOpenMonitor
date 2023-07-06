@@ -51,7 +51,7 @@ namespace eeprom_plugin
             ResetEEPROM re = new ResetEEPROM(_lco);
             //re.Show();
 
-            re.Show(dp, DockState.Document);
+            re.Show(dp, DockState.DockLeft);
 
         }
 

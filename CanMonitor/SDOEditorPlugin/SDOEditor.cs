@@ -151,6 +151,7 @@ namespace SDOEditorPlugin
 
 
             this.ToolTipText = eds.di.ProductName;
+            this.DockHandler.TabText = "OD: "+eds.di.ProductName;
 
             this.filename = filename;
             addtoMRU(filename);

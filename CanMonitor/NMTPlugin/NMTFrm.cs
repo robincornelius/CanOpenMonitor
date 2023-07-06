@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using libCanopenSimple;
-
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace NMTPlugin
 {
-    public partial class NMTFrm : Form
+    public partial class NMTFrm : DockContent
     {
         libCanopenSimple.libCanopenSimple lco;
 
@@ -21,6 +21,7 @@ namespace NMTPlugin
             this.lco = lco;
             InitializeComponent();
         }
+
 
         private void button_startbus_Click(object sender, EventArgs e)
         {

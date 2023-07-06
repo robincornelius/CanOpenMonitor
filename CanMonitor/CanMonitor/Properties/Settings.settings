@@ -47,5 +47,8 @@
     <Setting Name="lastrate" Type="System.String" Scope="User">
       <Value Profile="(Default)">500Kbit</Value>
     </Setting>
+    <Setting Name="autoscroll" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -100,13 +100,48 @@
     <Compile Include="CanLogForm.Designer.cs">
       <DependentUpon>CanLogForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ConnectionControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConnectionControl.Designer.cs">
+      <DependentUpon>ConnectionControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ControlExtensions.cs" />
+    <Compile Include="DriverLoader.cs" />
+    <Compile Include="EmcyDocument.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EmcyDocument.Designer.cs">
+      <DependentUpon>EmcyDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ErrorCodes.cs" />
+    <Compile Include="ICanDocument.cs" />
     <Compile Include="IComportManager.cs" />
+    <Compile Include="InfoLogDocument.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InfoLogDocument.Designer.cs">
+      <DependentUpon>InfoLogDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LogControls.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogControls.Designer.cs">
+      <DependentUpon>LogControls.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainDockForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainDockForm.Designer.cs">
       <DependentUpon>MainDockForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="NMTDocument.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NMTDocument.Designer.cs">
+      <DependentUpon>NMTDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PluginManager.cs" />
     <Compile Include="Prefs.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -118,8 +153,23 @@
     <EmbeddedResource Include="CanLogForm.resx">
       <DependentUpon>CanLogForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ConnectionControl.resx">
+      <DependentUpon>ConnectionControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmcyDocument.resx">
+      <DependentUpon>EmcyDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InfoLogDocument.resx">
+      <DependentUpon>InfoLogDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogControls.resx">
+      <DependentUpon>LogControls.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainDockForm.resx">
       <DependentUpon>MainDockForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NMTDocument.resx">
+      <DependentUpon>NMTDocument.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Prefs.resx">
       <DependentUpon>Prefs.cs</DependentUpon>

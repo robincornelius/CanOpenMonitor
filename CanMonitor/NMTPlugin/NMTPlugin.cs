@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using PDOInterface;
 using libCanopenSimple;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace NMTPlugin
 {
-    public class NMTPlugin : InterfaceService, IPDOParser
+    public class NMTPlugin : InterfaceService, IInterfaceService2, IPDOParser
     {
+        DockPanel dp;
         public NMTPlugin()
         {
             addverb("NMT", "_root_", null);
@@ -21,6 +23,11 @@ namespace NMTPlugin
             addverb("---", "NMT", null);
             addverb("Advanced", "NMT", showdlg);
 
+        }
+
+        void IInterfaceService2.setdockmanager(DockPanel _dp)
+        {
+            this.dp = _dp;
         }
 
         public void endsdo(int node, int index, int sub, byte[] payload)
@@ -84,7 +91,7 @@ namespace NMTPlugin
                 return;
 
             NMTFrm FRM = new NMTFrm(_lco);
-            FRM.Show();
+            FRM.Show(dp, DockState.DockLeft);
         }
     }
 
