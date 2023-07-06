@@ -22,9 +22,12 @@ namespace CanMonitor
             {  
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new CanLogForm());
+                Application.Run(new MainDockForm());
+
+                //Application.Run(new CanLogForm());
+
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.ToString());
             }

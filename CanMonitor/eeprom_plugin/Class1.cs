@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using libCanopenSimple;
 using PDOInterface;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace eeprom_plugin
 {
-    public class eeprom_plugin : InterfaceService, IPDOParser
+    public class eeprom_plugin : InterfaceService, IInterfaceService2, IPDOParser
     {
+        DockPanel dp;
         public eeprom_plugin()
         {
             addverb("Tools", "_root_", null);
@@ -47,8 +49,15 @@ namespace eeprom_plugin
                 return;
 
             ResetEEPROM re = new ResetEEPROM(_lco);
-            re.Show();
+            //re.Show();
+
+            re.Show(dp, DockState.Document);
+
         }
 
+        void IInterfaceService2.setdockmanager(DockPanel _dp)
+        {
+            this.dp = _dp;
+        }
     }
 }

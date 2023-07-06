@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using libCanopenSimple;
-
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace PDOInterface
 {
@@ -25,6 +25,11 @@ namespace PDOInterface
         void preregisterPDOS(Dictionary<UInt16, Func<byte[], string>> dic);
         void deregisterplugin();
         void DriverStateChange(libCanopenSimple.ConnectionChangedEventArgs e);
+    }
+
+    public interface IInterfaceService2
+    {
+        void setdockmanager(DockPanel dp);
     }
 
     public interface IVerb

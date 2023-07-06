@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using libCanopenSimple;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace eeprom_plugin
 {
-    public partial class ResetEEPROM : Form
+    public partial class ResetEEPROM : DockContent
     {
         private libCanopenSimple.libCanopenSimple lco;
 

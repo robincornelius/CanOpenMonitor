@@ -11,10 +11,11 @@ using libEDSsharp;
 using System.IO;
 using Xml2CSharp;
 using libCanopenSimple;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace SDOEditorPlugin
 {
-    public partial class SDOEditor : Form
+    public partial class SDOEditor : DockContent
     {
 
         EDSsharp eds;
@@ -88,12 +89,7 @@ namespace SDOEditorPlugin
                                     eds = xdd2.convert(xdd2.dev);
                                 }
   
-
-
-                     
                             /*   
-                          
-
                             eds.xmlfilename = filename;
                             */
                         }
@@ -152,6 +148,9 @@ namespace SDOEditorPlugin
 
             updatetable(isdcf,isemptydcf);
 
+
+
+            this.ToolTipText = eds.di.ProductName;
 
             this.filename = filename;
             addtoMRU(filename);

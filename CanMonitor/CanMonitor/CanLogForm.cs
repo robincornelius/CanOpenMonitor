@@ -14,13 +14,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace CanMonitor
 {
-    public partial class CanLogForm : Form
+    public partial class CanLogForm : DockContent
     {
 
         private libCanopenSimple.libCanopenSimple lco = new libCanopenSimple.libCanopenSimple();
+
+        public DockPanel dockpanel;
+
 
 
         private Dictionary<UInt16, Func<byte[], string>> pdoprocessors = new Dictionary<ushort, Func<byte[], string>>();
@@ -1163,7 +1167,16 @@ namespace CanMonitor
                     {
                         IInterfaceService iis = (IInterfaceService)kvp.Value;
                         iis.setlco(lco);
+
+                        if (kvp.Value is IInterfaceService2)
+                        {
+                            IInterfaceService2 iis2 = (IInterfaceService2)kvp.Value;
+                            iis2.setdockmanager(dockpanel);
+                        }
+
                     }
+
+
 
                 }
                 else

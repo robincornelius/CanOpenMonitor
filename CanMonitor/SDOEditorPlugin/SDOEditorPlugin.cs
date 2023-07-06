@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 
 using PDOInterface;
 using libCanopenSimple;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace SDOEditorPlugin
 {
-    public class SDOEditorPlugin : InterfaceService, IPDOParser
+    public class SDOEditorPlugin : InterfaceService, IInterfaceService2, IPDOParser
     {
-        
+
+        private DockPanel dp;
+
         public SDOEditorPlugin()
         {
             addverb("Tools", "_root_", null);
@@ -40,8 +43,12 @@ namespace SDOEditorPlugin
                 return;
 
             SDOEditor ed = new SDOEditor(_lco);
-            ed.Show();
+            ed.Show(dp, DockState.Document);
         }
 
+        public void setdockmanager(DockPanel dp)
+        {
+            this.dp = dp;
+        }
     }
 }
