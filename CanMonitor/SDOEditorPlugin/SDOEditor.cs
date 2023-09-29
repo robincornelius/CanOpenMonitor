@@ -12,6 +12,7 @@ using System.IO;
 using Xml2CSharp;
 using libCanopenSimple;
 using WeifenLuo.WinFormsUI.Docking;
+using System.Security.Cryptography;
 
 namespace SDOEditorPlugin
 {
@@ -49,9 +50,13 @@ namespace SDOEditorPlugin
 
                     lvi.BackColor = Color.White;
                     sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
-                    SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
-                    help.sdo = sdo;
-                    lvi.Tag = help;
+
+                    if (help.od.objecttype != ObjectType.DOMAIN)
+                    {
+                        SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
+                        help.sdo = sdo;
+                        lvi.Tag = help;
+                    }
 
                 }
 
@@ -313,11 +318,14 @@ namespace SDOEditorPlugin
                         if (help.sdo != sdo)
                             continue;
 
-                        sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
-                        help.sdo = sdo;
-                        lvi.Tag = help;
+                        if (help.od.objecttype != ObjectType.DOMAIN)
+                        {
+                            sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
+                            help.sdo = sdo;
+                            lvi.Tag = help;
 
-                        break;
+                            break;
+                        }
 
 
                     }
@@ -669,6 +677,19 @@ namespace SDOEditorPlugin
                         break;
                 }
 
+                case DataType.DOMAIN:
+                    {
+
+                        byte[] bytes = Encoding.ASCII.GetBytes(sval);
+
+                        
+
+                        sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, bytes, upsucc);
+
+
+                        break;
+                    }
+
 
                 default:
 
@@ -691,8 +712,6 @@ namespace SDOEditorPlugin
                 return;
             }
 
-
-
             sdocallbackhelper h = (sdocallbackhelper)listView1.SelectedItems[0].Tag;
             ValueEditor ve = new ValueEditor(h.od, listView1.SelectedItems[0].SubItems[5].Text);
 
@@ -706,6 +725,31 @@ namespace SDOEditorPlugin
             {
                 h.sdo = dovalueupdate(h, s);
                 listView1.SelectedItems[0].Tag = h;
+            };
+
+            ve.SaveValue += delegate (string file, ODentry od)
+            {
+                if (od.objecttype != ObjectType.DOMAIN)
+                {
+                    lco.SDOread((byte)this.numericUpDown_node.Value, od.Index, (byte)od.Subindex, delegate (SDO s)
+                    {
+                        try
+                        {
+                            if (s.state == SDO.SDO_STATE.SDO_FINISHED)
+                            {
+                                System.IO.File.WriteAllBytes(file, s.databuffer);
+                            }
+                            else
+                            {
+                                throw new Exception("SDO transfer failed");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error: " + ex.ToString());
+                        }
+                    });
+                }
             };
 
 
@@ -744,9 +788,13 @@ namespace SDOEditorPlugin
 
                     lvi.BackColor = Color.White;
                     sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
-                    SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
-                    help.sdo = sdo;
-                    lvi.Tag = help;
+
+                    if (help.od.objecttype != ObjectType.DOMAIN)
+                    {
+                        SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
+                        help.sdo = sdo;
+                        lvi.Tag = help;
+                    }
 
                 }
 

@@ -35,6 +35,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.label2 = new System.Windows.Forms.Label();
+            this.button_flashzero = new System.Windows.Forms.Button();
+            this.button_enterbootloader = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).BeginInit();
             this.SuspendLayout();
             // 
@@ -42,7 +44,7 @@
             // 
             this.button1.Location = new System.Drawing.Point(27, 38);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(150, 45);
+            this.button1.Size = new System.Drawing.Size(98, 45);
             this.button1.TabIndex = 0;
             this.button1.Text = "Load Hex";
             this.button1.UseVisualStyleBackColor = true;
@@ -50,6 +52,7 @@
             // 
             // button_flash
             // 
+            this.button_flash.Enabled = false;
             this.button_flash.Location = new System.Drawing.Point(27, 117);
             this.button_flash.Name = "button_flash";
             this.button_flash.Size = new System.Drawing.Size(150, 45);
@@ -81,7 +84,7 @@
             this.textBox1.Location = new System.Drawing.Point(12, 308);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(617, 167);
+            this.textBox1.Size = new System.Drawing.Size(266, 167);
             this.textBox1.TabIndex = 3;
             // 
             // label1
@@ -97,23 +100,45 @@
             // 
             this.progressBar1.Location = new System.Drawing.Point(12, 237);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(617, 23);
+            this.progressBar1.Size = new System.Drawing.Size(266, 23);
             this.progressBar1.TabIndex = 6;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(253, 263);
+            this.label2.Location = new System.Drawing.Point(12, 273);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(75, 13);
             this.label2.TabIndex = 7;
             this.label2.Text = "Flash progress";
             // 
+            // button_flashzero
+            // 
+            this.button_flashzero.Location = new System.Drawing.Point(27, 168);
+            this.button_flashzero.Name = "button_flashzero";
+            this.button_flashzero.Size = new System.Drawing.Size(123, 45);
+            this.button_flashzero.TabIndex = 8;
+            this.button_flashzero.Text = "Flash page 0";
+            this.button_flashzero.UseVisualStyleBackColor = true;
+            this.button_flashzero.Click += new System.EventHandler(this.button_flashzero_Click);
+            // 
+            // button_enterbootloader
+            // 
+            this.button_enterbootloader.Location = new System.Drawing.Point(180, 38);
+            this.button_enterbootloader.Name = "button_enterbootloader";
+            this.button_enterbootloader.Size = new System.Drawing.Size(98, 45);
+            this.button_enterbootloader.TabIndex = 9;
+            this.button_enterbootloader.Text = "Enter BL";
+            this.button_enterbootloader.UseVisualStyleBackColor = true;
+            this.button_enterbootloader.Click += new System.EventHandler(this.button_enterbootloader_Click);
+            // 
             // Flasher
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(656, 487);
+            this.ClientSize = new System.Drawing.Size(307, 487);
+            this.Controls.Add(this.button_enterbootloader);
+            this.Controls.Add(this.button_flashzero);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label1);
@@ -138,5 +163,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button button_flashzero;
+        private System.Windows.Forms.Button button_enterbootloader;
     }
 }

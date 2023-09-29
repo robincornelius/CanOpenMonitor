@@ -29,5 +29,19 @@ namespace CanMonitor
             return port;
         }
 
+        
+        public bool issamedriver(driverport obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (this.driver == obj.driver && this.port == obj.port)
+                return true;
+
+            return false;
+
+        }
+        
+
     }
 }

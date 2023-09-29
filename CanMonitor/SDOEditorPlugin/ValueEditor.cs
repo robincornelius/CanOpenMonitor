@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,10 @@ namespace SDOEditorPlugin
 
         public delegate void OnUpdateValue(string value);
         public event OnUpdateValue UpdateValue;
+        
+        public delegate void OnSaveValue(string file, ODentry od);
+        public event OnSaveValue SaveValue;
+
 
         ODentry tod;
 
@@ -35,6 +40,25 @@ namespace SDOEditorPlugin
             textBox_current.Text = currentval;
 
             tod = od;
+
+            if(od.datatype == DataType.DOMAIN)
+            {
+                button_downloadfile.Enabled = true;
+                button_uploadfile.Enabled = true;
+                button1.Enabled = false;
+                button2.Enabled = false;
+                textBox_current.Enabled = false;
+
+            }
+            else
+            {
+                button_downloadfile.Enabled = false;
+                button_uploadfile.Enabled = false;
+                button1.Enabled = true;
+                button2.Enabled = true;
+                textBox_current.Enabled = true;
+            }
+
 
             updatestring();
 
@@ -100,6 +124,33 @@ namespace SDOEditorPlugin
         {
             updatestring();
                 
+        }
+
+        private void button_uploadfile_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            
+            if(ofd.ShowDialog()== DialogResult.OK)
+            {
+
+                byte[] b = File.ReadAllBytes(ofd.FileName);
+
+                string str = System.Text.Encoding.ASCII.GetString(b);
+                UpdateValue?.Invoke(str);
+
+            }    
+
+        }
+
+        private void button_downloadfile_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                SaveValue?.Invoke(sfd.FileName, tod);
+            }
+
         }
     }
 }

@@ -16,6 +16,7 @@ namespace CanMonitor
     public partial class MainDockForm : Form
     {
         private List<string> _mru = new List<string>();
+        string gitVersion;
 
         ConnectionControl connectioncontrol = null;
         LogControls logcontrols = null;
@@ -31,23 +32,28 @@ namespace CanMonitor
             InitializeComponent();
 
             this.FormClosing += MainDockForm_FormClosing;
+            this.Load += MainDockForm_Load;
 
             Program.pluginManager.menuStrip1 = this.menuStrip1;
-
+ 
             //  dockPanel1.Theme = new WeifenLuo.WinFormsUI.ThemeVS2015.VS2015ThemeBase();
             var theme = new VS2015DarkTheme();
             dockPanel1.Theme = theme;
+
+            Program.pluginManager.SetDockPanel(dockPanel1);
 
             clf = new CanLogForm();
             clf.dockpanel = dockPanel1;
             clf.Show(dockPanel1, DockState.Document);
 
             connectioncontrol = new ConnectionControl();
-            connectioncontrol.Show(dockPanel1, DockState.DockTop);
+            //connectioncontrol.Show(dockPanel1, DockState.DockTop);
+            addtotopcontrols(connectioncontrol);
 
             logcontrols = new LogControls();
             logcontrols.ClearLists += Logcontrols_ClearLists;
-            logcontrols.Show(dockPanel1, DockState.DockTop);
+            addtotopcontrols(logcontrols);
+            //logcontrols.Show(dockPanel1, DockState.DockTop);
 
             infolog = new InfoLogDocument();
             nmtdocument = new NMTDocument();
@@ -57,11 +63,44 @@ namespace CanMonitor
             emcydocument.Show(dockPanel1, DockState.Document);
             infolog.Show(dockPanel1, DockState.Document);
 
+            connectioncontrol.Activate();
+            clf.Activate();
+
+            Program.pluginManager.autoloadplugins();
+
+
+
             var mruFilePath = Path.Combine(Program.appdatafolder, "PLUGINMRU.txt");
             if (System.IO.File.Exists(mruFilePath))
                 _mru.AddRange(System.IO.File.ReadAllLines(mruFilePath));
 
             populateMRU();
+
+        }
+
+        private void MainDockForm_Load(object sender, EventArgs e)
+        {
+            //read git version string, show in title bar 
+            //(https://stackoverflow.com/a/15145121)
+            string gitVersion = String.Empty;
+            using (Stream stream = System.Reflection.Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("CanMonitor." + "version.txt"))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                gitVersion = reader.ReadToEnd();
+            }
+            if (gitVersion == "")
+            {
+                gitVersion = "Unknown";
+            }
+            this.Text += " -- " + gitVersion;
+            this.gitVersion = gitVersion;
+        }
+
+        private void addtotopcontrols(DockContent o)
+        {
+
+            o.Show(dockPanel1, DockState.DockTop);
 
         }
 

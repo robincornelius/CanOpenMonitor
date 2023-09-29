@@ -69,8 +69,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
         readonly Guid ClassUSBSerialFTDIMode = new Guid("36fc9e60-c465-11cf-8056-444553540000");
         readonly Guid ClassUSB = new Guid("a503e2d3-a031-49dc-b684-c99085dbfe92");
 
-        Dictionary<string, EventHandler> portStatusChanged = new Dictionary<string, EventHandler>();
-
         public ComPortManagerModel()
         {
             ports = EnumerateSerialPorts();
@@ -172,23 +170,7 @@ namespace PFMMeasurementService.Models.Devices.Buses
                 {
                     foreach (sComPortModel port in ports)
                     {
-                        if (!caption.Contains("Pololu") && port.description == caption)
-                        {
-                            port.present = true;
-                            port.onConnect(port.name);
-                            return port;
-                        }
-
-                        if (caption.Contains("Pololu") && port.description == caption && mSer2.Success)
-                        {
-                            if (mSer2.Groups[1].Value == port.serial)
-                            {
-                                port.present = true;
-                                port.onConnect(port.name);
-                                return port;
-                            }
-                        }
-
+                       
                         if (port.description == null)
                         {
                             if (mVID.Success && mPID.Success)

@@ -96,8 +96,8 @@ namespace FlashLoader
 
                             if (curaddress==0)
                             {
-                                //Console.WriteLine("ADDR 0");
-
+                                 Console.WriteLine($"ADDR 0 GOTO 0x{opcode_num:x}");
+                                
                                  //Console.WriteLine("MODDING GOTO TO POINT TO BOOTLOADER");
                                  //opcode_num = 0x00040800; //GOTO 0x800 
                                
@@ -118,7 +118,7 @@ namespace FlashLoader
                             if (curaddress>0x557FE)
                             {
                                 Console.WriteLine("Ignoring PIC config settings for the moment??");
-                                continue;
+                               // continue;
                             }
 
                         //    Console.WriteLine("line {0} - base {1:x6} ext {2:x6} address: {3:x6} opcode: {4:x6}", lineno, addrlo, ext_address, curaddress, opcode_num);

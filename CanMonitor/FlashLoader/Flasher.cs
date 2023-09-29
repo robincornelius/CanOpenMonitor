@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using libCanopenSimple;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace FlashLoader
 {
-    public partial class Flasher : Form
+    public partial class Flasher : DockContent
     {
         libCanopenSimple.libCanopenSimple lco;
         IntelHex ih;
@@ -19,6 +20,7 @@ namespace FlashLoader
         bool busy = false;
         string filename = "";
         byte node;
+        byte node2;
 
         public Flasher(libCanopenSimple.libCanopenSimple lco)
         {
@@ -52,7 +54,8 @@ namespace FlashLoader
                 textBox1.AppendText("** Loading hex file **\r\n");
 
                 filename = ofd.FileName;
-                node = (byte)numericUpDown_node.Value;
+                node2 = (byte)numericUpDown_node.Value;
+                node = 0x7f;
 
                 backgroundWorker1 = new BackgroundWorker();
 
@@ -117,7 +120,8 @@ namespace FlashLoader
             //to put the device in operational mode. The bootloader is not fully CANopen 
             //compliant(deemed unnecessary), but should be compatible with most CANopen devices.
 
-            node = (byte)numericUpDown_node.Value;
+            node2 = (byte)numericUpDown_node.Value;
+            node = 0x7f;
 
             if (ih == null)
                 return;
@@ -131,12 +135,12 @@ namespace FlashLoader
 
             textBox1.AppendText("** Enabling boot loader restart **\r\n");
 
-            lco.SDOwrite(node, 0x5fff, 0x00, (byte)0xff, a => {
-                textBox1.Invoke(new MethodInvoker(delegate
-                {
-                    textBox1.AppendText("** Sending node reset **\r\n");
-                }));
-                lco.NMT_ResetNode(node);
+            UInt32 boot = 0x66797984;
+
+            textBox1.AppendText("** Sending enter boot loader command **\r\n");
+
+            lco.SDOwrite(node2, 0x5fff, 0x00, boot, a => {
+               
             });
 
             //backgroundWorker2.RunWorkerAsync();
@@ -148,10 +152,8 @@ namespace FlashLoader
             if (!busy)
                 return;
 
-
            
-
-            if ((p.cob&0x0ff) == node)
+            if ((p.cob&0x0ff) == 0x7f)
             {
 
                 if (p.len ==1)
@@ -163,6 +165,9 @@ namespace FlashLoader
                         {
                             textBox1.AppendText("** RESET EVENT **\r\n");
                         }));
+
+
+                        System.Threading.Thread.Sleep(1000);
 
                         nextsdoplease(null);
 
@@ -179,6 +184,16 @@ namespace FlashLoader
 
         void nextsdoplease(SDO sdo)
         {
+
+            System.Threading.Thread.Sleep(1000);
+
+            if(sdo!=null && sdo.state == SDO.SDO_STATE.SDO_ERROR)
+            {
+                this.Invoke(new MethodInvoker(delegate ()
+                {
+                    textBox1.AppendText($"SDO ERROR\r\n");
+                }));
+            }
 
             if (ih.pages.ContainsKey(currentpage))
             {
@@ -208,7 +223,7 @@ namespace FlashLoader
 
                 currentpage++;
                 //nextsdoplease(null);
-                lco.SDOwrite((byte)numericUpDown_node.Value, 0x1f50, 0x01, sdodata, nextsdoplease);
+                lco.SDOwrite((byte)node, 0x1f50, 0x01, sdodata, nextsdoplease);
             }
             else
             {
@@ -246,10 +261,66 @@ namespace FlashLoader
 
         }
 
+        private void writepage(int page)
+        {
+
+        }
+
+
         private void button_run_Click(object sender, EventArgs e)
         {
 
             lco.NMT_start(0);
+
+        }
+
+        private void button_flashzero_Click(object sender, EventArgs e)
+        {
+
+            currentpage = 0;
+
+            byte[] sdodata = new byte[3 * 1024 + 3]; //pagesize + header;
+
+
+            UInt32 pageaddr = currentpage * 2 * 1024; //awesome
+
+            byte[] pagebits = BitConverter.GetBytes(pageaddr);
+
+            //24 bit page address
+            sdodata[0] = pagebits[0]; //LSB
+            sdodata[1] = pagebits[1];
+            sdodata[2] = pagebits[2]; //c# MSB
+
+            for (int x = 0; x < (3 * 1024); x++)
+            {
+                sdodata[x + 3] = ih.pages[currentpage][x];
+            }
+
+            textBox1.Invoke(new MethodInvoker(delegate ()
+            {
+                progressBar1.Value = (int)currentpage;
+                label2.Text = (String.Format("writing page {0}/{1}\r\n", currentpage, ih.maxpageno));
+            }));
+
+            currentpage++;
+            //nextsdoplease(null);
+            lco.SDOwrite((byte)node, 0x1f50, 0x01, sdodata, null);
+
+        }
+
+        private void button_enterbootloader_Click(object sender, EventArgs e)
+        {
+
+
+            UInt32 boot = 0x66797984;
+
+            node2 = (byte)numericUpDown_node.Value;
+
+            textBox1.AppendText("** Sending enter boot loader command **\r\n");
+
+            lco.SDOwrite(node2, 0x5fff, 0x00, boot, a => {
+
+            });
 
         }
     }

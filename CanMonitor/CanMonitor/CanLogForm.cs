@@ -37,13 +37,6 @@ namespace CanMonitor
 
         StreamWriter sw;
 
-      
-
-        string gitVersion;
-
-       
-
-
    
         Timer savetimer;
 
@@ -83,9 +76,8 @@ namespace CanMonitor
 
             //FIXME this is messy
             //FIXME autoload/start plugins may be a problem with docpanel                
-           
-            Program.pluginManager.autoloadplugins();
-            Program.pluginManager.SetDockPanel(dockpanel);
+
+           // Program.pluginManager.autoloadplugins();
 
             this.Shown += Form1_Shown;
 
@@ -144,6 +136,8 @@ namespace CanMonitor
         private void Form1_Shown(object sender, EventArgs e)
         {
 
+            this.Text = "CanOpen Log";
+
             //FIXME
             //if (Properties.Settings.Default.autoconnect == true)
             // {
@@ -185,6 +179,9 @@ namespace CanMonitor
                     listView1.Items.AddRange(listitems.ToArray());
 
                     listitems.Clear();
+
+                //    Properties.Settings.Default.Reload();
+                    bool s = Properties.Settings.Default.autoscroll;
 
                     if (Properties.Settings.Default.autoscroll && listView1.Items.Count > 2)
                         listView1.EnsureVisible(listView1.Items.Count - 1);
@@ -787,28 +784,6 @@ namespace CanMonitor
 
         }
 
-     
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-            //read git version string, show in title bar 
-            //(https://stackoverflow.com/a/15145121)
-            string gitVersion = String.Empty;
-            using (Stream stream = System.Reflection.Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("CanMonitor." + "version.txt"))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                gitVersion = reader.ReadToEnd();
-            }
-            if (gitVersion == "")
-            {
-                gitVersion = "Unknown";
-            }
-            this.Text += " -- " + gitVersion;
-            this.gitVersion = gitVersion;
-
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (Properties.Settings.Default.autoscroll)
@@ -920,11 +895,6 @@ namespace CanMonitor
         {
 
         }
-
-      
-      
-
-    
 
         private void Form1_Resize(object sender, EventArgs e)
         {

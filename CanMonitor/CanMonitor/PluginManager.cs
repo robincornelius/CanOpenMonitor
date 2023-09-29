@@ -25,6 +25,7 @@ namespace CanMonitor
         public Dictionary<UInt16, Func<byte[], string>> pdoprocessors = new Dictionary<ushort, Func<byte[], string>>();
         public MenuStrip menuStrip1;
 
+        DockPanel dp;
 
         public PluginManager()
         {
@@ -38,18 +39,7 @@ namespace CanMonitor
 
         public void SetDockPanel(DockPanel p)
         {
-            foreach (KeyValuePair<string, object> kvp in Program.pluginManager.plugins)
-            {
-                IInterfaceService iis = (IInterfaceService)kvp.Value;
-                iis.setlco(Program.lco);
-
-                if (kvp.Value is IInterfaceService2)
-                {
-                    IInterfaceService2 iis2 = (IInterfaceService2)kvp.Value;
-                    iis2.setdockmanager(p);
-                }
-
-            }
+            dp = p;
 
         }
 
@@ -121,6 +111,8 @@ namespace CanMonitor
                 plugins.Remove(pfilename);
                 loadedplugins.Remove(pfilename);
             }
+
+          
 
             if (loadedplugins.Contains(pfilename))
                 return;
@@ -226,12 +218,27 @@ namespace CanMonitor
                             ipdo.registerPDOS();
 
 
+                            if(obj is IInterfaceService2)
+                            {
+                                IInterfaceService2 iis2 = (IInterfaceService2)obj;
+                                iis2.setdockmanager(dp);
+                            }
+                           
                             //fixme
                             //textBox_info.AppendText(string.Format("SUCCESS loading plugin {0}\r\n", filename));
                         }
 
                     }
 
+
+
+
+
+
+                    
+
+
+            
                     if (type.GetInterface("PDOInterface.IInterfaceService") != null)
                     {
                         if (obj != null && obj is PDOInterface.IInterfaceService)

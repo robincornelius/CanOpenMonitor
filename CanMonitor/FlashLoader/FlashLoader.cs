@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PDOInterface;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace FlashLoader
 {
-    public class FlashLoader : InterfaceService, IPDOParser
+    public class FlashLoader : InterfaceService, IInterfaceService2, IPDOParser
     {
+        DockPanel dp;
+
         public FlashLoader()
         {
             addverb("---", "File", null);
@@ -38,8 +41,15 @@ namespace FlashLoader
                 return;
 
             Flasher f = new Flasher(_lco);
-            f.ShowDialog();
+
+            f.Show(dp, DockState.DockRight);
         }
+
+        void IInterfaceService2.setdockmanager(DockPanel _dp)
+        {
+            this.dp = _dp;
+        }
+
     }
 
 }

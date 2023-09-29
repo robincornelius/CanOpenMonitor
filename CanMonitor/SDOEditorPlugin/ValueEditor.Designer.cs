@@ -43,6 +43,8 @@
             this.button2 = new System.Windows.Forms.Button();
             this.buttondown = new System.Windows.Forms.Button();
             this.label_length = new System.Windows.Forms.Label();
+            this.button_uploadfile = new System.Windows.Forms.Button();
+            this.button_downloadfile = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -165,8 +167,8 @@
             // 
             // buttondown
             // 
-            this.buttondown.Location = new System.Drawing.Point(298, 318);
-            this.buttondown.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttondown.Location = new System.Drawing.Point(374, 316);
+            this.buttondown.Margin = new System.Windows.Forms.Padding(2);
             this.buttondown.Name = "buttondown";
             this.buttondown.Size = new System.Drawing.Size(56, 19);
             this.buttondown.TabIndex = 13;
@@ -184,11 +186,33 @@
             this.label_length.TabIndex = 14;
             this.label_length.Text = "--";
             // 
+            // button_uploadfile
+            // 
+            this.button_uploadfile.Location = new System.Drawing.Point(221, 302);
+            this.button_uploadfile.Name = "button_uploadfile";
+            this.button_uploadfile.Size = new System.Drawing.Size(102, 33);
+            this.button_uploadfile.TabIndex = 15;
+            this.button_uploadfile.Text = "Upload File";
+            this.button_uploadfile.UseVisualStyleBackColor = true;
+            this.button_uploadfile.Click += new System.EventHandler(this.button_uploadfile_Click);
+            // 
+            // button_downloadfile
+            // 
+            this.button_downloadfile.Location = new System.Drawing.Point(221, 347);
+            this.button_downloadfile.Name = "button_downloadfile";
+            this.button_downloadfile.Size = new System.Drawing.Size(102, 33);
+            this.button_downloadfile.TabIndex = 16;
+            this.button_downloadfile.Text = "Download file";
+            this.button_downloadfile.UseVisualStyleBackColor = true;
+            this.button_downloadfile.Click += new System.EventHandler(this.button_downloadfile_Click);
+            // 
             // ValueEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(480, 392);
+            this.Controls.Add(this.button_downloadfile);
+            this.Controls.Add(this.button_uploadfile);
             this.Controls.Add(this.label_length);
             this.Controls.Add(this.buttondown);
             this.Controls.Add(this.button2);
@@ -228,5 +252,7 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button buttondown;
         private System.Windows.Forms.Label label_length;
+        private System.Windows.Forms.Button button_uploadfile;
+        private System.Windows.Forms.Button button_downloadfile;
     }
 }

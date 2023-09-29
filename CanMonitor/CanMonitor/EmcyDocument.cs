@@ -24,6 +24,12 @@ namespace CanMonitor
             listView_emcy.DoubleBuffering(true);
             Program.lco.emcyevent += log_EMCY;
 
+            timer1 = new Timer();
+            timer1.Tick += timer1_Tick;
+            timer1.Interval = 500;
+            timer1.Enabled = true;
+
+
         }
 
         public void clearlist()

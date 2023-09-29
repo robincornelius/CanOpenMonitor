@@ -36,6 +36,11 @@ namespace CanMonitor
 
             Program.lco.nmtecevent += Lco_nmtecevent;
 
+            timer1 = new Timer();
+            timer1.Tick += timer1_Tick;
+            timer1.Interval = 500;
+            timer1.Enabled = true;
+
         }
 
         public void clearlist()

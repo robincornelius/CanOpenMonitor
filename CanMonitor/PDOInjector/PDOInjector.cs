@@ -5,13 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 using PDOInterface;
 using libCanopenSimple;
+using WeifenLuo.WinFormsUI.Docking;
+using System.Windows.Forms;
 
 namespace PDOInjector
 {
-    public class PDOInjector : InterfaceService, IPDOParser
+    public class PDOInjector : InterfaceService, IPDOParser, IInterfaceService2
     {
 
         PDOForm frm;
+        DockPanel dp;
+
+        void IInterfaceService2.setdockmanager(DockPanel _dp)
+        {
+            this.dp = _dp;
+        }
+
 
         public PDOInjector()
         {
@@ -39,7 +48,7 @@ namespace PDOInjector
             {
                 frm = new PDOForm(_lco); 
             }
-            frm.Show();
+            frm.Show(dp,DockState.DockRight);
         }
     }
 }

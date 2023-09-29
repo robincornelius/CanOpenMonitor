@@ -13,6 +13,8 @@ namespace CanMonitor
 {
     public class DriverLoader
     {
+        public event EventHandler<EventArgs> DeviceListChanged;
+
         List<string> drivers = new List<string>();
 
         public List<driverport> _driverport;
@@ -87,11 +89,20 @@ namespace CanMonitor
                 foreach (sComPortModel p in psx)
                 {
                     driverport dp = new driverport();
-                    dp.port = string.Format($"USB/VID_{p.vid}/PID_{p.pid}");
-                    dp.PID = p.pid;
-                    dp.VID = p.vid;
-                    dp.driver = "drivers\\can_canusb_win32";
-                    _driverport.Add(dp);
+
+                    if (p.vid == null || p.pid == null)
+                        continue;
+
+
+                    //fixme this was a hack for JLR to autodetect the HMI Can Boards using their
+                    //VID PID but it only keeps adding new items to the list
+                    //dp.port = string.Format($"USB/VID_{p.vid}/PID_{p.pid}");
+                    //dp.PID = p.pid;
+                    //dp.VID = p.vid;
+                    //dp.driver = "drivers\\can_canusb_win32";
+                    
+                    
+              //      _driverport.Add(dp);
                 }
             }
 
@@ -101,7 +112,9 @@ namespace CanMonitor
 
         private void Cpm_DeviceListChanged(object sender, EventArgs e)
         {
-            // enumerateports();
+            enumerateports();
+            DeviceListChanged?.Invoke(this, new EventArgs());
+           
         }
 
         private void S_DeviceDisconnected(object sender, EventArgs e)
@@ -120,7 +133,7 @@ namespace CanMonitor
                 Program.lco.open(s.port, (BUSSPEED)rate, "drivers\\can_canusb_win32");
         }
 
-        public void Open(driverport dp,BUSSPEED rate)
+        public bool Open(driverport dp,BUSSPEED rate)
         {
             Program.lco.close();
             this.rate = rate;
@@ -135,7 +148,7 @@ namespace CanMonitor
                 port = s.port;
             }
 
-            Program.lco.open(port, (BUSSPEED)rate, dp.driver);
+            return Program.lco.open(port, (BUSSPEED)rate, dp.driver);
   
         }
 

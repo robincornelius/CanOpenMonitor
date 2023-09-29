@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using libCanopenSimple;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace PDOInjector
 {
-    public partial class PDOForm : Form
+    public partial class PDOForm : DockContent
     {
         libCanopenSimple.libCanopenSimple lco;
         public PDOForm(libCanopenSimple.libCanopenSimple lco)

@@ -15,16 +15,52 @@ namespace CanMonitor
 {
     public partial class ConnectionControl : DockContent
     {
+
+        driverport opendp = null;
+
+        driverport lastopen = null;
+        
+
         public ConnectionControl()
         {
             InitializeComponent();
 
             Program.driverloader.portchangedevent += Driverloader_portchangedevent;
-            Program.driverloader.finddrivers();
-            Program.driverloader.enumerateports();
+            Program.driverloader.finddrivers();    
             Program.lco.connectionevent += Lco_connectionevent;
+            Program.driverloader.DeviceListChanged += Driverloader_DeviceListChanged;
 
             Properties.Settings.Default.Reload();
+
+         
+
+            this.HandleCreated += ConnectionControl_HandleCreated;
+
+        }
+
+        private void Driverloader_DeviceListChanged(object sender, EventArgs e)
+        {
+            /*
+            if (this.IsHandleCreated == false)
+                return;
+
+            this.Invoke(new MethodInvoker(delegate ()
+            {
+                comboBox_port.Text = "";
+                comboBox_port.Items.Clear();
+
+                foreach (driverport dp in Program.driverloader._driverport)
+                {
+                    comboBox_port.Items.Add(dp);
+                }
+
+            }));
+            */
+        }
+
+        private void ConnectionControl_HandleCreated(object sender, EventArgs e)
+        {
+            Program.driverloader.enumerateports();
 
             //select last used port
             foreach (driverport dp in comboBox_port.Items)
@@ -46,10 +82,8 @@ namespace CanMonitor
             {
                 if (button_open.Text == "Close")
                 {
-
-                    //fixme streamwriter
-                    //if (sw != null)
-                    //    sw.Close();
+                    lastopen = null;
+                    opendp = null;
 
                     Program.driverloader.Close();
                     return;
@@ -61,20 +95,25 @@ namespace CanMonitor
                     return;
                 }
 
-                driverport dp = (driverport)comboBox_port.SelectedItem;
+                opendp = (driverport)comboBox_port.SelectedItem;
 
                 //textBox_info.AppendText(String.Format("Trying to open port {0} using driver {1} \r\n", dp.port, dp.driver));
 
                 int rate = comboBox_rate.SelectedIndex;
 
-                Program.driverloader.Open(dp, (BUSSPEED)rate);
+                if(Program.driverloader.Open(opendp, (BUSSPEED)rate)==false)
+                {
+                    MessageBox.Show("Failed to open port");
+                    return;
+                }
 
                 if (Program.lco.isopen())
                 {
-                    Properties.Settings.Default.lastport = dp.port;
-                    Properties.Settings.Default.lastdriver = dp.driver;
+                    Properties.Settings.Default.lastport = opendp.port;
+                    Properties.Settings.Default.lastdriver = opendp.driver;
                     Properties.Settings.Default.lastrate = comboBox_rate.Text;
                     Properties.Settings.Default.Save();
+                    lastopen = opendp;
                 }
             }
             catch (Exception ex)
@@ -113,10 +152,41 @@ namespace CanMonitor
                 comboBox_port.Text = "";
                 comboBox_port.Items.Clear();
 
+                bool found = false;
+
                 foreach (driverport dp in Program.driverloader._driverport)
                 {
                     comboBox_port.Items.Add(dp);
+
+                    if (dp.issamedriver(opendp))
+                        found = true;
+
                 }
+
+                if(found==false)
+                {
+                    if(Program.lco!=null)
+                    {
+                        Program.lco.close();
+                    }
+
+                }
+
+                if(found==true && Program.lco.isopen() == false)
+                {
+                  
+                    foreach(driverport dp in comboBox_port.Items)
+                    {
+                        if (dp.issamedriver(opendp))
+                            comboBox_port.SelectedItem = dp;
+                    }
+                    //button_open_Click(this, new EventArgs());
+                }
+
+              
+
+
+
 
             }));
 
@@ -128,6 +198,7 @@ namespace CanMonitor
             {
                 button_open.BackColor = Color.Red;
                 button_open.Text = "Close";
+              
             }
             else
             {
