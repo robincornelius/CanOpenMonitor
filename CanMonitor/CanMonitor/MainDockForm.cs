@@ -195,6 +195,9 @@ namespace CanMonitor
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
+
+                clf.dosave(sfd.FileName);
+
                 //FIXME link this up
                 //dosave(sfd.FileName);
             }
@@ -251,6 +254,12 @@ namespace CanMonitor
             if(infolog.IsDisposed)
                 infolog = new InfoLogDocument();
             infolog.Show(dockPanel1, DockState.Document);
+        }
+
+        private void loadDataToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            clf?.doload();
+
         }
     }
 }

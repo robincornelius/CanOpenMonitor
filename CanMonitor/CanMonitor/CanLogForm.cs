@@ -801,7 +801,7 @@ namespace CanMonitor
         }
 
       
-        private void dosave(string filename)
+        public void dosave(string filename)
         {
             XElement xeRoot = new XElement("CanOpenMonitor");
 
@@ -827,7 +827,110 @@ namespace CanMonitor
 
         }
 
-        private void loaddata2()
+
+        public void doload()
+        {
+            OpenFileDialog sfd = new OpenFileDialog();
+            sfd.ShowHelp = true;
+            sfd.Filter = "(*.xml)|*.xml";
+
+            try
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+
+                    listView1.Items.Clear();
+
+                    XElement xeRoot = XElement.Load(sfd.FileName);
+                    XName Packet = XName.Get("Packet");
+
+
+                    foreach (var packetelement in xeRoot.Elements(Packet))
+                    {
+                        XName XTimestamp = XName.Get("Timestamp");
+                        XName XType = XName.Get("Type");
+                        XName XCob = XName.Get("COB");
+                        XName XNodeT = XName.Get("Node");
+                        XName XPayload = XName.Get("Payload");
+                        XName XInfo = XName.Get("Info");
+
+                        string[] bits = new string[6];
+
+                        bits[0] = packetelement.Element(XTimestamp).Value;
+                        bits[1] = packetelement.Element(XType).Value;
+                        bits[2] = packetelement.Element(XCob).Value;
+                        bits[3] = packetelement.Element(XNodeT).Value;
+                        bits[4] = packetelement.Element(XPayload).Value;
+                        bits[5] = packetelement.Element(XInfo).Value;
+
+                        string cobx = bits[2].ToUpper();
+                        UInt16 cob = Convert.ToUInt16(cobx, 16);
+
+                        byte[] b = new byte[bits[4].Length / 2];
+                        for (int x = 0; x < bits[4].Length / 2; x++)
+                        {
+                            string s = bits[4].Substring(x * 2, 2);
+                            b[x] = byte.Parse(s, System.Globalization.NumberStyles.HexNumber);
+                        }
+
+                        canpacket[] p = new canpacket[1];
+                        p[0] = new canpacket();
+                        p[0].cob = cob;
+                        p[0].data = b;
+                        p[0].len = (byte)b.Length;
+
+
+
+                        string d = bits[0];
+                        string[] d2 = d.Split(' ');
+                        string[] d3 = d2[0].Split('/');
+                        string[] d4 = d2[1].Split(':');
+
+
+                        //  11/16/2023 17:56:53.474
+                        //  "2018-08-18T07:22:16.0000000Z"
+                        string d5 = $"{d3[2]}-{d3[0]}-{d3[1]}T{d4[0]}:{d4[1]}:{d4[2]}";
+
+
+                        DateTime dt = DateTime.Parse(d5);
+
+                        switch (bits[1])
+                        {
+                            case "PDO":
+                                log_PDO(p, dt);
+                                break;
+
+                            case "SDO":
+                                log_SDO(p[0], dt);
+                                break;
+
+                            case "NMT":
+                                log_NMT(p[0], dt);
+                                break;
+
+                            case "NMTEC":
+                                log_NMTEC(p[0], dt);
+                                break;
+
+                            case "EMCY":
+                                log_EMCY(p[0], dt);
+                                break;
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.ToString());
+                listView1.EndUpdate();
+
+            }
+
+        }
+
+
+        public void doload2()
         {
             OpenFileDialog sfd = new OpenFileDialog();
             sfd.ShowHelp = true;
