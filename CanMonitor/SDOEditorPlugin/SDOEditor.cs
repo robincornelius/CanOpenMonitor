@@ -36,8 +36,13 @@ namespace SDOEditorPlugin
             refreshtimer.Tick += Refreshtimer_Tick;
         }
 
+        bool oknextread = false;
+
         private void Refreshtimer_Tick(object sender, EventArgs e)
         {
+            if (oknextread == false)
+                return;
+
 
             if (button_read.Enabled == false)
                 return;
@@ -320,6 +325,7 @@ namespace SDOEditorPlugin
 
                         if (help.od.objecttype != ObjectType.DOMAIN)
                         {
+                            oknextread = true;
                             sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
                             help.sdo = sdo;
                             lvi.Tag = help;
@@ -351,6 +357,8 @@ namespace SDOEditorPlugin
         {
             try
             {
+
+                System.Threading.Thread.Sleep(10);
 
                 listView1.Invoke(new MethodInvoker(delegate
                 {
@@ -445,8 +453,19 @@ namespace SDOEditorPlugin
                                     }
 
                                     case DataType.UNSIGNED8:
+
+                                       
+
                                     case DataType.UNSIGNED16:
+
+
                                     case DataType.UNSIGNED32:
+
+                                        if(meh== DataType.UNSIGNED8)
+                                            h.sdo.expitideddata &= 0x000000FF;
+                                        if(meh == DataType.UNSIGNED16)
+                                            h.sdo.expitideddata &= 0x0000FFFF;
+
 
                                         lvi.SubItems[5].Text = String.Format("{0}", h.sdo.expitideddata);
 
@@ -555,6 +574,7 @@ namespace SDOEditorPlugin
                         }
 
                         h.od.actualvalue = lvi.SubItems[5].Text;
+                        oknextread = true;
 
                     }
 
@@ -791,6 +811,7 @@ namespace SDOEditorPlugin
 
                     if (help.od.objecttype != ObjectType.DOMAIN)
                     {
+                        oknextread = false;
                         SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
                         help.sdo = sdo;
                         lvi.Tag = help;

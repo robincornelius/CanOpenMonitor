@@ -43,6 +43,13 @@ namespace eeprom_plugin
             if (MessageBox.Show("save to eeprom?", string.Format("Really save to eeprom on node {0}", node), MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 lco.SDOwrite(node, 0x1010, 0x01, 0x65766173, null);
+                lco.SDOwrite(node, 0x1010, 0x02, 0x65766173, null);
+                lco.SDOwrite(node, 0x1010, 0x03, 0x65766173, null);
+                lco.SDOwrite(node, 0x1010, 0x04, 0x65766173, null);
+                lco.SDOwrite(node, 0x1010, 0x05, 0x65766173, null);
+                lco.SDOwrite(node, 0x1010, 0x06, 0x65766173, null);
+                lco.SDOwrite(node, 0x1010, 0x07, 0x65766173, null);
+                lco.SDOwrite(node, 0x1010, 0x08, 0x65766173, null);
             }
         }
     }
