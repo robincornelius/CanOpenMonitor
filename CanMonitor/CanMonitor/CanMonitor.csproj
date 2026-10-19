@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PacketDisplay\PacketLogRecord.cs" />
+    <Compile Include="PacketDisplay\PacketFilterExpression.cs" />
     <Compile Include="PacketDisplay\PacketHistory.cs" />
     <Compile Include="PacketDisplay\PacketDisplayPipeline.cs" />
     <Compile Include="PacketDisplay\PacketLogFormatter.cs" />

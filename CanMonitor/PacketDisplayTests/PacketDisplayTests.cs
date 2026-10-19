@@ -273,6 +273,8 @@ internal static class PacketDisplayTests
         Exception failure = null;
         int pulses = 0;
         int drained = 0;
+        int report = 0;
+        var testTime = Stopwatch.StartNew();
         using (var form = new Form { Opacity = 0, ShowInTaskbar = false, Width = 800, Height = 400 })
         using (var list = new ListView { Dock = DockStyle.Fill, View = View.Details })
         using (var pipeline = new PacketDisplayPipeline(Row))
@@ -291,6 +293,11 @@ internal static class PacketDisplayTests
                 try
                 {
                     drained += view.Drain(128, 4, 1024, pulses % 2 == 0);
+                    if (drained / 5000 > report)
+                    {
+                        report = drained / 5000;
+                        Console.WriteLine("Native display progress: " + drained + " rows in " + testTime.ElapsedMilliseconds + "ms");
+                    }
                     Require(view.LastDrainCount <= 128, "UI work exceeded its row budget");
                     if (view.History.Count > 0)
                     {
@@ -381,6 +388,8 @@ internal static class PacketDisplayTests
             callback(new[] { new canpacket { cob = 0x182, len = 1, data = new byte[] { 2 } } }, Timestamp);
             release.Set();
             var list = (ListView)logType.GetField("listView1", instance).GetValue(form);
+            Require(list.FullRowSelect, "Packet context actions require the whole row to be selectable");
+            Require(list.Top >= 60, "Filter controls cover the packet column headers");
             PumpUntil(() => list.VirtualListSize == 1, "Real document failed to drain after Clear");
             Require(list.Items[0].SubItems[2].Text == "182", "Real document resurrected an old decoded row");
             logType.GetMethod("dosave").Invoke(form, new object[] { filename });
@@ -391,12 +400,40 @@ internal static class PacketDisplayTests
             var loaded = new List<PacketLogRecord>();
             PacketLogFile.LoadXml(filename, loaded.Add, CancellationToken.None);
             Require(loaded.Count == 1 && loaded[0].CobId == 0x182, "Export snapshot mixed in later live traffic");
+            MethodInfo apply = logType.GetMethod("ApplyDisplayFilter", instance);
+            Require((bool)apply.Invoke(form, new object[] { "type == PDO and cobid == 0x182" }), "Document rejected valid filter");
+            PumpUntil(() => list.VirtualListSize == 1, "Document failed to filter retained rows");
+            Require(list.Items[0].SubItems[2].Text == "182", "Document displayed wrong filtered row");
+            Require(!(bool)apply.Invoke(form, new object[] { "cobid === 0x183" }), "Document accepted invalid filter");
+            Require(list.VirtualListSize == 1, "Invalid expression replaced active filter");
+            settingsType.GetProperty("showpdo").SetValue(settings, false);
+            PumpUntil(() => list.VirtualListSize == 0, "Protocol checkbox failed to narrow view");
+            settingsType.GetProperty("showpdo").SetValue(settings, true);
+            PumpUntil(() => list.VirtualListSize == 1, "Protocol checkbox failed to restore history");
+            object display = logType.GetField("display", instance).GetValue(form);
+            object selected = display.GetType().GetMethod("RowAt", instance).Invoke(display, new object[] { 0 });
+            logType.GetField("contextRow", instance).SetValue(form, selected);
+            list.ContextMenuStrip.Items[1].PerformClick();
+            Require(((TextBox)logType.GetField("filterText", instance).GetValue(form)).Text.Contains("not (type == PDO and cobid == 0x182)"),
+                "Context action did not append exclusion");
+            PumpUntil(() => list.VirtualListSize == 0, "Context exclusion failed");
+            apply.Invoke(form, new object[] { "cobid == 0x183" });
+            PumpUntil(() => list.VirtualListSize == 1, "Replacement filter failed");
+            logType.GetMethod("dosave").Invoke(form, new object[] { filename });
+            saving = (Task)logType.GetProperty("PendingSave", instance).GetValue(form);
+            PumpUntil(() => saving.IsCompleted, "Filtered export stalled");
+            loaded.Clear();
+            PacketLogFile.LoadXml(filename, loaded.Add, CancellationToken.None);
+            Require(loaded.Count == 1 && loaded[0].CobId == 0x183, "Manual export ignored display filter");
+            apply.Invoke(form, new object[] { "" });
+            PumpUntil(() => list.VirtualListSize == 2, "Clearing expression failed to restore retained history");
             form.Close();
         }
         if (File.Exists(filename)) { File.Delete(filename); }
         Require(subscriptions("pdoevent") == 0, "Real log remained subscribed after close");
         Console.WriteLine("PASS: real document capture isolation, clear race, live export and disposal");
         Console.WriteLine("PASS: actual docked documents unsubscribe and dispose their display workers");
+        Console.WriteLine("PASS: actual log expression Apply, invalid input, checkboxes, context exclusion and filtered export");
     }
 
     private static void Demo(string directory)
@@ -488,7 +525,7 @@ internal static class PacketDisplayTests
         {
             Console.Error.WriteLine("FAIL: Display regression deadline exceeded");
             Environment.Exit(2);
-        }, null, 90000, Timeout.Infinite))
+        }, null, 180000, Timeout.Infinite))
         {
             try
             {
@@ -505,6 +542,7 @@ internal static class PacketDisplayTests
                 SavedLogRoundTrip();
                 Console.WriteLine("PASS: saved XML round trip under a different locale");
                 VirtualListMessagePump();
+                FilterExpressionTests.Run();
                 if (args.Length == 2 && args[0] == "--application")
                 {
                     ApplicationDocuments(args[1]);

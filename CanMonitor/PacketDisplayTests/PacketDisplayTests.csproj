@@ -21,6 +21,7 @@
     <Compile Include="..\CanMonitor\PacketDisplay\*.cs" />
     <Compile Include="..\CanMonitor\ErrorCodes.cs" />
     <Compile Include="PacketDisplayTests.cs" />
+    <Compile Include="FilterExpressionTests.cs" />
     <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj">
       <Project>{2FB81ADD-258F-4135-A9B9-17E2ACA2448E}</Project>
       <Name>libCanopenSimple</Name>

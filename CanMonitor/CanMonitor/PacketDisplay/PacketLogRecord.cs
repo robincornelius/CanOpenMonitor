@@ -12,8 +12,8 @@ namespace CanMonitor.PacketDisplay
         Emcy
     }
 
-    // Preserve typed fields independently of the rendered columns. Future
-    // display filters can match COB-ID/payload without parsing formatted text.
+    // Preserve typed fields independently of the rendered columns so display
+    // filters match COB-ID/payload without parsing formatted text.
     internal sealed class PacketLogRecord
     {
         internal readonly PacketLogKind Kind;
@@ -117,8 +117,8 @@ namespace CanMonitor.PacketDisplay
             ShowEmcy = emcy;
         }
 
-        // This is the single metadata-based acceptance point for the existing
-        // toggles. A future compiled display expression can be added here.
+        // Protocol toggles compose with the compiled expression in the log's
+        // retained-history projection. Other documents may still prefilter.
         internal bool Matches(PacketLogRecord record)
         {
             switch (record.Kind)

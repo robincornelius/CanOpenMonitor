@@ -10,6 +10,15 @@ namespace CanMonitor.PacketDisplay
         private PacketLogRow[] rows = new PacketLogRow[256];
         private int start;
         internal int Count { get; private set; }
+        internal long FirstSequence { get; private set; }
+
+        internal long EndSequence
+        {
+            get
+            {
+                return FirstSequence + Count;
+            }
+        }
 
         internal PacketLogRow this[int index]
         {
@@ -54,6 +63,7 @@ namespace CanMonitor.PacketDisplay
                 rows[start] = null;
                 start = (start + 1) % rows.Length;
                 Count--;
+                FirstSequence++;
             }
         }
 
@@ -65,6 +75,7 @@ namespace CanMonitor.PacketDisplay
                 rows[start] = null;
                 start = (start + 1) % rows.Length;
                 Count--;
+                FirstSequence++;
                 removed++;
             }
             return removed;
@@ -75,6 +86,7 @@ namespace CanMonitor.PacketDisplay
             rows = new PacketLogRow[256];
             Count = 0;
             start = 0;
+            FirstSequence = 0;
         }
 
         internal PacketLogRow[] Snapshot()
