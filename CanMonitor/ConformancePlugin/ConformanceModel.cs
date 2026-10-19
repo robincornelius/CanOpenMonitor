@@ -59,6 +59,7 @@ namespace ConformancePlugin
         public bool ReadDictionary = true;
         public bool AbortProbes = true;
         public bool NmtTransitions;
+        public bool TestProducerHeartbeat;
         public int ObserveMilliseconds = 3000;
         public string Connection = "Current CanMonitor connection";
     }
@@ -250,11 +251,31 @@ namespace ConformancePlugin
                     cancellation.ThrowIfCancellationRequested();
                 }
                 CheckObservation(description.Dictionary);
-                if (options.NmtTransitions)
+                bool nmtExercised = false;
+                if (options.TestProducerHeartbeat)
+                {
+                    IHeartbeatTransport heartbeat = transport as IHeartbeatTransport;
+                    if (heartbeat == null)
+                    {
+                        Add("Enabled heartbeat test", Verdict.Skip, "Transport does not support controlled heartbeat configuration.");
+                    }
+                    else
+                    {
+                        HeartbeatProbe.Run(heartbeat, options.Node, Add, cancellation, () =>
+                        {
+                            if (options.NmtTransitions)
+                            {
+                                nmtExercised = true;
+                                CheckNmt();
+                            }
+                        });
+                    }
+                }
+                if (options.NmtTransitions && !nmtExercised)
                 {
                     CheckNmt();
                 }
-                else
+                else if (!options.NmtTransitions)
                 {
                     Add("NMT state transitions", Verdict.Skip, "State-changing tests not selected.");
                 }
@@ -270,7 +291,7 @@ namespace ConformancePlugin
             }
             finally
             {
-                Add("Coverage gaps", Verdict.Skip, "Not exercised: physical/electrical layer, bit timing/error injection/bus-off, official CiA 310-1 cases, SDO downloads and block transfers, reset/boot-up, PDO remapping/writes and triggered PDO timing, SYNC/TIME/EMCY generation, heartbeat consumer failures, LSS and device/application profiles. No unsupported service is counted as passed.");
+                Add("Coverage gaps", Verdict.Skip, "Not exercised: physical/electrical layer, bit timing/error injection/bus-off, official CiA 310-1 cases, general SDO downloads (apart from optional heartbeat-period writes) and block transfers, reset/boot-up, PDO remapping/writes and triggered PDO timing, SYNC/TIME/EMCY generation, heartbeat consumer failures, LSS and device/application profiles. No unsupported service is counted as passed.");
                 report.FinishedUtc = DateTime.UtcNow;
             }
             return report;

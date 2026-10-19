@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using libCanopenSimple;
 
 namespace ConformancePlugin
 {
-    public sealed class CanopenTransport : IConformanceTransport
+    public sealed class CanopenTransport : IHeartbeatTransport
     {
         private readonly libCanopenSimple.libCanopenSimple can;
         private readonly byte node;
@@ -14,6 +15,8 @@ namespace ConformancePlugin
         private readonly BusObservation observation = new BusObservation();
         private long stateSerial;
         private long commandStateSerial;
+        private List<HeartbeatSample> heartbeatCapture;
+        private bool captureOverflow;
 
         public CanopenTransport(libCanopenSimple.libCanopenSimple can, byte node)
         {
@@ -38,6 +41,22 @@ namespace ConformancePlugin
                 }
                 if (packet.cob == 0x700 + node)
                 {
+                    if (heartbeatCapture != null)
+                    {
+                        if (heartbeatCapture.Count < 10000)
+                        {
+                            heartbeatCapture.Add(new HeartbeatSample
+                            {
+                                Milliseconds = Stopwatch.GetTimestamp() * 1000.0 / Stopwatch.Frequency,
+                                Length = packet.len,
+                                State = packet.len > 0 ? packet.data[0] : (byte)0
+                            });
+                        }
+                        else
+                        {
+                            captureOverflow = true;
+                        }
+                    }
                     if (packet.len == 1 && packet.data[0] == 0)
                     {
                         // Boot-up shares the error-control COB-ID but is not evidence
@@ -117,6 +136,66 @@ namespace ConformancePlugin
                     Emergencies = observation.Emergencies,
                     InvalidEmergencies = observation.InvalidEmergencies
                 };
+            }
+        }
+
+        public void SetProducerHeartbeat(byte target, ushort milliseconds, CancellationToken cancellation)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            if (target != node || !can.isopen())
+            {
+                throw new InvalidOperationException("Connection closed or target node changed.");
+            }
+            SDO transfer = can.SDOwrite(target, 0x1017, 0, milliseconds, null);
+            Stopwatch elapsed = Stopwatch.StartNew();
+            try
+            {
+                while (!transfer.WaitOne(25))
+                {
+                    cancellation.ThrowIfCancellationRequested();
+                    if (!can.isopen() || elapsed.ElapsedMilliseconds > 4000)
+                    {
+                        transfer.SDOFinish();
+                        throw new TimeoutException("Producer heartbeat download timed out.");
+                    }
+                }
+                cancellation.ThrowIfCancellationRequested();
+                if (transfer.state != SDO.SDO_STATE.SDO_FINISHED)
+                {
+                    throw new InvalidOperationException("Producer heartbeat SDO abort 0x" + transfer.expitideddata.ToString("X8"));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                transfer.SDOFinish();
+                throw;
+            }
+        }
+
+        public HeartbeatWindow ObserveHeartbeats(int milliseconds, CancellationToken cancellation)
+        {
+            lock (sync)
+            {
+                heartbeatCapture = new List<HeartbeatSample>();
+                captureOverflow = false;
+            }
+            try
+            {
+                if (cancellation.WaitHandle.WaitOne(milliseconds))
+                {
+                    cancellation.ThrowIfCancellationRequested();
+                }
+                lock (sync)
+                {
+                    return new HeartbeatWindow { Samples = heartbeatCapture.ToArray(), Overflow = captureOverflow };
+                }
+            }
+            finally
+            {
+                lock (sync)
+                {
+                    heartbeatCapture = null;
+                }
             }
         }
 

@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="ConformancePlugin.cs" />
     <Compile Include="ConformanceModel.cs" />
+    <Compile Include="HeartbeatProbe.cs" />
     <Compile Include="CanopenTransport.cs" />
     <Compile Include="ConformanceForm.cs" />
   </ItemGroup>

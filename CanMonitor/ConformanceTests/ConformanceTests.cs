@@ -26,13 +26,22 @@ internal static class ConformanceTests
         }
     }
 
-    private sealed class Device : IConformanceTransport
+    private sealed class Device : IHeartbeatTransport
     {
         public readonly Dictionary<uint, UploadResult> Values = new Dictionary<uint, UploadResult>();
         public readonly List<byte> Commands = new List<byte>();
+        public readonly List<ushort> NmtHeartbeatPeriods = new List<ushort>();
         public readonly List<uint> Reads = new List<uint>();
         public BusObservation Bus = new BusObservation { Frames = 100, Heartbeats = 3, LastState = 127 };
         public CancellationTokenSource CancelOnState;
+        public CancellationTokenSource CancelOnHeartbeat;
+        public readonly List<ushort> HeartbeatWrites = new List<ushort>();
+        public ushort HeartbeatPeriod;
+        public bool UncertainHeartbeatWrite;
+        public bool NoHeartbeatFrames;
+        public bool MalformedHeartbeat;
+        public bool FailHeartbeatRestoration;
+        public double HeartbeatGap = 500;
 
         public UploadResult Upload(byte node, ushort index, byte subindex, CancellationToken token)
         {
@@ -59,6 +68,7 @@ internal static class ConformanceTests
         public void SetNmt(byte node, byte command)
         {
             Commands.Add(command);
+            NmtHeartbeatPeriods.Add(HeartbeatPeriod);
         }
         public bool WaitForState(byte state, int milliseconds, CancellationToken token)
         {
@@ -73,6 +83,37 @@ internal static class ConformanceTests
         }
         public void Dispose()
         {
+        }
+
+        public void SetProducerHeartbeat(byte node, ushort milliseconds, CancellationToken cancellation)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            HeartbeatWrites.Add(milliseconds);
+            if (FailHeartbeatRestoration && milliseconds == 0)
+            {
+                throw new InvalidOperationException("Simulated restoration failure");
+            }
+            HeartbeatPeriod = milliseconds;
+            Put(0x1017, 0, milliseconds, 2);
+            if (UncertainHeartbeatWrite && milliseconds == 500)
+            {
+                throw new TimeoutException("Uncertain download completion");
+            }
+        }
+
+        public HeartbeatWindow ObserveHeartbeats(int milliseconds, CancellationToken cancellation)
+        {
+            if (CancelOnHeartbeat != null)
+            {
+                CancelOnHeartbeat.Cancel();
+                CancelOnHeartbeat = null;
+                cancellation.ThrowIfCancellationRequested();
+            }
+            return new HeartbeatWindow
+            {
+                Samples = HeartbeatPeriod == 0 || NoHeartbeatFrames ? new HeartbeatSample[0]
+                    : Enumerable.Range(0, 8).Select(i => new HeartbeatSample { Milliseconds = i * HeartbeatGap, Length = MalformedHeartbeat ? 2 : 1, State = 5 }).ToArray()
+            };
         }
     }
 
@@ -226,6 +267,36 @@ internal static class ConformanceTests
             }
             Console.WriteLine("PASS: NMT transitions, unknown-state refusal and restoration on cancellation");
 
+            device = new Device(); description = Description(device);
+            device.Put(0x1017, 0, 0, 2);
+            report = new ConformanceRunner(device).Run(description, new RunOptions { ObserveMilliseconds = 0, TestProducerHeartbeat = true }, CancellationToken.None);
+            Require(Has(report, "Enabled heartbeat production", Verdict.Pass) && Has(report, "Heartbeat host interval", Verdict.Pass), "Enabled heartbeat not checked");
+            Require(device.HeartbeatWrites.SequenceEqual(new ushort[] { 500, 0 }) && Has(report, "Heartbeat disabled after restoration", Verdict.Pass), "Heartbeat setting not restored and disabled");
+            device = new Device(); description = Description(device); device.Put(0x1017, 0, 0, 2);
+            using (var cancel = new CancellationTokenSource())
+            {
+                device.CancelOnHeartbeat = cancel;
+                report = new ConformanceRunner(device).Run(description, new RunOptions { ObserveMilliseconds = 0, TestProducerHeartbeat = true }, cancel.Token);
+                Require(report.Cancelled && device.HeartbeatWrites.SequenceEqual(new ushort[] { 500, 0 }), "Heartbeat cancellation did not restore original setting");
+            }
+            device = new Device(); description = Description(device); device.Put(0x1017, 0, 1000, 2); device.HeartbeatPeriod = 1000; device.UncertainHeartbeatWrite = true;
+            report = new ConformanceRunner(device).Run(description, new RunOptions { ObserveMilliseconds = 0, TestProducerHeartbeat = true }, CancellationToken.None);
+            Require(Has(report, "Run interrupted", Verdict.Error) && device.HeartbeatWrites.SequenceEqual(new ushort[] { 500, 1000 }), "Uncertain download did not restore original nonzero period");
+            device = new Device(); description = Description(device); device.Put(0x1017, 0, 0, 2); device.NoHeartbeatFrames = true;
+            report = new ConformanceRunner(device).Run(description, new RunOptions { ObserveMilliseconds = 0, TestProducerHeartbeat = true }, CancellationToken.None);
+            Require(Has(report, "Enabled heartbeat production", Verdict.Fail) && Has(report, "Enabled heartbeat frame/state", Verdict.Skip), "Missing heartbeat counted as passed");
+            device = new Device(); description = Description(device); device.Put(0x1017, 0, 0, 2); device.MalformedHeartbeat = true; device.HeartbeatGap = 1600;
+            report = new ConformanceRunner(device).Run(description, new RunOptions { ObserveMilliseconds = 0, TestProducerHeartbeat = true }, CancellationToken.None);
+            Require(Has(report, "Enabled heartbeat frame/state", Verdict.Fail) && Has(report, "Heartbeat host interval", Verdict.Warning), "Malformed frames or timing observations misclassified");
+            device = new Device(); description = Description(device); device.Put(0x1017, 0, 0, 2); device.FailHeartbeatRestoration = true;
+            report = new ConformanceRunner(device).Run(description, new RunOptions { ObserveMilliseconds = 0, TestProducerHeartbeat = true }, CancellationToken.None);
+            Require(Has(report, "Restore heartbeat period", Verdict.Error), "Restoration failure was hidden");
+            device = new Device(); description = Description(device); device.Put(0x1017, 0, 0, 2); device.Bus.LastState = 5;
+            report = new ConformanceRunner(device).Run(description, new RunOptions { ObserveMilliseconds = 0, TestProducerHeartbeat = true, NmtTransitions = true }, CancellationToken.None);
+            Require(device.Commands.SequenceEqual(new byte[] { 128, 1, 2, 1 }) && device.NmtHeartbeatPeriods.All(p => p == 500) && device.HeartbeatPeriod == 0,
+                "Combined tests did not preserve heartbeat until after NMT restoration");
+            Console.WriteLine("PASS: heartbeat enable/readback, timing observations, missing frames, cancellation and uncertain-download restoration");
+
             string filename = Path.GetTempFileName();
             try
             {
@@ -276,7 +347,7 @@ internal static class ConformanceTests
     {
         if (args.Length < 7)
         {
-            throw new ArgumentException("--hardware <description> <node-hex> <500|250|125|1000> <driver-without-extension> <adapter-path> <report.html> [--nmt]");
+            throw new ArgumentException("--hardware <description> <node-hex> <500|250|125|1000> <driver-without-extension> <adapter-path> <report.html> [--nmt] [--heartbeat]");
         }
         byte target = Convert.ToByte(args[2], 16);
         var speed = args[3] == "500" ? libCanopenSimple.BUSSPEED.BUS_500Kbit : args[3] == "250" ? libCanopenSimple.BUSSPEED.BUS_250Kbit : args[3] == "125" ? libCanopenSimple.BUSSPEED.BUS_125Kbit : args[3] == "1000" ? libCanopenSimple.BUSSPEED.BUS_1Mbit : throw new ArgumentException("Unsupported bitrate");
@@ -301,7 +372,7 @@ internal static class ConformanceTests
                 using (var transport = new CanopenTransport(can, target))
                 {
                     var runner = new ConformanceRunner(transport) { Progress = r => Console.WriteLine(r.Verdict + " " + r.Check + ": " + r.Evidence) };
-                    ConformanceReport report = runner.Run(description, new RunOptions { Node = target, Connection = Path.GetFileName(args[4]) + "; " + args[5] + "; " + args[3] + " kbit/s", NmtTransitions = args.Contains("--nmt") }, cancellation.Token);
+                    ConformanceReport report = runner.Run(description, new RunOptions { Node = target, Connection = Path.GetFileName(args[4]) + "; " + args[5] + "; " + args[3] + " kbit/s", NmtTransitions = args.Contains("--nmt"), TestProducerHeartbeat = args.Contains("--heartbeat") }, cancellation.Token);
                     report.SaveHtml(args[6]);
                     Console.WriteLine("Report: " + args[6]);
                     return ExitCode(report);

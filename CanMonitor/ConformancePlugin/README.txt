@@ -29,8 +29,15 @@ not automatically a failure. Error-history entries above the live count are skip
 Optional NMT tests send only node-addressed pre-operational, start and stop
 commands. They require an observed initial heartbeat state and attempt to restore
 that state even after cancellation. They interrupt the target's normal operation.
-Heartbeat producer configuration is never changed. With heartbeat disabled the
-NMT tests are skipped because state transitions/restoration cannot be verified.
+Producer configuration is unchanged unless the optional heartbeat test is selected.
+That test reads 0x1017/00, temporarily downloads 500 ms, verifies readback, observes
+four seconds of production, and restores the original value even on cancellation
+or an uncertain download. No save-to-flash command is sent. If the original value
+was zero, it also checks for a quiet window after restoring disabled production.
+Timing results use monotonic host timestamps and documented diagnostic tolerances;
+they do not certify wire-level timing. If both heartbeat and NMT options are selected,
+NMT checks run while heartbeat is enabled, restore NMT state, then restore the period.
+Without temporary enabling, NMT tests are skipped when no initial state is observed.
 Pause other node configuration tools during NMT testing. Cancellation affects
 only this tool's active SDO; it does not flush other plugins' queued transfers.
 
@@ -49,3 +56,4 @@ not in this public plugin or its generic regression fixtures.
 Additional implementation references:
 https://github.com/CANopenNode/CANopenDemo/blob/master/tutorial/PDO.md
 https://www.renesas.com/en/document/mas/canopen-library-user-manual
+https://canopennode.github.io/CANopenNode/group__CO__NMT__Heartbeat.html

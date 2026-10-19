@@ -17,6 +17,7 @@ namespace ConformancePlugin
         private readonly CheckBox dictionary = new CheckBox { Text = "Read described objects", Checked = true, AutoSize = true };
         private readonly CheckBox probes = new CheckBox { Text = "SDO abort/recovery probes", Checked = true, AutoSize = true };
         private readonly CheckBox nmt = new CheckBox { Text = "Exercise NMT states (interrupts operation)", AutoSize = true };
+        private readonly CheckBox heartbeat = new CheckBox { Text = "Temporarily test 500 ms heartbeat (restores setting)", AutoSize = true };
         private readonly Button browse = new Button { Text = "Load XDD/EDS", AutoSize = true };
         private readonly Button run = new Button { Text = "Run checks", AutoSize = true };
         private readonly Button cancel = new Button { Text = "Cancel", Enabled = false };
@@ -44,8 +45,8 @@ namespace ConformancePlugin
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             var controls = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true };
             controls.Controls.AddRange(new Control[] { browse, file, new Label { Text = "Node 0x", AutoSize = true, Padding = new Padding(0, 7, 0, 0) }, node, run, cancel, export });
-            var choices = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill };
-            choices.Controls.AddRange(new Control[] { dictionary, probes, nmt });
+            var choices = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true };
+            choices.Controls.AddRange(new Control[] { dictionary, probes, nmt, heartbeat });
             layout.Controls.Add(controls, 0, 0);
             layout.Controls.Add(choices, 0, 1);
             layout.Controls.Add(new Label { Text = ConformanceReport.Scope, AutoSize = true, ForeColor = Color.DarkGoldenrod }, 0, 2);
@@ -109,7 +110,7 @@ namespace ConformancePlugin
                 MessageBox.Show(this, "Connect CanMonitor to the device first.");
                 return;
             }
-            RunOptions options = new RunOptions { Node = (byte)node.Value, ReadDictionary = dictionary.Checked, AbortProbes = probes.Checked, NmtTransitions = nmt.Checked };
+            RunOptions options = new RunOptions { Node = (byte)node.Value, ReadDictionary = dictionary.Checked, AbortProbes = probes.Checked, NmtTransitions = nmt.Checked, TestProducerHeartbeat = heartbeat.Checked };
             CheckResult previous;
             while (pending.TryDequeue(out previous))
             {
@@ -143,7 +144,7 @@ namespace ConformancePlugin
 
         private void SetRunning(bool active)
         {
-            run.Enabled = browse.Enabled = node.Enabled = dictionary.Enabled = probes.Enabled = nmt.Enabled = !active;
+            run.Enabled = browse.Enabled = node.Enabled = dictionary.Enabled = probes.Enabled = nmt.Enabled = heartbeat.Enabled = !active;
             cancel.Enabled = active;
             export.Enabled = !active && report != null;
             if (active)
