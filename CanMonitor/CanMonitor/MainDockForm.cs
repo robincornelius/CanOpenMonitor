@@ -17,6 +17,7 @@ namespace CanMonitor
     {
         private List<string> _mru = new List<string>();
         string gitVersion;
+        private bool waitingForExport;
 
         ConnectionControl connectioncontrol = null;
         LogControls logcontrols = null;
@@ -112,13 +113,39 @@ namespace CanMonitor
             if (nmtdocument != null && !nmtdocument.IsDisposed)
                 nmtdocument.clearlist();
 
-            if (emcydocument != null && !nmtdocument.IsDisposed)
+            if (emcydocument != null && !emcydocument.IsDisposed)
                 emcydocument.clearlist();
 
         }
 
-        private void MainDockForm_FormClosing(object sender, FormClosingEventArgs e)
+        private async void MainDockForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (waitingForExport)
+            {
+                e.Cancel = true;
+                return;
+            }
+            if (clf != null && !clf.PendingSave.IsCompleted)
+            {
+                e.Cancel = true;
+                waitingForExport = true;
+                try
+                {
+                    await clf.PendingSave;
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(this, "The export failed. The application will remain open.\n" + error.Message);
+                    return;
+                }
+                finally
+                {
+                    waitingForExport = false;
+                }
+                Close();
+                return;
+            }
+
             SettingsMgr.writeXML(Path.Combine(Program.appdatafolder, "settings.xml"));
 
             Program.driverloader.Close();

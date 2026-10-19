@@ -37,6 +37,27 @@ namespace CanMonitor
 
         }
 
+        internal Func<byte[], string> GetPdoDecoder(ushort cobId)
+        {
+            // Capture the delegate under the registry lock; invoke it outside.
+            lock (pdoprocessors)
+            {
+                Func<byte[], string> decoder;
+                pdoprocessors.TryGetValue(cobId, out decoder);
+                return decoder;
+            }
+        }
+
+        internal string DecodeSdo(ushort cobId, ushort index, byte subindex, byte[] data)
+        {
+            IPDOParser parser;
+            lock (pdoprocessors)
+            {
+                parser = ipdo;
+            }
+            return parser == null ? "" : parser.decodesdo(cobId, index, subindex, data);
+        }
+
         public void SetDockPanel(DockPanel p)
         {
             dp = p;
@@ -100,7 +121,10 @@ namespace CanMonitor
                 try
                 {
                     IInterfaceService iis = (IInterfaceService)plugins[pfilename];
-                    iis.deregisterplugin();
+                    lock (pdoprocessors)
+                    {
+                        iis.deregisterplugin();
+                    }
 
                 }
                 catch (Exception e)
@@ -208,14 +232,18 @@ namespace CanMonitor
                         {
                             plugins.Add(filename, obj);
                             IInterfaceService iis = (IInterfaceService)obj;
-                            ipdo = (IPDOParser)obj;
+                            IPDOParser parser = (IPDOParser)obj;
 
                             Dictionary<UInt16, Func<byte[], string>> dictemp = new Dictionary<ushort, Func<byte[], string>>();
 
                             iis.setlco(Program.lco);
 
-                            iis.preregisterPDOS(pdoprocessors);
-                            ipdo.registerPDOS();
+                            lock (pdoprocessors)
+                            {
+                                iis.preregisterPDOS(pdoprocessors);
+                                parser.registerPDOS();
+                                ipdo = parser;
+                            }
 
 
                             if(obj is IInterfaceService2)

@@ -93,6 +93,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PacketDisplay\PacketLogRecord.cs" />
+    <Compile Include="PacketDisplay\PacketHistory.cs" />
+    <Compile Include="PacketDisplay\PacketDisplayPipeline.cs" />
+    <Compile Include="PacketDisplay\PacketLogFormatter.cs" />
+    <Compile Include="PacketDisplay\VirtualPacketLog.cs" />
+    <Compile Include="PacketDisplay\PacketLogFile.cs" />
     <Compile Include="ComPortManager.cs" />
     <Compile Include="CanLogForm.cs">
       <SubType>Form</SubType>
