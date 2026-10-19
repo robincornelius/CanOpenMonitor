@@ -89,7 +89,7 @@ namespace CanMonitor
                         rows.Add(pair.Key, row);
                         listView_nmt.Items.Add(row);
                     }
-                    row.SubItems[0].Text = pair.Value.Timestamp.ToString();
+                    row.SubItems[0].Text = PacketTimestamp.ToDisplayString(pair.Value.Timestamp);
                     row.SubItems[2].Text = state;
                 }
             }

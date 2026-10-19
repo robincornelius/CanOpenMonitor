@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Globalization;
 using libCanopenSimple;
 
 namespace CanMonitor.PacketDisplay
@@ -50,7 +49,7 @@ namespace CanMonitor.PacketDisplay
             {
                 return; // A registered decoder may intentionally suppress a row.
             }
-            Emit(new[] { timestamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture), "PDO", packet.cob.ToString("x3"), "",
+            Emit(new[] { PacketTimestamp.ToDisplayString(timestamp), "PDO", packet.cob.ToString("x3"), "",
                 current.PayloadText(), info });
         }
 
@@ -58,7 +57,7 @@ namespace CanMonitor.PacketDisplay
         {
 
             string[] items = new string[6];
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            items[0] = PacketTimestamp.ToDisplayString(dt);
             items[1] = "NMT";
             items[2] = string.Format("{0:x3}", payload.cob);
             items[3] = "";
@@ -108,7 +107,7 @@ namespace CanMonitor.PacketDisplay
         {
 
             string[] items = new string[6];
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            items[0] = PacketTimestamp.ToDisplayString(dt);
             items[1] = "NMTEC";
             items[2] = string.Format("{0:x3}", payload.cob);
             items[3] = string.Format("{0:x3}", payload.cob & 0x0FF);
@@ -144,7 +143,7 @@ namespace CanMonitor.PacketDisplay
             }
 
             string[] items = new string[6];
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            items[0] = PacketTimestamp.ToDisplayString(dt);
             items[1] = "SDO";
             items[2] = string.Format("{0:x3}", payload.cob);
 
@@ -355,7 +354,7 @@ namespace CanMonitor.PacketDisplay
         {
             string[] items = new string[6];
 
-            items[0] = dt.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            items[0] = PacketTimestamp.ToDisplayString(dt);
             items[1] = "EMCY";
             items[2] = string.Format("{0:x3}", payload.cob);
             items[3] = string.Format("{0:x3}", payload.cob - 0x080);

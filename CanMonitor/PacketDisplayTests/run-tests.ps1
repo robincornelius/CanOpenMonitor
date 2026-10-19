@@ -4,7 +4,8 @@ param(
     [ValidateSet('Debug', 'Release', 'All')]
     [string]$Configuration = 'All',
     [string]$ApplicationDirectory,
-    [switch]$OdEditorOnly
+    [switch]$OdEditorOnly,
+    [switch]$BugOnly
 )
 $ErrorActionPreference = 'Stop'
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
@@ -28,8 +29,14 @@ foreach ($architecture in $architectures)
         {
             throw "Display test build failed: $architecture $variant"
         }
-        $mode = if ($OdEditorOnly) { '--od-editor' } else { '--application' }
+        $mode = if ($BugOnly) { '--bugs' } elseif ($OdEditorOnly) { '--od-editor' } else { '--application' }
         $arguments = if ($ApplicationDirectory) { @($mode, $ApplicationDirectory) } else { @() }
+        if ($BugOnly)
+        {
+            if (-not $ApplicationDirectory) { throw 'BugOnly requires ApplicationDirectory.' }
+            $nativePlatform = if ($architecture -eq 'x86') { 'Win32' } else { 'x64' }
+            $arguments += [IO.Path]::GetFullPath("$PSScriptRoot/../../libCanOpenSimple2/canfestivaldrivers/tests/build/$nativePlatform/$variant")
+        }
         & "$PSScriptRoot/build/$architecture/$variant/PacketDisplayTests.exe" @arguments
         if ($LASTEXITCODE -ne 0)
         {

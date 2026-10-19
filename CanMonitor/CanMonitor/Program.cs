@@ -16,9 +16,9 @@ namespace CanMonitor
 
         static public PluginManager pluginManager;
 
-        static public libCanopenSimple.libCanopenSimple lco = new libCanopenSimple.libCanopenSimple();
+        static public libCanopenSimple.libCanopenSimple lco;
 
-        static public DriverLoader driverloader = new DriverLoader();
+        static public DriverLoader driverloader;
 
         /// <summary>
         /// The main entry point for the application.
@@ -28,22 +28,23 @@ namespace CanMonitor
         {
 
             Application.ThreadException += Application_ThreadException;
-
-            ErrorCodes.interror();
-
-
-            string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _appdatafolder = Path.Combine(folder, "CanMonitor");
-            _assemblyfolder = AppDomain.CurrentDomain.BaseDirectory;
-            if (!Directory.Exists(appdatafolder))
+            try
             {
-                Directory.CreateDirectory(appdatafolder);
-            }
+                // Initialization belongs inside the error boundary, including optional driver discovery.
+                lco = new libCanopenSimple.libCanopenSimple();
+                driverloader = new DriverLoader();
+                ErrorCodes.interror();
 
-            pluginManager = new PluginManager();
+                string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                _appdatafolder = Path.Combine(folder, "CanMonitor");
+                _assemblyfolder = AppDomain.CurrentDomain.BaseDirectory;
+                if (!Directory.Exists(appdatafolder))
+                {
+                    Directory.CreateDirectory(appdatafolder);
+                }
+
+                pluginManager = new PluginManager();
             
-            try 
-            {  
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 

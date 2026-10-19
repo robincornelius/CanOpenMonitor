@@ -16,6 +16,10 @@ namespace CanMonitor
         public InfoLogDocument()
         {
             InitializeComponent();
+            if (Program.driverloader != null)
+            {
+                textBox_info.Text = string.Join(Environment.NewLine, Program.driverloader.DiscoveryErrors);
+            }
         }
     }
 }

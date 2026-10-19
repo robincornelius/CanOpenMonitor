@@ -112,3 +112,35 @@ errors are surfaced rather than automatically starting the node after failure.
 See libCanOpenSimple/tests/README.txt for protocol references and NMT/heartbeat
 confirmation behaviour. Fake-device regressions cover the wire sequence; the
 application test verifies full DCF extraction and typed mapping-count values.
+
+Issue regressions
+=================
+
+Prerequisites: Visual Studio with MSBuild, the .NET Framework 4.8 targeting pack,
+v145 C++ tools and CMake. Rebuild the public CanMonitor solution for the desired
+configuration/platform first. Tests must match the application's architecture.
+
+Build the native regression fixtures once, from the public repository root:
+
+  ./libCanOpenSimple2/canfestivaldrivers/tests/run-tests.ps1
+
+Run the application bug regressions, substituting an absolute output directory:
+
+  ./CanMonitor/PacketDisplayTests/run-tests.ps1 -Platform x64 -Configuration Debug -ApplicationDirectory C:/path/to/CanMonitor/bin/x64/Debug -BugOnly
+
+Repeat for Release and x86 using their corresponding deployment directories.
+The normal run-tests.ps1 invocation still runs display/filter regression tests.
+
+Issue #3 uses the production NMTDocument control and PacketLogFormatter under
+en-GB, en-US, de-DE and fr-FR, asserting their exact timestamps and milliseconds.
+
+Issue #2 checks discovery from an unrelated working directory, repeated discovery,
+missing drivers, an unavailable optional WMI service, an invalid DLL, and a DLL
+whose imported runtime is absent (Windows loader error 126). It verifies that a
+healthy null driver remains discoverable and failures are recorded. It also
+launches the actual application from an unrelated working directory with and
+without a native-driver directory, and checks main-window startup and clean exit.
+These launch tests require an interactive Windows session; they launch no CAN
+connection and do not remove or replace any installed FTDI files.
+
+The missing-runtime DLLs are test fixtures only; never deploy them as drivers.

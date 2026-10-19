@@ -64,7 +64,7 @@ namespace CanMonitor.PacketDisplay
                     }
                     ushort cob = ushort.Parse((string)packet.Element("COB"), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                     DateTime timestamp = DateTime.ParseExact((string)packet.Element("Timestamp"),
-                        "MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
+                        PacketTimestamp.Format, CultureInfo.InvariantCulture);
                     accept(new PacketLogRecord(kind, cob, timestamp, Payload((string)packet.Element("Payload"))));
                 }
             }

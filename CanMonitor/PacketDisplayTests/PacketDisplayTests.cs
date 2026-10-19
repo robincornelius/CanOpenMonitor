@@ -755,6 +755,11 @@ internal static class PacketDisplayTests
         {
             try
             {
+                if (args.Length == 3 && args[0] == "--bugs")
+                {
+                    BugRegressionTests.Run(args[1], Path.GetFullPath(args[2]));
+                    return 0;
+                }
                 if (args.Length == 2 && args[0] == "--od-editor")
                 {
                     ApplicationDocuments(args[1], true);

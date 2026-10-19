@@ -3,6 +3,7 @@ using PFMMeasurementService.Models.Devices.Buses;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,19 @@ namespace CanMonitor
         public event EventHandler<EventArgs> DeviceListChanged;
 
         List<string> drivers = new List<string>();
+        private readonly string driverDirectory;
+        private readonly List<string> discoveryErrors = new List<string>();
+
+        public IEnumerable<string> DiscoveryErrors
+        {
+            get
+            {
+                lock (discoveryErrors)
+                {
+                    return discoveryErrors.ToArray();
+                }
+            }
+        }
 
         public List<driverport> _driverport;
 
@@ -26,24 +40,62 @@ namespace CanMonitor
         public delegate void PortChangedEvent(object sender, EventArgs e);
         public event PortChangedEvent portchangedevent;
 
-        public DriverLoader()
+        public DriverLoader() : this(Path.GetDirectoryName(typeof(DriverLoader).Assembly.Location),
+            () => new ComPortManagerModel())
         {
-            cpm = new ComPortManagerModel(); ;
-            cpm.DeviceListChanged += Cpm_DeviceListChanged;
+        }
+
+        internal DriverLoader(string applicationDirectory, Func<IComPortManagerInterface> createPortManager)
+        {
+            driverDirectory = Path.Combine(applicationDirectory, "drivers");
+            try
+            {
+                // WMI hot-plug discovery is optional; native drivers can still enumerate without it.
+                cpm = createPortManager();
+                if (cpm != null)
+                {
+                    cpm.DeviceListChanged += Cpm_DeviceListChanged;
+                }
+            }
+            catch (Exception error)
+            {
+                ReportDiscoveryError("WMI port discovery unavailable: " + error.Message);
+            }
+        }
+
+        private void ReportDiscoveryError(string message)
+        {
+            lock (discoveryErrors)
+            {
+                if (discoveryErrors.Contains(message))
+                {
+                    return;
+                }
+                discoveryErrors.Add(message);
+            }
+            Trace.TraceWarning(message);
         }
 
         public void finddrivers()
         {
 
-            //textBox_info.AppendText("Searching for drivers...\r\n\r\n");
-            string[] founddrivers = Directory.GetFiles("drivers\\", "*.dll");
-
-            foreach (string driver in founddrivers)
+            drivers.Clear();
+            if (!Directory.Exists(driverDirectory))
             {
-                //textBox_info.AppendText(string.Format("Found driver {0}\r\n", driver));
-                drivers.Add(driver.Substring(0, driver.Length - 4));
+                ReportDiscoveryError("Driver directory is missing: " + driverDirectory);
+                return;
             }
-
+            try
+            {
+                foreach (string driver in Directory.GetFiles(driverDirectory, "*.dll"))
+                {
+                    drivers.Add(Path.Combine(driverDirectory, Path.GetFileNameWithoutExtension(driver)));
+                }
+            }
+            catch (Exception error)
+            {
+                ReportDiscoveryError("Cannot discover drivers in " + driverDirectory + ": " + error.Message);
+            }
         }
 
         public void enumerateports()
@@ -64,9 +116,9 @@ namespace CanMonitor
                     {
                         Program.lco.enumerate(s);
                     }
-                    catch (Exception)
+                    catch (Exception error)
                     {
-                        //textBox_info.AppendText(e.ToString() + "\r\n");
+                        ReportDiscoveryError("Cannot enumerate driver " + s + ": " + error.Message);
                     }
                 }
 
@@ -84,7 +136,7 @@ namespace CanMonitor
                     }
                 }
 
-                List<sComPortModel> psx = cpm.GetPorts();
+                List<sComPortModel> psx = cpm == null ? new List<sComPortModel>() : cpm.GetPorts();
 
                 foreach (sComPortModel p in psx)
                 {

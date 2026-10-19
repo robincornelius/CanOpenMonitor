@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.Threading;
 
 namespace CanMonitor.PacketDisplay
@@ -178,7 +177,7 @@ namespace CanMonitor.PacketDisplay
                     {
                         Volatile.Write(ref lastError, error);
                         Interlocked.Increment(ref errors);
-                        row = new PacketLogRow(record, new[] { record.Timestamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture),
+                        row = new PacketLogRow(record, new[] { PacketTimestamp.ToDisplayString(record.Timestamp),
                             record.TypeName, record.CobId.ToString("x3"), "",
                             record.PayloadText(), "Decode error: " + error.Message },
                             Color.White, Color.DarkRed);

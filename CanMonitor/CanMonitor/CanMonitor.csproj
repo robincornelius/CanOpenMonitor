@@ -156,6 +156,7 @@
       <DependentUpon>Prefs.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="PacketDisplay\PacketTimestamp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="CanLogForm.resx">
       <DependentUpon>CanLogForm.cs</DependentUpon>
