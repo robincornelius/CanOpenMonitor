@@ -21,8 +21,6 @@ namespace IO_Node
         byte out0;
         byte out1;
 
-        byte in0;
-        byte in1;
 
         public IOForm(libCanopenSimple.libCanopenSimple lco)
         {

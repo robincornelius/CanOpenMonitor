@@ -116,7 +116,7 @@ namespace CanMonitor
                     lastopen = opendp;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //textBox_info.AppendText("ERROR opening port " + ex.ToString() + "\r\n");
                 //MessageBox.Show("Setup error " + ex.ToString());

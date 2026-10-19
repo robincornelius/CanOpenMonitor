@@ -340,7 +340,7 @@ namespace CanMonitor
                     //addtoMRU(filename);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //fixme
                 //textBox_info.AppendText("Failed loading plugi \r\n" + ex.ToString() + "\r\n");

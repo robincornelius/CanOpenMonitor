@@ -28,7 +28,7 @@ namespace N_SettingsMgr
                 settings = (Settings)serializer.Deserialize(reader);
                 reader.Close();
             }
-            catch(Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Unable to load settings file :" + file);
             }

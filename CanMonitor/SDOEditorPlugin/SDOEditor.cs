@@ -745,7 +745,7 @@ namespace SDOEditorPlugin
 
                 });
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
 

@@ -20,7 +20,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
         public string serial;
         public string description;
         public string wmipath;
-        bool connected;
         public bool present = true;
 
         public string port { get; set; }
@@ -54,7 +53,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
         public event EventHandler<EventArgs> DeviceListChanged;
 
-        private readonly dynamic _status;
 
         private const string vidPattern = @"VID_([0-9A-F]{4})";
         private const string pidPattern = @"PID_([0-9A-F]{4})";
@@ -121,7 +119,6 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
         private void initWatcher()
         {
-            WqlEventQuery query;
             ManagementOperationObserver observer = new ManagementOperationObserver();
 
             var scope = new ManagementScope("root\\CIMV2") { Options = { EnablePrivileges = true } };
@@ -219,7 +216,7 @@ namespace PFMMeasurementService.Models.Devices.Buses
 
                 return c;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

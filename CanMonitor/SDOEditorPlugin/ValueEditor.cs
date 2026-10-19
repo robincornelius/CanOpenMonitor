@@ -87,7 +87,7 @@ namespace SDOEditorPlugin
             {
                 UpdateValue?.Invoke(textBox_current.Text);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
@@ -103,7 +103,7 @@ namespace SDOEditorPlugin
             {
                 UpdateValue?.Invoke(textBox_current.Text);
             }
-            catch(Exception ex)
+            catch (Exception)
             {
 
             }

@@ -64,7 +64,7 @@ namespace CanMonitor
                     {
                         Program.lco.enumerate(s);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         //textBox_info.AppendText(e.ToString() + "\r\n");
                     }
