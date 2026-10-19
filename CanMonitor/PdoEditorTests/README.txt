@@ -53,3 +53,17 @@ The OD Editor has a Decimal/Hexadecimal page selector and row context overrides;
 changing the page selector resets overrides. Actual Default/Current/DCF column
 checks run through PacketDisplayTests/run-tests.ps1 with -OdEditorOnly and a
 matching -ApplicationDirectory, -Platform and -Configuration.
+
+Three-way OD comparisons list every active Current/Default, Current/DCF and
+DCF/Default mismatch in a Differences column. Current cells are pale yellow
+when either Current comparison differs; DCF cells are lavender when they differ
+from Default. Tooltips give the result of each pair, including unavailable pairs.
+Missing data, read failures, unresolved expressions and unsupported datatypes
+do not create mismatches. Selection uses the normal Windows selection colors.
+Regressions cover all equality combinations and removal of stale highlights.
+
+Recent device files are saved immediately after a successful open, with the
+newest ten unique paths retained in the existing user SDOMRU.txt location.
+The menu refreshes from disk when opened and marks missing files unavailable.
+MRU tests use isolated temporary storage and simulated EDS files, covering
+reload, exact menu clicks, concurrent editor histories and storage failures.

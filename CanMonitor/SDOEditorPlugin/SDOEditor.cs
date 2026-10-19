@@ -23,6 +23,7 @@ namespace SDOEditorPlugin
         libCanopenSimple.libCanopenSimple lco;
         string filename = null;
         private string appdatafolder;
+        private RecentDeviceFiles recentFiles;
 
         private List<string> _mru = new List<string>();
 
@@ -32,6 +33,8 @@ namespace SDOEditorPlugin
         private readonly ToolStripComboBox integerFormat = new ToolStripComboBox();
         private readonly Dictionary<ListViewItem, string> currentIntegerValues = new Dictionary<ListViewItem, string>();
         private readonly Dictionary<ListViewItem, string> dcfIntegerValues = new Dictionary<ListViewItem, string>();
+        private readonly Dictionary<ListViewItem, string> wideIntegerValues = new Dictionary<ListViewItem, string>();
+        private readonly HashSet<ListViewItem> currentValuesAvailable = new HashSet<ListViewItem>();
         private readonly Dictionary<uint, bool> integerOverrides = new Dictionary<uint, bool>();
 
         private uint RowAddress(ListViewItem row)
@@ -58,10 +61,73 @@ namespace SDOEditorPlugin
             {
                 row.SubItems[6].Text = OdIntegerDisplay.Format(type, value, hex);
             }
+            UpdateValueHighlights(row);
+        }
+
+        private void UpdateValueHighlights(ListViewItem row)
+        {
+            ODentry entry = ((sdocallbackhelper)row.Tag).od;
+            if (entry == null)
+            {
+                return;
+            }
+            DataType type = OdIntegerDisplay.TypeOf(entry);
+            string current = null;
+            if (currentValuesAvailable.Contains(row))
+            {
+                if (!currentIntegerValues.TryGetValue(row, out current) && !wideIntegerValues.TryGetValue(row, out current))
+                {
+                    current = row.SubItems[5].Text;
+                }
+            }
+            string dcf;
+            if (!dcfIntegerValues.TryGetValue(row, out dcf) || dcf.Length == 0)
+            {
+                dcf = null;
+            }
+            string baseline = entry.defaultvalue.Length == 0 && type != DataType.VISIBLE_STRING ? null : entry.defaultvalue;
+            bool? currentDefault = OdValueComparison.Different(type, current, baseline);
+            bool? currentDcf = OdValueComparison.Different(type, current, dcf);
+            bool? dcfDefault = OdValueComparison.Different(type, dcf, baseline);
+            var differences = new List<string>();
+            if (currentDefault == true)
+            {
+                differences.Add("Current ≠ Default");
+            }
+            if (currentDcf == true)
+            {
+                differences.Add("Current ≠ DCF");
+            }
+            if (dcfDefault == true)
+            {
+                differences.Add("DCF ≠ Default");
+            }
+            while (row.SubItems.Count < 8)
+            {
+                row.SubItems.Add("");
+            }
+            bool comparable = currentDefault.HasValue || currentDcf.HasValue || dcfDefault.HasValue;
+            row.SubItems[7].Text = differences.Count != 0 ? string.Join("; ", differences)
+                : comparable ? "Comparable values match" : "No comparable values";
+            row.UseItemStyleForSubItems = false;
+            row.BackColor = listView1.BackColor;
+            foreach (ListViewItem.ListViewSubItem cell in row.SubItems)
+            {
+                cell.BackColor = listView1.BackColor;
+                cell.ForeColor = listView1.ForeColor;
+            }
+            row.SubItems[5].BackColor = currentDefault == true || currentDcf == true ? Color.LightGoldenrodYellow : listView1.BackColor;
+            row.SubItems[6].BackColor = dcfDefault == true ? Color.Lavender : listView1.BackColor;
+            row.SubItems[7].BackColor = differences.Count != 0 ? Color.LightGoldenrodYellow : listView1.BackColor;
+            Func<bool?, string> verdict = value => value.HasValue ? value.Value ? "different" : "equal" : "unavailable";
+            row.ToolTipText = "Current / Default: " + verdict(currentDefault) + "\nCurrent / DCF: " + verdict(currentDcf)
+                + "\nDCF / Default: " + verdict(dcfDefault);
         }
 
         private void InitializeIntegerDisplay()
         {
+            listView1.Columns.Add("Differences", 410);
+            listView1.ShowItemToolTips = true;
             integerFormat.DropDownStyle = ComboBoxStyle.DropDownList;
             integerFormat.Items.AddRange(new object[] { "Decimal", "Hexadecimal" });
             integerFormat.SelectedIndex = 0;
@@ -131,6 +197,7 @@ namespace SDOEditorPlugin
             editPdos.Click += EditPdos;
             menuStrip1.Items.Add(editPdos);
             InitializeIntegerDisplay();
+            mnuRecentlyUsed.DropDownOpening += (sender, args) => LoadRecentFiles();
             refreshtimer.Tick += Refreshtimer_Tick;
             Disposed += (sender, args) => refreshtimer.Dispose();
         }
@@ -210,7 +277,7 @@ namespace SDOEditorPlugin
             foreach (ListViewItem lvi in listView1.Items)
             {
 
-                lvi.BackColor = Color.White;
+                UpdateValueHighlights(lvi);
                 sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
 
                 if (help.od.objecttype != ObjectType.DOMAIN)
@@ -230,6 +297,12 @@ namespace SDOEditorPlugin
             if (filename == null || filename == "")
                 return;
 
+            string extension = Path.GetExtension(filename).ToLowerInvariant();
+            if (!System.IO.File.Exists(filename) || (extension != ".eds" && extension != ".dcf" && extension != ".xdd" && extension != ".xml"))
+            {
+                MessageBox.Show(this, "The selected device file is missing or unsupported.", "Open device file");
+                return;
+            }
             bool isdcf = false;
             bool isemptydcf = false;
 
@@ -332,6 +405,8 @@ namespace SDOEditorPlugin
             {
                 listView1.Items.Clear();
                 currentIntegerValues.Clear();
+                currentValuesAvailable.Clear();
+                wideIntegerValues.Clear();
                 dcfIntegerValues.Clear();
             }
 
@@ -487,7 +562,9 @@ namespace SDOEditorPlugin
                     if (completed.state == SDO.SDO_STATE.SDO_ERROR)
                     {
                         currentIntegerValues.Remove(item);
+                        currentValuesAvailable.Remove(item);
                         item.SubItems[5].Text = "Write failed: 0x" + completed.expitideddata.ToString("X8");
+                        UpdateValueHighlights(item);
                         return;
                     }
                     if (help.od.objecttype != ObjectType.DOMAIN)
@@ -501,25 +578,6 @@ namespace SDOEditorPlugin
                     break;
                 }
             });
-        }
-
-        private void UpdateIntegerColor(ListViewItem row, bool differs, ODentry entry)
-        {
-            row.BackColor = differs ? (entry.accesstype == EDSsharp.AccessType.ro || entry.accesstype == EDSsharp.AccessType.@const
-                ? Color.Yellow : Color.Red) : listView1.BackColor;
-        }
-
-        void testnumber(ListViewItem lvi)
-        {
-            Int64 i1, i2;
-
-            if (Int64.TryParse(lvi.SubItems[5].Text, out i1) && Int64.TryParse(lvi.SubItems[4].Text, out i2))
-            {
-                if (i1 != i2)
-                {
-                    lvi.BackColor = Color.Red;
-                }
-            }
         }
 
         void gotit(SDO sdo)
@@ -543,7 +601,9 @@ namespace SDOEditorPlugin
                             if (sdo.state == SDO.SDO_STATE.SDO_ERROR)
                             {
                                 currentIntegerValues.Remove(lvi);
+                                currentValuesAvailable.Remove(lvi);
                                 lvi.SubItems[5].Text = " **ERROR **";
+                                UpdateValueHighlights(lvi);
                                 return;
                             }
 
@@ -564,27 +624,12 @@ namespace SDOEditorPlugin
                                         float myFloat = System.BitConverter.ToSingle(BitConverter.GetBytes(h.sdo.expitideddata), 0);
                                         lvi.SubItems[5].Text = myFloat.ToString();
 
-                                        float fout;
-                                        if (float.TryParse(lvi.SubItems[4].Text, out fout))
-                                        {
-                                            if (fout != myFloat)
-                                            {
-                                                lvi.BackColor = Color.Red;
-                                            }
-                                        }
-
                                         break;
 
                                     case DataType.REAL64:
 
                                         double myDouble = System.BitConverter.ToDouble(h.sdo.databuffer, 0);
                                         lvi.SubItems[5].Text = myDouble.ToString();
-
-                                        //fixme bad test
-                                        if(lvi.SubItems[5].Text!=lvi.SubItems[4].Text)
-                                        {
-                                            lvi.BackColor = Color.Red;
-                                        }
 
                                         break;
 
@@ -600,8 +645,6 @@ namespace SDOEditorPlugin
                                         string raw = "0x" + (h.sdo.expitideddata & mask).ToString("X" + width / 4);
                                         string canonical = OdIntegerDisplay.Format(meh, raw, false);
                                         currentIntegerValues[lvi] = canonical;
-                                        string expected = OdIntegerDisplay.Format(meh, h.od.defaultvalue, false);
-                                        UpdateIntegerColor(lvi, canonical != expected, h.od);
                                         FormatIntegerRow(lvi);
                                         break;
                                     }
@@ -609,10 +652,6 @@ namespace SDOEditorPlugin
                                     case DataType.VISIBLE_STRING:
 
                                         lvi.SubItems[5].Text = System.Text.Encoding.UTF8.GetString(h.sdo.databuffer);
-                                        if (lvi.SubItems[5].Text != lvi.SubItems[4].Text)
-                                        {
-                                            lvi.BackColor = Color.Red;
-                                        }
 
 
                                         break;
@@ -628,38 +667,31 @@ namespace SDOEditorPlugin
 
                                         lvi.SubItems[5].Text = sb.ToString();
 
-                                        //fixme bad test
-                                        if (lvi.SubItems[5].Text != lvi.SubItems[4].Text)
-                                        {
-                                            lvi.BackColor = Color.Red;
-                                        }
-
 
                                         break;
 
 
                                     case DataType.UNSIGNED64:
                                     {
-                                        testnumber(lvi);
 
                                         UInt64 data = (UInt64)System.BitConverter.ToUInt64(h.sdo.databuffer, 0);
                                         lvi.SubItems[5].Text = String.Format("{0:x}", data);
+                                        wideIntegerValues[lvi] = data.ToString(System.Globalization.CultureInfo.InvariantCulture);
                                     }
                                     break;
 
                                     case DataType.INTEGER64:
                                     {
-                                        testnumber(lvi);
 
                                         Int64 data = (Int64)System.BitConverter.ToInt64(h.sdo.databuffer, 0);
                                         lvi.SubItems[5].Text = String.Format("{0:x}", data);
+                                        wideIntegerValues[lvi] = data.ToString(System.Globalization.CultureInfo.InvariantCulture);
                                     }
                                     break;
 
                                     case DataType.BOOLEAN:
                                     {
-                                            lvi.SubItems[5].Text = String.Format("{0}", h.sdo.expitideddata);
-                                            testnumber(lvi);
+                                        lvi.SubItems[5].Text = String.Format("{0}", h.sdo.expitideddata);
                                     }
                                     break;
 
@@ -694,15 +726,9 @@ namespace SDOEditorPlugin
 
                                 }
 
-                                if(lvi.BackColor==Color.Red)
-                                {
-                                    if(h.od.accesstype == EDSsharp.AccessType.ro || h.od.accesstype==EDSsharp.AccessType.@const)
-                                    {
-                                        lvi.BackColor = Color.Yellow;
-                                    }
-                                }
-
                             }
+                            currentValuesAvailable.Add(lvi);
+                            UpdateValueHighlights(lvi);
                             if (OdIntegerDisplay.Width(OdIntegerDisplay.TypeOf(h.od)) == 0)
                             {
                                 h.od.actualvalue = lvi.SubItems[5].Text;
@@ -933,7 +959,7 @@ namespace SDOEditorPlugin
             foreach (ListViewItem lvi in listView1.Items)
             {
 
-                lvi.BackColor = Color.White;
+                UpdateValueHighlights(lvi);
                 sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
 
                 if (help.od.objecttype != ObjectType.DOMAIN)
@@ -978,33 +1004,66 @@ namespace SDOEditorPlugin
             loadeds(filename);
         }
 
+        private void EnsureRecentFiles()
+        {
+            if (recentFiles == null)
+            {
+                if (appdatafolder == null)
+                {
+                    appdatafolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CanMonitor");
+                }
+                recentFiles = new RecentDeviceFiles(Path.Combine(appdatafolder, "SDOMRU.txt"));
+            }
+        }
+
+        private void LoadRecentFiles()
+        {
+            EnsureRecentFiles();
+            _mru = recentFiles.Load().ToList();
+            populateMRU();
+            ReportRecentFileError();
+        }
+
+        private void ReportRecentFileError()
+        {
+            if (recentFiles.Error != null)
+            {
+                label_sdo_queue_size.Text = "Recent-file history unavailable: " + recentFiles.Error;
+            }
+        }
+
         private void addtoMRU(string path)
         {
-            // if it already exists remove it then let it readd itsself
-            // so it will be promoted to the top of the list
-            if (_mru.Contains(path))
-                _mru.Remove(path);
-
-            _mru.Insert(0, path);
-
-            if (_mru.Count > 10)
-                _mru.RemoveAt(10);
-
+            EnsureRecentFiles();
+            // Merge with disk immediately: other OD editor windows may have
+            // opened files since this window last displayed its history.
+            _mru = recentFiles.Add(path).ToList();
             populateMRU();
-
+            ReportRecentFileError();
         }
 
         private void populateMRU()
         {
 
+            foreach (ToolStripItem oldItem in mnuRecentlyUsed.DropDownItems.Cast<ToolStripItem>().ToArray())
+            {
+                oldItem.Dispose();
+            }
             mnuRecentlyUsed.DropDownItems.Clear();
+            if (_mru.Count == 0)
+            {
+                mnuRecentlyUsed.DropDownItems.Add(new ToolStripMenuItem("No recent device files") { Enabled = false });
+            }
 
             foreach (var path in _mru)
             {
-                var item = new ToolStripMenuItem(path);
+                var item = new ToolStripMenuItem(path) { AutoToolTip = false };
+                item.Enabled = System.IO.File.Exists(path);
+                item.ToolTipText = item.Enabled ? path : "File unavailable: " + path;
+                item.Text = path.Replace("&", "&&");
                 item.Tag = path;
                 item.Click += OpenRecentFile;
-                switch (Path.GetExtension(path))
+                switch (Path.GetExtension(path).ToLowerInvariant())
                 {
                     case ".xml":
                     case ".xdd":
@@ -1012,6 +1071,7 @@ namespace SDOEditorPlugin
                         break;
 
                     case ".eds":
+                    case ".dcf":
                         item.Image = Properties.Resource1.EventLog_5735;
                         break;
 
@@ -1023,31 +1083,9 @@ namespace SDOEditorPlugin
             }
         }
 
-        private void SDOEditor_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            var mruFilePath = Path.Combine(appdatafolder, "SDOMRU.txt");
-            System.IO.File.WriteAllLines(mruFilePath, _mru);
-        }
-
         private void SDOEditor_Load(object sender, EventArgs e)
         {
-            //First lets create an appdata folder
-
-            // The folder for the roaming current user 
-            string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-            // Combine the base folder with your specific folder....
-            appdatafolder = Path.Combine(folder, "CanMonitor");
-
-            // Check if folder exists and if not, create it
-            if (!Directory.Exists(appdatafolder))
-                Directory.CreateDirectory(appdatafolder);
-
-            var mruFilePath = Path.Combine(appdatafolder, "SDOMRU.txt");
-            if (System.IO.File.Exists(mruFilePath))
-                _mru.AddRange(System.IO.File.ReadAllLines(mruFilePath));
-
-            populateMRU();
+            LoadRecentFiles();
         }
 
         private void saveDifferenceToolStripMenuItem_Click(object sender, EventArgs e)

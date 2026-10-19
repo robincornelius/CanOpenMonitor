@@ -498,6 +498,7 @@ internal static class PacketDisplayTests
             Require(((SDO)helperType.GetField("sdo").GetValue(row.Tag)).node == 7, "Write read-back used a changed node selection");
             DcfPdoEntries(editorType, odType);
             IntegerColumns(editorType, odType, can);
+            RecentFileMenu(editorType, can);
             editor.Dispose();
             Require(Task.Run(() => editorType.GetMethod("gotit", instance).Invoke(editor, new object[] { transfer })).Wait(1000),
                 "Closed OD Editor callback blocked");
@@ -507,6 +508,49 @@ internal static class PacketDisplayTests
             editor.Dispose();
         }
         Console.WriteLine("PASS: actual OD Editor callbacks post without blocking the UI and tolerate disposal");
+    }
+
+    private static void RecentFileMenu(Type editorType, libCanopenSimple.libCanopenSimple can)
+    {
+        BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        string directory = Path.Combine(Path.GetTempPath(), "canmonitor-mru-menu-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            string filename = Path.Combine(directory, "A & B.EDS");
+            File.WriteAllText(filename, "[FileInfo]\nFileName=example.eds\n[DeviceInfo]\nProductName=MRU regression device\n"
+                + "[MandatoryObjects]\nSupportedObjects=1\n1=0x1000\n[1000]\nParameterName=Device type\nObjectType=0x7\n"
+                + "DataType=0x7\nAccessType=ro\nDefaultValue=0\nPDOMapping=0\n");
+            using (var first = (Form)Activator.CreateInstance(editorType, new object[] { can }))
+            using (var second = (Form)Activator.CreateInstance(editorType, new object[] { can }))
+            {
+                editorType.GetField("appdatafolder", flags).SetValue(first, directory);
+                editorType.GetField("appdatafolder", flags).SetValue(second, directory);
+                editorType.GetMethod("LoadRecentFiles", flags).Invoke(first, null);
+                var menu = (ToolStripMenuItem)editorType.GetField("mnuRecentlyUsed", flags).GetValue(first);
+                Require(menu.DropDownItems.Count == 1 && !menu.DropDownItems[0].Enabled, "Empty history lacks placeholder");
+                editorType.GetMethod("addtoMRU", flags).Invoke(first, new object[] { filename });
+                Require(File.ReadAllLines(Path.Combine(directory, "SDOMRU.txt")).Single() == filename, "Menu did not save immediately");
+                editorType.GetMethod("LoadRecentFiles", flags).Invoke(second, null);
+                var restored = (ToolStripMenuItem)editorType.GetField("mnuRecentlyUsed", flags).GetValue(second);
+                Require(restored.DropDownItems.Count == 1 && restored.DropDownItems[0].Enabled, "Reopened MRU menu is empty");
+                ((CheckBox)editorType.GetField("checkBox_useronly", flags).GetValue(second)).Checked = false;
+                ((ComboBox)editorType.GetField("comboBoxtype", flags).GetValue(second)).SelectedItem = "ALL";
+                restored.DropDownItems[0].PerformClick();
+                Require((string)editorType.GetField("filename", flags).GetValue(second) == filename, "Recent menu did not open the exact path");
+                var list = (ListView)editorType.GetField("listView1", flags).GetValue(second);
+                Require(list.Items.Count == 1 && list.Items[0].SubItems[2].Text == "Device type", "Recent file did not populate OD rows: " + list.Items.Count + " / " + string.Join(",", list.Items.Cast<ListViewItem>().Select(item => item.SubItems[2].Text)) );
+                File.Delete(filename);
+                editorType.GetMethod("LoadRecentFiles", flags).Invoke(second, null);
+                Require(!restored.DropDownItems[0].Enabled && restored.DropDownItems[0].ToolTipText.Contains("unavailable"),
+                    "Missing recent file was not marked unavailable");
+            }
+            Console.WriteLine("PASS: actual MRU menu reload, exact ampersand path click, OD loading and missing-file state");
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
     }
 
     private static void IntegerColumns(Type editorType, Type odType, libCanopenSimple.libCanopenSimple can)
@@ -553,6 +597,36 @@ internal static class PacketDisplayTests
                 .Invoke(null, new object[] { row.Tag, row.SubItems[5].Text });
             byte[] data = (byte[])write.GetType().GetProperty("Data").GetValue(write);
             Require(data.Length == 1 && data[0] == 255, "Hexadecimal signed value cannot be edited losslessly");
+            Action<string, string, uint, string> compare = (baseline, dcf, current, expected) =>
+            {
+                odType.GetField("defaultvalue").SetValue(entry, baseline);
+                odType.GetField("actualvalue").SetValue(entry, dcf);
+                editorType.GetMethod("adddcfvalue", flags).Invoke(editor, new object[] { entry });
+                transfer.expitideddata = current;
+                row.SubItems[5].Text = "waiting";
+                editorType.GetMethod("gotit", flags).Invoke(editor, new object[] { transfer });
+                PumpUntil(() => row.SubItems[5].Text != "waiting", "Comparison read not processed");
+                Require(row.SubItems[7].Text == expected, "Wrong simultaneous differences: " + row.SubItems[7].Text);
+            };
+            compare("0", "0x00", 0, "Comparable values match");
+            compare("0", "0", 1, "Current ≠ Default; Current ≠ DCF");
+            compare("0", "1", 0, "Current ≠ DCF; DCF ≠ Default");
+            compare("0", "1", 1, "Current ≠ Default; DCF ≠ Default");
+            compare("0", "1", 2, "Current ≠ Default; Current ≠ DCF; DCF ≠ Default");
+            Require(row.SubItems[5].BackColor != list.BackColor && row.SubItems[6].BackColor != list.BackColor,
+                "Independent Current/DCF highlights missing");
+            transfer.state = SDO.SDO_STATE.SDO_ERROR;
+            editorType.GetMethod("gotit", flags).Invoke(editor, new object[] { transfer });
+            PumpUntil(() => row.SubItems[5].Text.Contains("ERROR"), "Read error not displayed");
+            Require(row.SubItems[7].Text == "DCF ≠ Default", "Read error retained stale Current comparisons");
+            transfer.state = SDO.SDO_STATE.SDO_FINISHED;
+            compare("0", "", 1, "Current ≠ Default");
+            compare("0", "0", 0, "Comparable values match");
+            Require(row.SubItems[5].BackColor == list.BackColor && row.SubItems[6].BackColor == list.BackColor,
+                "Matching values retained stale highlights");
+            format.SelectedIndex = 0;
+            Require(row.SubItems[7].Text == "Comparable values match", "Display base changed comparison result");
+            Console.WriteLine("PASS: simultaneous three-way comparisons, missing DCF, read errors and cleared highlights");
         }
         Console.WriteLine("PASS: integer Default/Current/DCF columns, signed reads, page and row formats preserve values");
     }

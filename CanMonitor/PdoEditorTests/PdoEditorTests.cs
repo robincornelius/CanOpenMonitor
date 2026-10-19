@@ -235,6 +235,63 @@ internal static class PdoEditorTests
         Console.WriteLine("PASS: actual window current/draft values, mapping selectors, save/revert, failures, stale reads, busy close and fixed mappings");
     }
 
+    private static void RecentFiles()
+    {
+        string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "canmonitor-mru-" + Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(directory);
+        try
+        {
+            string storage = System.IO.Path.Combine(directory, "history", "SDOMRU.txt");
+            var first = new RecentDeviceFiles(storage);
+            Require(first.Load().Length == 0, "Fresh MRU was not empty");
+            string a = System.IO.Path.Combine(directory, "A & B.EDS");
+            first.Add(a);
+            Require(System.IO.File.Exists(storage) && new RecentDeviceFiles(storage).Load().Single() == a,
+                "MRU was not persisted immediately");
+            var second = new RecentDeviceFiles(storage);
+            second.Load();
+            string b = System.IO.Path.Combine(directory, "second.dcf");
+            first.Add(b);
+            string c = System.IO.Path.Combine(directory, "third.xdd");
+            Require(second.Add(c).SequenceEqual(new[] { c, b, a }), "Stale editor overwrote newer history");
+            Require(first.Add(a.ToUpperInvariant()).Length == 3, "Case variant duplicated recent path");
+            for (int index = 0; index < 15; index++)
+            {
+                first.Add(System.IO.Path.Combine(directory, index + ".eds"));
+            }
+            Require(first.Load().Length == 10 && first.Load()[0].EndsWith("14.eds"), "MRU cap/order failed");
+            System.IO.File.WriteAllLines(storage, new[] { "", "bad\0path.eds", a, a.ToLowerInvariant(), "unsupported.txt" });
+            Require(first.Load().Single() == a, "Malformed/duplicate legacy history was not normalized");
+            var blocked = new RecentDeviceFiles(directory);
+            Require(blocked.Add(a).Length == 1 && blocked.Error != null, "MRU write error escaped or was hidden");
+            Console.WriteLine("PASS: immediate MRU persistence, reload, stale editors, case deduplication, cap and storage failures");
+        }
+        finally
+        {
+            System.IO.Directory.Delete(directory, true);
+        }
+    }
+
+    private static void ValueComparison()
+    {
+        Require(OdValueComparison.Different(DataType.INTEGER8, "-1", "0xFF") == false, "Signed hex mismatch");
+        Require(OdValueComparison.Different(DataType.UNSIGNED32, "4294967295", "0xFFFFFFFF") == false, "Unsigned32 mismatch");
+        Require(OdValueComparison.Different(DataType.UNSIGNED16, "200", "0x00C9") == true, "Numeric mismatch missing");
+        Require(OdValueComparison.Different(DataType.UNSIGNED8, "256", "0") == null, "Invalid numeric source compared");
+        Require(OdValueComparison.Different(DataType.UNSIGNED32, "$NODEID+0x180", "409") == null, "Unresolved expression compared");
+        Require(OdValueComparison.Different(DataType.INTEGER16, null, "0") == null, "Missing current compared");
+        Require(OdValueComparison.Different(DataType.INTEGER16, " **ERROR **", "0") == null, "Error compared as a value");
+        Require(OdValueComparison.Different(DataType.INTEGER64, "-1", "0xFFFFFFFFFFFFFFFF") == false, "Signed64 mismatch");
+        Require(OdValueComparison.Different(DataType.UNSIGNED64, "18446744073709551615", "0xFFFFFFFFFFFFFFFF") == false, "Unsigned64 mismatch");
+        Require(OdValueComparison.Different(DataType.REAL32, "1.0", "1") == false, "Float formatting mismatch");
+        Require(OdValueComparison.Different(DataType.VISIBLE_STRING, "", "") == false, "Empty string mismatch");
+        Require(OdValueComparison.Different(DataType.VISIBLE_STRING, "a", "b") == true, "String mismatch missing");
+        Require(OdValueComparison.Different(DataType.DOMAIN, "Domain Len = 4", "Domain Len = 4") == null, "Domain lengths treated as values");
+        Require(OdValueComparison.Different(DataType.OCTET_STRING, "a b ", "0A 0x0B") == false, "Octet formatting mismatch");
+        Require(OdValueComparison.Different(DataType.OCTET_STRING, "a b", "a c") == true, "Octet mismatch missing");
+        Console.WriteLine("PASS: typed value comparisons, numeric representations, missing values, errors and expressions");
+    }
+
     private static void IntegerDisplay()
     {
         foreach (DataType type in new[] { DataType.INTEGER8, DataType.INTEGER16, DataType.INTEGER32,
@@ -273,6 +330,8 @@ internal static class PdoEditorTests
         {
             try
             {
+                RecentFiles();
+                ValueComparison();
                 IntegerDisplay();
                 Model();
                 Window();

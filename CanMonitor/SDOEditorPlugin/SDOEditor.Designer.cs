@@ -398,7 +398,6 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "SDOEditor";
             this.Text = "Device OD Editor";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SDOEditor_FormClosed);
             this.Load += new System.EventHandler(this.SDOEditor_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_node)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
