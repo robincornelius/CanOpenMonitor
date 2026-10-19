@@ -232,7 +232,7 @@ namespace CanMonitor
                         {
                             plugins.Add(filename, obj);
                             IInterfaceService iis = (IInterfaceService)obj;
-                            IPDOParser parser = (IPDOParser)obj;
+                            IPDOParser parser = obj as IPDOParser;
 
                             Dictionary<UInt16, Func<byte[], string>> dictemp = new Dictionary<ushort, Func<byte[], string>>();
 
@@ -241,8 +241,12 @@ namespace CanMonitor
                             lock (pdoprocessors)
                             {
                                 iis.preregisterPDOS(pdoprocessors);
-                                parser.registerPDOS();
-                                ipdo = parser;
+                                // Tool-only plugins must not replace an existing packet decoder.
+                                if (parser != null)
+                                {
+                                    parser.registerPDOS();
+                                    ipdo = parser;
+                                }
                             }
 
 
