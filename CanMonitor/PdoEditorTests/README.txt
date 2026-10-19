@@ -46,3 +46,10 @@ explicit unconfirmed-NMT status, as in the underlying configuration API.
 
 The x86 test executable builds the reusable library references as Any CPU;
 x64 selects their x64 configurations.
+
+OD integer display tests cover signed/unsigned 8/16/32-bit boundaries, fixed-width
+hexadecimal two's-complement values, decimal round trips and preserved expressions.
+The OD Editor has a Decimal/Hexadecimal page selector and row context overrides;
+changing the page selector resets overrides. Actual Default/Current/DCF column
+checks run through PacketDisplayTests/run-tests.ps1 with -OdEditorOnly and a
+matching -ApplicationDirectory, -Platform and -Configuration.

@@ -54,6 +54,7 @@
     </Compile>
     <Compile Include="SDOEditorPlugin.cs" />
     <Compile Include="PdoEditorModel.cs" />
+    <Compile Include="OdIntegerDisplay.cs" />
     <Compile Include="PdoEditorForm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SDOEditor.cs">

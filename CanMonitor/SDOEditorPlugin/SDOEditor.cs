@@ -29,6 +29,98 @@ namespace SDOEditorPlugin
         Timer refreshtimer = new Timer();
         private readonly HashSet<SDO> pendingWrites = new HashSet<SDO>();
         private bool editingValue;
+        private readonly ToolStripComboBox integerFormat = new ToolStripComboBox();
+        private readonly Dictionary<ListViewItem, string> currentIntegerValues = new Dictionary<ListViewItem, string>();
+        private readonly Dictionary<ListViewItem, string> dcfIntegerValues = new Dictionary<ListViewItem, string>();
+        private readonly Dictionary<uint, bool> integerOverrides = new Dictionary<uint, bool>();
+
+        private uint RowAddress(ListViewItem row)
+        {
+            ODentry entry = ((sdocallbackhelper)row.Tag).od;
+            return ((uint)entry.Index << 8) | entry.Subindex;
+        }
+
+        private void FormatIntegerRow(ListViewItem row)
+        {
+            DataType type = OdIntegerDisplay.TypeOf(((sdocallbackhelper)row.Tag).od);
+            bool hex;
+            if (!integerOverrides.TryGetValue(RowAddress(row), out hex))
+            {
+                hex = integerFormat.SelectedIndex == 1;
+            }
+            row.SubItems[4].Text = OdIntegerDisplay.Format(type, ((sdocallbackhelper)row.Tag).od.defaultvalue, hex);
+            string value;
+            if (currentIntegerValues.TryGetValue(row, out value))
+            {
+                row.SubItems[5].Text = OdIntegerDisplay.Format(type, value, hex);
+            }
+            if (dcfIntegerValues.TryGetValue(row, out value))
+            {
+                row.SubItems[6].Text = OdIntegerDisplay.Format(type, value, hex);
+            }
+        }
+
+        private void InitializeIntegerDisplay()
+        {
+            integerFormat.DropDownStyle = ComboBoxStyle.DropDownList;
+            integerFormat.Items.AddRange(new object[] { "Decimal", "Hexadecimal" });
+            integerFormat.SelectedIndex = 0;
+            menuStrip1.Items.Add(new ToolStripLabel("Integer display:"));
+            menuStrip1.Items.Add(integerFormat);
+            integerFormat.SelectedIndexChanged += (sender, args) =>
+            {
+                // An explicit page-wide switch resets row overrides so every
+                // integer row follows the newly selected format.
+                integerOverrides.Clear();
+                listView1.BeginUpdate();
+                foreach (ListViewItem row in listView1.Items)
+                {
+                    FormatIntegerRow(row);
+                }
+                listView1.EndUpdate();
+            };
+            var context = new ContextMenuStrip();
+            foreach (string label in new[] { "Use page default", "Show decimal", "Show hexadecimal" })
+            {
+                var item = new ToolStripMenuItem(label);
+                item.Click += (sender, args) =>
+                {
+                    foreach (ListViewItem row in listView1.SelectedItems)
+                    {
+                        if (label == "Use page default")
+                        {
+                            integerOverrides.Remove(RowAddress(row));
+                        }
+                        else
+                        {
+                            integerOverrides[RowAddress(row)] = label == "Show hexadecimal";
+                        }
+                        FormatIntegerRow(row);
+                    }
+                };
+                context.Items.Add(item);
+            }
+            context.Opening += (sender, args) => args.Cancel = listView1.SelectedItems.Count == 0
+                || listView1.SelectedItems.Cast<ListViewItem>().Any(row => OdIntegerDisplay.Width(OdIntegerDisplay.TypeOf(((sdocallbackhelper)row.Tag).od)) == 0);
+            listView1.MouseDown += (sender, args) =>
+            {
+                if (args.Button == MouseButtons.Right)
+                {
+                    ListViewItem row = listView1.GetItemAt(args.X, args.Y);
+                    if (row == null)
+                    {
+                        listView1.SelectedItems.Clear();
+                    }
+                    else if (!row.Selected)
+                    {
+                        listView1.SelectedItems.Clear();
+                        row.Selected = true;
+                    }
+                }
+            };
+            listView1.ContextMenuStrip = context;
+            Disposed += (sender, args) => context.Dispose();
+        }
 
 
         public SDOEditor(libCanopenSimple.libCanopenSimple lco)
@@ -38,6 +130,7 @@ namespace SDOEditorPlugin
             var editPdos = new ToolStripMenuItem("Edit PDOs...");
             editPdos.Click += EditPdos;
             menuStrip1.Items.Add(editPdos);
+            InitializeIntegerDisplay();
             refreshtimer.Tick += Refreshtimer_Tick;
             Disposed += (sender, args) => refreshtimer.Dispose();
         }
@@ -236,7 +329,11 @@ namespace SDOEditorPlugin
 
             listView1.BeginUpdate();
             if (!isdcf)
+            {
                 listView1.Items.Clear();
+                currentIntegerValues.Clear();
+                dcfIntegerValues.Clear();
+            }
 
             //           StorageLocation loc = StorageLocation
 
@@ -311,7 +408,9 @@ namespace SDOEditorPlugin
 
                 if ((help.od.Index == od.Index) && (help.od.Subindex == od.Subindex))
                 {
+                    dcfIntegerValues[lvi] = od.actualvalue;
                     lvi.SubItems[6].Text = od.actualvalue;
+                    FormatIntegerRow(lvi);
                 }
             }
         }
@@ -362,6 +461,7 @@ namespace SDOEditorPlugin
                 lvi.Tag = help;
 
                 listView1.Items.Add(lvi);
+                FormatIntegerRow(lvi);
             }
 
             if (dcf)
@@ -386,6 +486,7 @@ namespace SDOEditorPlugin
                     }
                     if (completed.state == SDO.SDO_STATE.SDO_ERROR)
                     {
+                        currentIntegerValues.Remove(item);
                         item.SubItems[5].Text = "Write failed: 0x" + completed.expitideddata.ToString("X8");
                         return;
                     }
@@ -400,6 +501,12 @@ namespace SDOEditorPlugin
                     break;
                 }
             });
+        }
+
+        private void UpdateIntegerColor(ListViewItem row, bool differs, ODentry entry)
+        {
+            row.BackColor = differs ? (entry.accesstype == EDSsharp.AccessType.ro || entry.accesstype == EDSsharp.AccessType.@const
+                ? Color.Yellow : Color.Red) : listView1.BackColor;
         }
 
         void testnumber(ListViewItem lvi)
@@ -435,6 +542,7 @@ namespace SDOEditorPlugin
                         {
                             if (sdo.state == SDO.SDO_STATE.SDO_ERROR)
                             {
+                                currentIntegerValues.Remove(lvi);
                                 lvi.SubItems[5].Text = " **ERROR **";
                                 return;
                             }
@@ -481,57 +589,22 @@ namespace SDOEditorPlugin
                                         break;
 
                                     case DataType.INTEGER8:
-                                    {
-                                        testnumber(lvi);
-
-                                        byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
-                                        byte num = data[0];
-                                        lvi.SubItems[5].Text = String.Format("{0}", num);
-                                        break;
-                                    }
-
                                     case DataType.INTEGER16:
-                                    {
-                                        testnumber(lvi);
-
-                                        byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
-                                        Int16 num = BitConverter.ToInt16(data, 0);
-                                        lvi.SubItems[5].Text = String.Format("{0}", num);
-                                        break;
-                                    }
-
                                     case DataType.INTEGER32:
-                                    {
-
-                                        testnumber(lvi);
-
-                                        byte[] data = BitConverter.GetBytes(h.sdo.expitideddata);
-                                        Int32 num = BitConverter.ToInt32(data, 0);
-                                        lvi.SubItems[5].Text = String.Format("{0}", num);
-                                        break;
-
-                                    }
-
                                     case DataType.UNSIGNED8:
-
-                                       
-
                                     case DataType.UNSIGNED16:
-
-
                                     case DataType.UNSIGNED32:
-
-                                        if(meh== DataType.UNSIGNED8)
-                                            h.sdo.expitideddata &= 0x000000FF;
-                                        if(meh == DataType.UNSIGNED16)
-                                            h.sdo.expitideddata &= 0x0000FFFF;
-
-
-                                        lvi.SubItems[5].Text = String.Format("{0}", h.sdo.expitideddata);
-
-                                        testnumber(lvi);
-
+                                    {
+                                        int width = OdIntegerDisplay.Width(meh);
+                                        uint mask = width == 32 ? uint.MaxValue : (1U << width) - 1;
+                                        string raw = "0x" + (h.sdo.expitideddata & mask).ToString("X" + width / 4);
+                                        string canonical = OdIntegerDisplay.Format(meh, raw, false);
+                                        currentIntegerValues[lvi] = canonical;
+                                        string expected = OdIntegerDisplay.Format(meh, h.od.defaultvalue, false);
+                                        UpdateIntegerColor(lvi, canonical != expected, h.od);
+                                        FormatIntegerRow(lvi);
                                         break;
+                                    }
 
                                     case DataType.VISIBLE_STRING:
 
@@ -630,10 +703,14 @@ namespace SDOEditorPlugin
                                 }
 
                             }
+                            if (OdIntegerDisplay.Width(OdIntegerDisplay.TypeOf(h.od)) == 0)
+                            {
+                                h.od.actualvalue = lvi.SubItems[5].Text;
+                            }
+                            oknextread = true;
                             break;
                         }
 
-                        h.od.actualvalue = lvi.SubItems[5].Text;
                         oknextread = true;
 
                     }
@@ -992,7 +1069,11 @@ namespace SDOEditorPlugin
                     sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
 
                     string defaultstring = help.od.defaultvalue;
-                    string currentstring = help.od.actualvalue;
+                    string currentstring;
+                    if (!currentIntegerValues.TryGetValue(lvi, out currentstring))
+                    {
+                        currentstring = help.od.actualvalue;
+                    }
 
                     UInt16 key = Convert.ToUInt16(index, 16);
                     UInt16 subi = Convert.ToUInt16(sub, 16);
@@ -1117,6 +1198,7 @@ namespace SDOEditorPlugin
             foreach(ListViewItem lvi in lvi2)
             {
                 listView1.Items.Add(lvi);
+                FormatIntegerRow(lvi);
             }
 
         }

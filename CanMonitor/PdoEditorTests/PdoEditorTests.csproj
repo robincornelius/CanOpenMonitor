@@ -16,6 +16,7 @@
     <Compile Include="..\SDOEditorPlugin\PdoEditorModel.cs" />
     <Compile Include="..\SDOEditorPlugin\PdoEditorForm.cs" />
     <Compile Include="PdoEditorTests.cs" />
+    <Compile Include="..\SDOEditorPlugin\OdIntegerDisplay.cs" />
     <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj"><Name>libCanopenSimple</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform></ProjectReference>
     <ProjectReference Include="..\..\libeds\libEDSsharp\libEDSsharp.csproj"><Name>libEDSsharp</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform></ProjectReference>
   </ItemGroup>

@@ -327,7 +327,7 @@ internal static class PacketDisplayTests
         Console.WriteLine("PASS: virtual WinForms list, bounded UI drain and " + pulses + " independent UI timer pulses");
     }
 
-    private static void ApplicationDocuments(string directory)
+    private static void ApplicationDocuments(string directory, bool odEditorOnly = false)
     {
         string appDirectory = Path.GetFullPath(directory);
         ResolveEventHandler resolve = (sender, args) =>
@@ -344,6 +344,11 @@ internal static class PacketDisplayTests
             Delegate callback = (Delegate)can.GetType().GetField(name, instance).GetValue(can);
             return callback == null ? 0 : callback.GetInvocationList().Length;
         };
+        if (odEditorOnly)
+        {
+            SdoEditorCallbacks(application, can, appDirectory);
+            return;
+        }
         foreach (string document in new[] { "CanLogForm", "NMTDocument", "EmcyDocument" })
         {
             string eventName = document == "EmcyDocument" ? "emcyevent" : "nmtecevent";
@@ -492,6 +497,7 @@ internal static class PacketDisplayTests
             PumpUntil(() => !ReferenceEquals(helperType.GetField("sdo").GetValue(row.Tag), written), "Write read-back was not queued");
             Require(((SDO)helperType.GetField("sdo").GetValue(row.Tag)).node == 7, "Write read-back used a changed node selection");
             DcfPdoEntries(editorType, odType);
+            IntegerColumns(editorType, odType, can);
             editor.Dispose();
             Require(Task.Run(() => editorType.GetMethod("gotit", instance).Invoke(editor, new object[] { transfer })).Wait(1000),
                 "Closed OD Editor callback blocked");
@@ -501,6 +507,54 @@ internal static class PacketDisplayTests
             editor.Dispose();
         }
         Console.WriteLine("PASS: actual OD Editor callbacks post without blocking the UI and tolerate disposal");
+    }
+
+    private static void IntegerColumns(Type editorType, Type odType, libCanopenSimple.libCanopenSimple can)
+    {
+        BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        using (var editor = (Form)Activator.CreateInstance(editorType, new object[] { can }))
+        {
+            IntPtr handle = editor.Handle;
+            var list = (ListView)editorType.GetField("listView1", flags).GetValue(editor);
+            handle = list.Handle;
+            object entry = Activator.CreateInstance(odType, new object[] { "Signed byte", (ushort)0x2001, (byte)0 });
+            odType.GetField("datatype").SetValue(entry, Enum.Parse(odType.GetField("datatype").FieldType, "INTEGER8"));
+            odType.GetField("defaultvalue").SetValue(entry, "0xFF");
+            odType.GetField("actualvalue").SetValue(entry, "0x80");
+            editorType.GetMethod("addtolist", flags).Invoke(editor, new object[] { entry, true, true });
+            ListViewItem row = list.Items[0];
+            Require(row.SubItems[4].Text == "-1" && row.SubItems[6].Text == "-128", "Initial integer columns disagree");
+            var transfer = new SDO(can, 1, 0x2001, 0, SDO.direction.SDO_READ, null, null);
+            transfer.state = SDO.SDO_STATE.SDO_FINISHED;
+            transfer.expitideddata = 255;
+            object helper = row.Tag;
+            helper.GetType().GetField("sdo").SetValue(helper, transfer);
+            row.Tag = helper;
+            editorType.GetMethod("gotit", flags).Invoke(editor, new object[] { transfer });
+            PumpUntil(() => row.SubItems[5].Text == "-1", "Signed current byte display incorrect");
+            var format = (ToolStripComboBox)editorType.GetField("integerFormat", flags).GetValue(editor);
+            format.SelectedIndex = 1;
+            Require(row.SubItems[4].Text == "0xFF" && row.SubItems[5].Text == "0xFF" && row.SubItems[6].Text == "0x80",
+                "Page hex format did not update every value column");
+            row.Selected = true;
+            list.ContextMenuStrip.Items[1].PerformClick();
+            Require(row.SubItems[4].Text == "-1" && row.SubItems[5].Text == "-1" && row.SubItems[6].Text == "-128",
+                "Per-row decimal override failed");
+            list.ContextMenuStrip.Items[0].PerformClick();
+            Require(row.SubItems[5].Text == "0xFF", "Use page default failed");
+            list.ContextMenuStrip.Items[1].PerformClick();
+            format.SelectedIndex = 0;
+            format.SelectedIndex = 1;
+            Require(row.SubItems[5].Text == "0xFF", "Page switch did not reset row override");
+            Require((string)odType.GetField("defaultvalue").GetValue(entry) == "0xFF"
+                && (string)odType.GetField("actualvalue").GetValue(entry) == "0x80", "Display changed source values");
+            Require(transfer.expitideddata == 255, "Display mutated the SDO payload");
+            object write = editorType.GetMethod("CreateParameterWrite", BindingFlags.Static | BindingFlags.NonPublic)
+                .Invoke(null, new object[] { row.Tag, row.SubItems[5].Text });
+            byte[] data = (byte[])write.GetType().GetProperty("Data").GetValue(write);
+            Require(data.Length == 1 && data[0] == 255, "Hexadecimal signed value cannot be edited losslessly");
+        }
+        Console.WriteLine("PASS: integer Default/Current/DCF columns, signed reads, page and row formats preserve values");
     }
 
     private static void DcfPdoEntries(Type editorType, Type odType)
@@ -627,6 +681,11 @@ internal static class PacketDisplayTests
         {
             try
             {
+                if (args.Length == 2 && args[0] == "--od-editor")
+                {
+                    ApplicationDocuments(args[1], true);
+                    return 0;
+                }
                 LosslessBacklogAndIsolation();
                 Console.WriteLine("PASS: 100000 ordered entries preserved while formatter and UI are blocked");
                 MultipleProducers();

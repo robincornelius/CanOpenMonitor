@@ -235,6 +235,31 @@ internal static class PdoEditorTests
         Console.WriteLine("PASS: actual window current/draft values, mapping selectors, save/revert, failures, stale reads, busy close and fixed mappings");
     }
 
+    private static void IntegerDisplay()
+    {
+        foreach (DataType type in new[] { DataType.INTEGER8, DataType.INTEGER16, DataType.INTEGER32,
+            DataType.UNSIGNED8, DataType.UNSIGNED16, DataType.UNSIGNED32 })
+        {
+            int width = OdIntegerDisplay.Width(type);
+            bool signed = type == DataType.INTEGER8 || type == DataType.INTEGER16 || type == DataType.INTEGER32;
+            long min = signed ? -(1L << (width - 1)) : 0;
+            long max = signed ? (1L << (width - 1)) - 1 : (1L << width) - 1;
+            foreach (long value in new[] { min, 0, max })
+            {
+                string number = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                string hex = OdIntegerDisplay.Format(type, number, true);
+                Require(hex.Length == 2 + width / 4, "Hex width was not preserved");
+                Require(OdIntegerDisplay.Format(type, hex, false) == number, "Integer format round trip failed");
+            }
+            Require(OdIntegerDisplay.Format(type, "$NODEID+0x180", true) == "$NODEID+0x180", "Expression changed");
+            Require(OdIntegerDisplay.Format(type, " **ERROR **", true) == " **ERROR **", "Error text changed");
+        }
+        Require(OdIntegerDisplay.Format(DataType.INTEGER8, "0xFF", false) == "-1", "Signed byte decoded as unsigned");
+        Require(OdIntegerDisplay.Format(DataType.UNSIGNED32, "0xFFFFFFFF", false) == "4294967295", "Unsigned32 overflow");
+        Require(OdIntegerDisplay.Format(DataType.REAL32, "1.25", true) == "1.25", "Non-integer display changed");
+        Console.WriteLine("PASS: signed/unsigned integer bounds, fixed-width hex, expressions and round trips");
+    }
+
     [STAThread]
     private static int Main(string[] args)
     {
@@ -248,6 +273,7 @@ internal static class PdoEditorTests
         {
             try
             {
+                IntegerDisplay();
                 Model();
                 Window();
                 return 0;
