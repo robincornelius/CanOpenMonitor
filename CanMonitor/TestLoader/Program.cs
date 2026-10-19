@@ -23,7 +23,7 @@ namespace TestLoader
             }
         }
 
-        private static void Driver_rxmessage(DriverInstance.Message msg)
+        private static void Driver_rxmessage(DriverInstance.Message msg, bool bridge = false)
         {
             Console.WriteLine(string.Format("RX MESSAGE ID {0:x2} LEN {1:x2} DATA {2:x2}", msg.cob_id, msg.len, msg.data));
         }
