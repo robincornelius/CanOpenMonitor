@@ -434,6 +434,100 @@ internal static class PacketDisplayTests
         Console.WriteLine("PASS: real document capture isolation, clear race, live export and disposal");
         Console.WriteLine("PASS: actual docked documents unsubscribe and dispose their display workers");
         Console.WriteLine("PASS: actual log expression Apply, invalid input, checkboxes, context exclusion and filtered export");
+        SdoEditorCallbacks(application, can, appDirectory);
+    }
+
+    private static void SdoEditorCallbacks(Assembly application, libCanopenSimple.libCanopenSimple can, string directory)
+    {
+        Assembly plugin = Assembly.LoadFrom(Path.Combine(directory, "plugins", "SDOEditorPlugin.dll"));
+        Type editorType = plugin.GetType("SDOEditorPlugin.SDOEditor", true);
+        BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+        var editor = (Form)Activator.CreateInstance(editorType, new object[] { can });
+        try
+        {
+            // Create handles without showing/loading an OD or touching hardware
+            // or the editor's recent-file settings.
+            IntPtr handle = editor.Handle;
+            var list = (ListView)editorType.GetField("listView1", instance).GetValue(editor);
+            handle = list.Handle;
+            var read = (Button)editorType.GetField("button_read", instance).GetValue(editor);
+            var transfer = new SDO(can, 1, 0x2000, 0, SDO.direction.SDO_READ, null, null);
+            foreach (string callback in new[] { "gotit", "upsucc" })
+            {
+                read.Enabled = false;
+                // The UI deliberately waits here. Synchronous Invoke in the
+                // completion callback reproduces the original lock cycle.
+                Task worker = Task.Run(() => editorType.GetMethod(callback, instance).Invoke(editor, new object[] { transfer }));
+                Require(worker.Wait(1000), "OD Editor callback waited synchronously for blocked UI: " + callback);
+                PumpUntil(() => read.Enabled, "OD Editor posted completion was not processed: " + callback);
+            }
+            Type helperType = editorType.GetNestedType("sdocallbackhelper", BindingFlags.Public);
+            object helper = Activator.CreateInstance(helperType);
+            var failed = new SDO(can, 7, 0x2000, 0, SDO.direction.SDO_WRITE, null, new byte[] { 1 });
+            failed.state = SDO.SDO_STATE.SDO_ERROR;
+            failed.expitideddata = 0x06010002;
+            helperType.GetField("sdo").SetValue(helper, failed);
+            var row = new ListViewItem(new[] { "2000", "00", "test", "", "", "old" }) { Tag = helper };
+            list.Items.Add(row);
+            object writes = editorType.GetField("pendingWrites", instance).GetValue(editor);
+            writes.GetType().GetMethod("Add").Invoke(writes, new object[] { failed });
+            Require(Task.Run(() => editorType.GetMethod("upsucc", instance).Invoke(editor, new object[] { failed })).Wait(1000),
+                "OD Editor write completion blocked UI");
+            PumpUntil(() => row.SubItems[5].Text == "Write failed: 0x06010002", "OD Editor hid write failure");
+            Require((int)writes.GetType().GetProperty("Count").GetValue(writes) == 0, "Write failure stranded refresh pause");
+
+            Type odType = Assembly.LoadFrom(Path.Combine(directory, "libEDSsharp.dll")).GetType("libEDSsharp.ODentry", true);
+            helperType.GetField("od").SetValue(helper, Activator.CreateInstance(odType,
+                new object[] { "Test", (ushort)0x2000, (byte)0 }));
+            var written = new SDO(can, 7, 0x2000, 0, SDO.direction.SDO_WRITE, null, new byte[] { 1 });
+            written.state = SDO.SDO_STATE.SDO_FINISHED;
+            helperType.GetField("sdo").SetValue(helper, written);
+            row.Tag = helper;
+            ((NumericUpDown)editorType.GetField("numericUpDown_node", instance).GetValue(editor)).Value = 9;
+            Task.Run(() => editorType.GetMethod("upsucc", instance).Invoke(editor, new object[] { written })).Wait();
+            PumpUntil(() => !ReferenceEquals(helperType.GetField("sdo").GetValue(row.Tag), written), "Write read-back was not queued");
+            Require(((SDO)helperType.GetField("sdo").GetValue(row.Tag)).node == 7, "Write read-back used a changed node selection");
+            DcfPdoEntries(editorType, odType);
+            editor.Dispose();
+            Require(Task.Run(() => editorType.GetMethod("gotit", instance).Invoke(editor, new object[] { transfer })).Wait(1000),
+                "Closed OD Editor callback blocked");
+        }
+        finally
+        {
+            editor.Dispose();
+        }
+        Console.WriteLine("PASS: actual OD Editor callbacks post without blocking the UI and tolerate disposal");
+    }
+
+    private static void DcfPdoEntries(Type editorType, Type odType)
+    {
+        Type edsType = odType.Assembly.GetType("libEDSsharp.EDSsharp", true);
+        object dcf = Activator.CreateInstance(edsType);
+        object dictionary = edsType.GetField("ods").GetValue(dcf);
+        Func<ushort, byte, string, string, object> entry = (index, sub, type, value) =>
+        {
+            object od = Activator.CreateInstance(odType, new object[] { "Test", index, (byte)0 });
+            odType.GetField("datatype").SetValue(od, Enum.Parse(odType.GetField("datatype").FieldType, type));
+            odType.GetField("accesstype").SetValue(od, Enum.Parse(odType.GetField("accesstype").FieldType, "rw"));
+            odType.GetField("actualvalue").SetValue(od, value);
+            return od;
+        };
+        object mapping = entry(0x1A00, 0, "UNSIGNED32", "");
+        odType.GetMethod("addsubobject").Invoke(mapping, new object[] { (byte)0, entry(0x1A00, 0, "UNSIGNED8", "2") });
+        odType.GetMethod("addsubobject").Invoke(mapping, new object[] { (byte)1, entry(0x1A00, 1, "UNSIGNED32", "0x20000010") });
+        dictionary.GetType().GetMethod("Add").Invoke(dictionary, new object[] { (ushort)0x1A00, mapping });
+        object communication = entry(0x1800, 0, "UNSIGNED32", "");
+        odType.GetMethod("addsubobject").Invoke(communication, new object[] { (byte)3, entry(0x1800, 3, "UNSIGNED16", "200") });
+        dictionary.GetType().GetMethod("Add").Invoke(dictionary, new object[] { (ushort)0x1800, communication });
+        var writes = (IEnumerable<SdoParameterWrite>)editorType.GetMethod("BuildDcfWrites", BindingFlags.Static | BindingFlags.NonPublic)
+            .Invoke(null, new[] { dcf });
+        SdoParameterWrite[] values = new List<SdoParameterWrite>(writes).ToArray();
+        Require(Array.Exists(values, write => write.Index == 0x1A00 && write.Subindex == 0 && write.Data.Length == 1 && write.Data[0] == 2),
+            "DCF planning omitted hidden mapping count");
+        Require(Array.Exists(values, write => write.Index == 0x1A00 && write.Subindex == 1 && BitConverter.ToUInt32(write.Data, 0) == 0x20000010)
+            && Array.Exists(values, write => write.Index == 0x1800 && write.Subindex == 3 && BitConverter.ToUInt16(write.Data, 0) == 200),
+            "DCF planning lost mapping/communication parameters or their widths");
+        Console.WriteLine("PASS: actual OD Editor DCF planning includes mapping count and combined communication/mapping values");
     }
 
     private static void Demo(string directory)

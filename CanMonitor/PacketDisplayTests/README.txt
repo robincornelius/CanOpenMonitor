@@ -97,3 +97,18 @@ Clear, live filtering and exported-prefix retirement. Actual application tests
 also exercise Apply, invalid input, checkboxes, the context exclusion handler,
 and filtered export. The synthetic --demo mode opens the actual docked log at
 about 20,000 PDO packets/second, with no CAN adapter access.
+
+OD Editor application regressions additionally block the UI while invoking
+completion handlers on a worker, verify nonblocking UI posts and disposal,
+check failed-write feedback and refresh-pause cleanup, and verify read-back
+continues to target the written node after the node selector changes.
+
+PDO editing and DCF application use the reusable PdoConfiguration transaction
+API in libCanOpenSimple. The full DCF dictionary supplies writable ParameterValue
+entries, including mapping subindex zero even when rows are filtered out. The
+mapping count is displayed for mapping records; communication record metadata
+subindex zero remains hidden. PDO changes are grouped by channel and download
+errors are surfaced rather than automatically starting the node after failure.
+See libCanOpenSimple/tests/README.txt for protocol references and NMT/heartbeat
+confirmation behaviour. Fake-device regressions cover the wire sequence; the
+application test verifies full DCF extraction and typed mapping-count values.

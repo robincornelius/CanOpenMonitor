@@ -27,6 +27,8 @@ namespace SDOEditorPlugin
         private List<string> _mru = new List<string>();
 
         Timer refreshtimer = new Timer();
+        private readonly HashSet<SDO> pendingWrites = new HashSet<SDO>();
+        private bool editingValue;
 
 
         public SDOEditor(libCanopenSimple.libCanopenSimple lco)
@@ -34,12 +36,41 @@ namespace SDOEditorPlugin
             this.lco = lco;
             InitializeComponent();
             refreshtimer.Tick += Refreshtimer_Tick;
+            Disposed += (sender, args) => refreshtimer.Dispose();
+        }
+
+        // Completion callbacks run independently of the protocol listener.
+        // Never synchronously marshal back to a UI that may enqueue another SDO.
+        private void PostToUi(Action action)
+        {
+            if (IsDisposed || !IsHandleCreated)
+            {
+                return;
+            }
+            try
+            {
+                BeginInvoke(new MethodInvoker(() =>
+                {
+                    if (!IsDisposed)
+                    {
+                        action();
+                    }
+                }));
+            }
+            catch (InvalidOperationException) when (IsDisposed || !IsHandleCreated)
+            {
+                // The editor may close between the checks and BeginInvoke.
+            }
         }
 
         bool oknextread = false;
 
         private void Refreshtimer_Tick(object sender, EventArgs e)
         {
+            if (editingValue || applyingParameters || pendingWrites.Count != 0 || !lco.isopen())
+            {
+                return;
+            }
             if (oknextread == false)
                 return;
 
@@ -47,25 +78,23 @@ namespace SDOEditorPlugin
             if (button_read.Enabled == false)
                 return;
 
-            listView1.Invoke(new MethodInvoker(delegate
+            button_read.Enabled = false;
+            foreach (ListViewItem lvi in listView1.Items)
             {
-                button_read.Enabled = false;
-                foreach (ListViewItem lvi in listView1.Items)
+
+                lvi.BackColor = Color.White;
+                sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
+
+                if (help.od.objecttype != ObjectType.DOMAIN)
                 {
-
-                    lvi.BackColor = Color.White;
-                    sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
-
-                    if (help.od.objecttype != ObjectType.DOMAIN)
-                    {
-                        SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
-                        help.sdo = sdo;
-                        lvi.Tag = help;
-                    }
-
+                    SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
+                    help.sdo = sdo;
+                    lvi.Tag = help;
                 }
 
-            }));
+            }
+
+
         }
 
         private void loadeds(string filename)
@@ -203,7 +232,8 @@ namespace SDOEditorPlugin
                 {
                     foreach (ODentry subod in tod.subobjects.Values)
                     {
-                        if (subod.Subindex == 0)
+                        if (subod.Subindex == 0 && !((subod.Index >= 0x1600 && subod.Index <= 0x17FF)
+                            || (subod.Index >= 0x1A00 && subod.Index <= 0x1BFF)))
                             continue;
 
                         addtolist(subod, isdcf, isemptydcf);
@@ -306,38 +336,35 @@ namespace SDOEditorPlugin
 
         }
 
-        void upsucc(SDO sdo)
+        void upsucc(SDO completed)
         {
-
-            //button_read_Click(null, null);
-
-           
-                listView1.BeginInvoke(new MethodInvoker(delegate
+            PostToUi(delegate
+            {
+                pendingWrites.Remove(completed);
+                button_read.Enabled = !applyingParameters && pendingWrites.Count == 0 && lco.getSDOQueueSize() == 0;
+                foreach (ListViewItem item in listView1.Items)
                 {
-                    foreach (ListViewItem lvi in listView1.Items)
+                    sdocallbackhelper help = (sdocallbackhelper)item.Tag;
+                    if (help.sdo != completed)
                     {
-
-
-                        sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
-
-                        if (help.sdo != sdo)
-                            continue;
-
-                        if (help.od.objecttype != ObjectType.DOMAIN)
-                        {
-                            oknextread = true;
-                            sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
-                            help.sdo = sdo;
-                            lvi.Tag = help;
-
-                            break;
-                        }
-
-
+                        continue;
                     }
-                }));
-            
-
+                    if (completed.state == SDO.SDO_STATE.SDO_ERROR)
+                    {
+                        item.SubItems[5].Text = "Write failed: 0x" + completed.expitideddata.ToString("X8");
+                        return;
+                    }
+                    if (help.od.objecttype != ObjectType.DOMAIN)
+                    {
+                        oknextread = true;
+                        // Preserve the node that was written even if the user
+                        // changes the editor's node selection before completion.
+                        help.sdo = lco.SDOread(completed.node, help.od.Index, (byte)help.od.Subindex, gotit);
+                        item.Tag = help;
+                    }
+                    break;
+                }
+            });
         }
 
         void testnumber(ListViewItem lvi)
@@ -358,12 +385,10 @@ namespace SDOEditorPlugin
             try
             {
 
-                System.Threading.Thread.Sleep(10);
-
-                listView1.Invoke(new MethodInvoker(delegate
+                PostToUi(delegate
                 {
 
-                    if (lco.getSDOQueueSize() == 0)
+                    if (!applyingParameters && pendingWrites.Count == 0 && lco.getSDOQueueSize() == 0)
                         button_read.Enabled = true;
 
                     label_sdo_queue_size.Text = string.Format("SDO Queue Size: {0}", lco.getSDOQueueSize());
@@ -580,7 +605,7 @@ namespace SDOEditorPlugin
 
 
 
-                }));
+                });
             }
             catch (Exception e)
             {
@@ -593,135 +618,111 @@ namespace SDOEditorPlugin
 
         }
 
-        private SDO dovalueupdate(sdocallbackhelper h,string sval)
+        private static SdoParameterWrite CreateParameterWrite(sdocallbackhelper helper, string value)
         {
-            DataType dt = h.od.datatype;
-
-            if (dt == DataType.UNKNOWN && h.od.parent != null)
-                dt = h.od.parent.datatype;
-
-            SDO sdo = null;
-
-            switch (dt)
+            DataType type = helper.od.datatype;
+            if (type == DataType.UNKNOWN && helper.od.parent != null)
             {
-                case DataType.REAL32:
-                {
-
-                    float val = (float)new SingleConverter().ConvertFromString(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                    break;
-                }
-
-                case DataType.REAL64:
-                {
-
-                    double val = (double)new DoubleConverter().ConvertFromString(sval);
-                    byte[] payload = BitConverter.GetBytes(val);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                    break;
-                }
-
-                case DataType.INTEGER8:
-                {
-                    sbyte val = (sbyte)new SByteConverter().ConvertFromString(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                    break;
-                }
-
-                case DataType.INTEGER16:
-                {
-                    Int16 val = (Int16)new Int16Converter().ConvertFromString(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                    break;
-                }
-
-    
-                case DataType.INTEGER32:
-                {
-                    Int32 val = (Int32)new Int32Converter().ConvertFromString(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                    break;
-                }
-                case DataType.UNSIGNED8:
-                {
-                    byte val = (byte)new ByteConverter().ConvertFromString(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                    break;
-                }
-                case DataType.UNSIGNED16:
-                {
-                    UInt16 val = (UInt16)new UInt16Converter().ConvertFromString(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                    break;
-                }
-
-                case DataType.UNSIGNED32:
-                {
-                    UInt32 val = (UInt32)new UInt32Converter().ConvertFromString(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                    break;
-                }
-
-                case DataType.INTEGER64:
-                {
-
-                    Int64 val = (Int64)new Int64Converter().ConvertFromString(sval);
-                    byte[] payload = BitConverter.GetBytes(val);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                    break;
-                }
-
-                case DataType.UNSIGNED64:
-                {
-
-                    UInt64 val = (UInt64)new UInt64Converter().ConvertFromString(sval);
-                    byte[] payload = BitConverter.GetBytes(val);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                    break;
-                }
-
-                case DataType.VISIBLE_STRING:
-                {
-
-                    byte[] payload = Encoding.ASCII.GetBytes(sval);
-                    sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, payload, upsucc);
-                    break;
-                }
-
-                case DataType.BOOLEAN:
-                {
-
-                        byte val = (byte)new ByteConverter().ConvertFromString(sval);
-                        sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, val, upsucc);
-                        
-                        break;
-                }
-
-                case DataType.DOMAIN:
-                    {
-
-                        byte[] bytes = Encoding.ASCII.GetBytes(sval);
-
-                        
-
-                        sdo = lco.SDOwrite((byte)numericUpDown_node.Value, (UInt16)h.od.Index, (byte)h.od.Subindex, bytes, upsucc);
-
-
-                        break;
-                    }
-
-
-                default:
-
-                    break;
+                type = helper.od.parent.datatype;
             }
+            byte[] data;
+            switch (type)
+            {
+                case DataType.REAL32: data = BitConverter.GetBytes((float)new SingleConverter().ConvertFromString(value)); break;
+                case DataType.REAL64: data = BitConverter.GetBytes((double)new DoubleConverter().ConvertFromString(value)); break;
+                case DataType.INTEGER8: data = new[] { unchecked((byte)(sbyte)new SByteConverter().ConvertFromString(value)) }; break;
+                case DataType.INTEGER16: data = BitConverter.GetBytes((short)new Int16Converter().ConvertFromString(value)); break;
+                case DataType.INTEGER32: data = BitConverter.GetBytes((int)new Int32Converter().ConvertFromString(value)); break;
+                case DataType.INTEGER64: data = BitConverter.GetBytes((long)new Int64Converter().ConvertFromString(value)); break;
+                case DataType.BOOLEAN: case DataType.UNSIGNED8: data = new[] { (byte)new ByteConverter().ConvertFromString(value) }; break;
+                case DataType.UNSIGNED16: data = BitConverter.GetBytes((ushort)new UInt16Converter().ConvertFromString(value)); break;
+                case DataType.UNSIGNED32: data = BitConverter.GetBytes((uint)new UInt32Converter().ConvertFromString(value)); break;
+                case DataType.UNSIGNED64: data = BitConverter.GetBytes((ulong)new UInt64Converter().ConvertFromString(value)); break;
+                case DataType.VISIBLE_STRING: case DataType.DOMAIN: data = Encoding.ASCII.GetBytes(value); break;
+                default: throw new NotSupportedException("Writing this OD data type is not supported.");
+            }
+            return new SdoParameterWrite(helper.od.Index, (byte)helper.od.Subindex, data);
+        }
 
-            return sdo;
+        private SDO dovalueupdate(sdocallbackhelper helper, string value)
+        {
+            SdoParameterWrite write = CreateParameterWrite(helper, value);
+            if (PdoConfiguration.IsPdoParameter(write.Index))
+            {
+                // The form remains responsive while all handshake steps are
+                // acknowledged. Never treat an intermediate write as success.
+                ApplyParameterBatch(new[] { write });
+                return null;
+            }
+            SDO transfer = lco.SDOwrite((byte)numericUpDown_node.Value, write.Index, write.Subindex, write.Data, upsucc);
+            pendingWrites.Add(transfer);
+            button_read.Enabled = false;
+            return transfer;
+        }
 
+        private bool applyingParameters;
+
+        private async void ApplyParameterBatch(SdoParameterWrite[] writes)
+        {
+            if (applyingParameters || pendingWrites.Count != 0)
+            {
+                MessageBox.Show(this, "Wait for the outstanding parameter writes to finish.");
+                return;
+            }
+            applyingParameters = true;
+            byte node = (byte)numericUpDown_node.Value;
+            button_read.Enabled = false;
+            button_writeDCF.Enabled = false;
+            button_flush_queue.Enabled = false;
+            numericUpDown_node.Enabled = false;
+            label_sdo_queue_size.Text = "Applying parameters; waiting for SDO/NMT acknowledgements...";
+            try
+            {
+                PdoConfigurationResult result = await PdoConfiguration.ApplyAsync(lco, node, writes);
+                if (IsDisposed)
+                {
+                    return;
+                }
+                label_sdo_queue_size.Text = result.NmtStateChanged && !result.NmtStateConfirmed
+                    ? "Parameters verified; Operational NMT sent. Heartbeat disabled: NMT state unconfirmed."
+                    : "Parameters verified; configuration complete.";
+                foreach (ListViewItem row in listView1.Items)
+                {
+                    sdocallbackhelper helper = (sdocallbackhelper)row.Tag;
+                    if (writes.Any(write => write.Index == helper.od.Index && write.Subindex == helper.od.Subindex))
+                    {
+                        helper.sdo = lco.SDOread(node, helper.od.Index, (byte)helper.od.Subindex, gotit);
+                        row.Tag = helper;
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                if (!IsDisposed)
+                {
+                    label_sdo_queue_size.Text = "Parameter configuration failed: " + error.Message;
+                    MessageBox.Show(this, error.Message, "Configuration stopped");
+                }
+            }
+            finally
+            {
+                applyingParameters = false;
+                if (!IsDisposed)
+                {
+                    button_read.Enabled = pendingWrites.Count == 0;
+                    button_writeDCF.Enabled = filename != null && Path.GetExtension(filename).Equals(".dcf", StringComparison.OrdinalIgnoreCase);
+                    button_flush_queue.Enabled = true;
+                    numericUpDown_node.Enabled = true;
+                }
+            }
         }
 
         private void listView1_DoubleClick(object sender, EventArgs e)
         {
+            if (applyingParameters)
+            {
+                return;
+            }
 
             if (listView1.SelectedItems.Count == 0)
                 return;
@@ -733,6 +734,11 @@ namespace SDOEditorPlugin
             }
 
             sdocallbackhelper h = (sdocallbackhelper)listView1.SelectedItems[0].Tag;
+            if (h.od.AccessSDO() != AccessSDO.rw && h.od.AccessSDO() != AccessSDO.wo)
+            {
+                MessageBox.Show(this, "This OD entry is read-only.");
+                return;
+            }
             ValueEditor ve = new ValueEditor(h.od, listView1.SelectedItems[0].SubItems[5].Text);
 
             if (h.od.prop.CO_storageGroup == "ROM")
@@ -773,10 +779,17 @@ namespace SDOEditorPlugin
             };
 
 
-            //SDO sdo = null;
-            if (ve.ShowDialog() == DialogResult.OK)
+            // A modal editor still pumps WinForms timers. Pause refresh until
+            // it closes, then keep it paused until outstanding writes complete.
+            editingValue = true;
+            try
             {
-
+                ve.ShowDialog();
+            }
+            finally
+            {
+                editingValue = false;
+                ve.Dispose();
             }
         }
 
@@ -787,6 +800,10 @@ namespace SDOEditorPlugin
 
         private void button_read_Click(object sender, EventArgs e)
         {
+            if (applyingParameters || pendingWrites.Count != 0)
+            {
+                return;
+            }
 
             if (!lco.isopen())
             {
@@ -800,26 +817,24 @@ namespace SDOEditorPlugin
                 return;
             }
 
-            listView1.Invoke(new MethodInvoker(delegate
+            button_read.Enabled = false;
+            foreach (ListViewItem lvi in listView1.Items)
             {
-                button_read.Enabled = false;
-                foreach (ListViewItem lvi in listView1.Items)
+
+                lvi.BackColor = Color.White;
+                sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
+
+                if (help.od.objecttype != ObjectType.DOMAIN)
                 {
-
-                    lvi.BackColor = Color.White;
-                    sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
-
-                    if (help.od.objecttype != ObjectType.DOMAIN)
-                    {
-                        oknextread = false;
-                        SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
-                        help.sdo = sdo;
-                        lvi.Tag = help;
-                    }
-
+                    oknextread = false;
+                    SDO sdo = lco.SDOread((byte)numericUpDown_node.Value, (UInt16)help.od.Index, (byte)help.od.Subindex, gotit);
+                    help.sdo = sdo;
+                    lvi.Tag = help;
                 }
 
-            }));
+            }
+
+
 
 
 
@@ -984,52 +999,58 @@ namespace SDOEditorPlugin
         private void button_flush_queue_Click(object sender, EventArgs e)
         {
             lco.flushSDOqueue();
-            button_read.Enabled = true;
+            button_read.Enabled = pendingWrites.Count == 0;
 
+        }
+
+        private static List<SdoParameterWrite> BuildDcfWrites(EDSsharp dcf)
+        {
+            if (dcf == null)
+            {
+                throw new InvalidOperationException("Load a DCF before applying it.");
+            }
+            var writes = new List<SdoParameterWrite>();
+            // Use the complete DCF, not the currently filtered rows. Otherwise
+            // a hidden mapping-count entry can leave a remap incomplete.
+            foreach (ODentry parent in dcf.ods.Values)
+            {
+                IEnumerable<ODentry> entries = parent.subobjects.Count == 0
+                    ? new[] { parent } : parent.subobjects.Values.AsEnumerable();
+                foreach (ODentry entry in entries)
+                {
+                    if (entry.prop.CO_disabled || entry.actualvalue.Length == 0 || entry.AccessSDO() != AccessSDO.rw)
+                    {
+                        continue;
+                    }
+                    if (entry.Subindex == 0 && PdoConfiguration.IsPdoParameter(entry.Index)
+                        && !((entry.Index >= 0x1600 && entry.Index <= 0x17FF) || (entry.Index >= 0x1A00 && entry.Index <= 0x1BFF)))
+                    {
+                        continue;
+                    }
+                    writes.Add(CreateParameterWrite(new sdocallbackhelper { od = entry }, entry.actualvalue));
+                }
+            }
+            return writes;
         }
 
         private void button_writeDCF_Click(object sender, EventArgs e)
         {
-
-            if(numericUpDown_node.Value==0)
+            if (numericUpDown_node.Value == 0 || !lco.isopen())
             {
-                MessageBox.Show("Cannot write to node 0, please select a valid node");
+                MessageBox.Show(this, "Open CAN and select a valid node before applying a DCF.");
                 return;
             }
-
-            foreach (ListViewItem lvi in listView1.Items)
+            try
             {
-
-                string index = lvi.SubItems[0].Text;
-                string sub = lvi.SubItems[1].Text;
-                string name = lvi.SubItems[2].Text;
-
-                UInt16 key = Convert.ToUInt16(index, 16);
-                byte subi = Convert.ToByte(sub, 16);
-
-                sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
-
-                string edsstring = help.od.defaultvalue; //the eds value
-                string actualstring = lvi.SubItems[5].Text;  // the dcf value
-                string dcfstring = lvi.SubItems[6].Text;
-
-                if(actualstring!=dcfstring )
+                var writes = BuildDcfWrites(eds);
+                if (writes.Count != 0)
                 {
-                    if (dcfstring != "")
-                    {
-                        sdocallbackhelper h = (sdocallbackhelper)lvi.Tag;
-                        try
-                        {
-                            h.sdo = dovalueupdate(h, dcfstring);
-                        }
-                        catch(Exception ex)
-                        {
-                            MessageBox.Show(string.Format("Error writing to 0x{0:x4}/{1:x2} details :-\n{2}", h.od.Index, h.od.Subindex, ex.ToString()));
-                        }
-
-                        lvi.Tag = h;
-                    }
+                    ApplyParameterBatch(writes.ToArray());
                 }
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(this, "DCF validation failed before download: " + error.Message);
             }
         }
 
@@ -1087,6 +1108,11 @@ namespace SDOEditorPlugin
         }
 
         private void scansomplete(SDO obj)
+        {
+            PostToUi(() => ProcessScanComplete(obj));
+        }
+
+        private void ProcessScanComplete(SDO obj)
         {
 
             //Console.WriteLine(obj.ToString());
@@ -1171,10 +1197,10 @@ namespace SDOEditorPlugin
                 lco.SDOread((byte)numericUpDown_node.Value, scanindex, scansub, scansomplete);
             else
             {
-                listView1.Invoke(new MethodInvoker(delegate
+                PostToUi(delegate
                 {
                     updatetable();
-                }));
+                });
 
             }
 
