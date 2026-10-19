@@ -35,6 +35,9 @@ namespace SDOEditorPlugin
         {
             this.lco = lco;
             InitializeComponent();
+            var editPdos = new ToolStripMenuItem("Edit PDOs...");
+            editPdos.Click += EditPdos;
+            menuStrip1.Items.Add(editPdos);
             refreshtimer.Tick += Refreshtimer_Tick;
             Disposed += (sender, args) => refreshtimer.Dispose();
         }
@@ -64,6 +67,38 @@ namespace SDOEditorPlugin
         }
 
         bool oknextread = false;
+
+        private void EditPdos(object sender, EventArgs args)
+        {
+            if (eds == null)
+            {
+                MessageBox.Show(this, "Load an EDS/XDD device dictionary first.");
+                return;
+            }
+            if (!lco.isopen() || numericUpDown_node.Value == 0)
+            {
+                MessageBox.Show(this, "Open CAN and select a node before editing PDOs.");
+                return;
+            }
+            if (applyingParameters || pendingWrites.Count != 0)
+            {
+                MessageBox.Show(this, "Wait for outstanding parameter writes to finish.");
+                return;
+            }
+            editingValue = true;
+            try
+            {
+                byte node = (byte)numericUpDown_node.Value;
+                using (var editor = new PdoEditorForm(eds, node, new CanPdoEditorDevice(lco, node)))
+                {
+                    editor.ShowDialog(this);
+                }
+            }
+            finally
+            {
+                editingValue = false;
+            }
+        }
 
         private void Refreshtimer_Tick(object sender, EventArgs e)
         {

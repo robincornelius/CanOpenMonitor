@@ -1,3 +1,4 @@
+using System.Linq;
 using CanMonitor.PacketDisplay;
 using libCanopenSimple;
 using System;
@@ -448,6 +449,9 @@ internal static class PacketDisplayTests
             // Create handles without showing/loading an OD or touching hardware
             // or the editor's recent-file settings.
             IntPtr handle = editor.Handle;
+            var menu = (MenuStrip)editorType.GetField("menuStrip1", instance).GetValue(editor);
+            Require(menu.Items.Cast<ToolStripItem>().Any(item => item.Text == "Edit PDOs..."),
+                "Device OD Editor PDO menu is missing");
             var list = (ListView)editorType.GetField("listView1", instance).GetValue(editor);
             handle = list.Handle;
             var read = (Button)editorType.GetField("button_read", instance).GetValue(editor);
