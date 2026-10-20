@@ -85,6 +85,24 @@ The SDO Editor allows live updating of paramaters in the object dictionary of an
 
 
 
+## Building on Windows
+
+Install Visual Studio with MSBuild, the v145 C++ toolset, a Windows SDK, CMake
+tools and the .NET Framework 4.8.1 Developer Pack. x64 is the primary target.
+Clone this public repository with its submodules:
+
+```powershell
+git clone --recurse-submodules https://github.com/robincornelius/CanOpenMonitor.git
+cd CanOpenMonitor/CanMonitor
+MSBuild CanMonitor.sln /t:Restore /p:RestorePackagesConfig=true /p:Platform=x64 /nr:false
+MSBuild CanMonitor.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64 /m:1 /nr:false
+```
+
+Run `CanMonitor/bin/x64/Release/CanMonitor.exe` relative to the cloned repository
+root. Keep the adjacent DLLs, `plugins` and `drivers` folders together when
+copying the application. For Debug, substitute `Configuration=Debug` and use
+`CanMonitor/bin/x64/Debug`. No private repository or customer plugin is needed.
+
 ## Object dictionary dependency
 
 The `libeds` submodule now follows the maintained
