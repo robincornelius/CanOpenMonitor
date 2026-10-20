@@ -48,13 +48,9 @@ namespace CanMonitor
             clf.Show(dockPanel1, DockState.Document);
 
             connectioncontrol = new ConnectionControl();
-            //connectioncontrol.Show(dockPanel1, DockState.DockTop);
-            addtotopcontrols(connectioncontrol);
 
             logcontrols = new LogControls();
             logcontrols.ClearLists += Logcontrols_ClearLists;
-            addtotopcontrols(logcontrols);
-            //logcontrols.Show(dockPanel1, DockState.DockTop);
 
             infolog = new InfoLogDocument();
             nmtdocument = new NMTDocument();
@@ -64,7 +60,6 @@ namespace CanMonitor
             emcydocument.Show(dockPanel1, DockState.Document);
             infolog.Show(dockPanel1, DockState.Document);
 
-            connectioncontrol.Activate();
             clf.Activate();
 
             Program.pluginManager.autoloadplugins();
@@ -96,13 +91,33 @@ namespace CanMonitor
             }
             this.Text += " -- " + gitVersion;
             this.gitVersion = gitVersion;
+
+            ArrangeDefaultToolbar(dockPanel1, connectioncontrol, logcontrols);
         }
 
-        private void addtotopcontrols(DockContent o)
+        internal static void ArrangeDefaultToolbar(DockPanel panel, DockContent connection, DockContent packets)
         {
+            // These are tool panes, not documents: keep both visible in one short
+            // row, with connection controls on the left and packet controls on the right.
+            // Use the scaled control sizes so larger display fonts are not clipped.
+            int connectionWidth = connection.Width + 12;
+            int toolbarHeight = Math.Max(connection.ClientSize.Height, packets.ClientSize.Height)
+                + SystemInformation.ToolWindowCaptionHeight + 12;
+            double leftFraction = Math.Min(0.5, (double)connectionWidth / Math.Max(1, panel.ClientSize.Width));
 
-            o.Show(dockPanel1, DockState.DockTop);
-
+            panel.SuspendLayout(true);
+            try
+            {
+                connection.Show(panel, DockState.DockTop);
+                packets.Show(connection.Pane, DockAlignment.Right, 1.0 - leftFraction);
+                // Values greater than one are pixels; a fraction would consume a
+                // disproportionate amount of vertical space as the window grows.
+                panel.DockTopPortion = toolbarHeight;
+            }
+            finally
+            {
+                panel.ResumeLayout(true, true);
+            }
         }
 
         private void Logcontrols_ClearLists(object sender, EventArgs e)
