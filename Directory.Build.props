@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)libCanOpenSimple2\RuntimeConfigurations.props" />
   <PropertyGroup>
     <!-- Keep existing deployments on Framework unless the entire solution opts into .NET 8. -->
     <BuildNet481 Condition="'$(BuildNet481)' == '' and '$(BuildNet8)' != 'true' and '$(MSBuildProjectName)' != 'libCanopenSimple'">true</BuildNet481>

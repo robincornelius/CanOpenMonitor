@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net481</TargetFramework>
+    <TargetFrameworks>net481;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildNet8)' == 'true'">net8.0-windows;net481</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
     <LangVersion>7.3</LangVersion>
@@ -10,9 +11,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <TargetFramework Condition="'$(BuildNet8)' == 'true'">net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <ModernOutputFolder Condition="'$(BuildNet8)' == 'true'">net8.0\</ModernOutputFolder>
+    <ModernOutputFolder Condition="'$(TargetFramework)' == 'net8.0-windows'">net8.0\</ModernOutputFolder>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
@@ -34,19 +34,19 @@
     <AssemblyName>eeprom_plugin</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(SolutionDir)\bin\$(Configuration)\$(ModernOutputFolder)plugins\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\$(BaseBuildConfiguration)\$(ModernOutputFolder)plugins\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)\bin\$(Configuration)\$(ModernOutputFolder)plugins\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\$(BaseBuildConfiguration)\$(ModernOutputFolder)plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -80,21 +80,21 @@
       <DependentUpon>ResetEEPROM.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(SolutionDir)\bin\x64\$(Configuration)\$(ModernOutputFolder)plugins\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\x64\$(BaseBuildConfiguration)\$(ModernOutputFolder)plugins\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Release|x64' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)\bin\x64\$(Configuration)\$(ModernOutputFolder)plugins\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\x64\$(BaseBuildConfiguration)\$(ModernOutputFolder)plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

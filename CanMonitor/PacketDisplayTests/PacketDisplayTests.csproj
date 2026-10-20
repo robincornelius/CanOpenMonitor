@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net481</TargetFramework>
+    <TargetFrameworks>net481;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildNet8)' == 'true'">net8.0-windows;net481</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
     <LangVersion>7.3</LangVersion>
@@ -10,7 +11,6 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <TargetFramework Condition="'$(BuildNet8)' == 'true'">net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -29,9 +29,9 @@
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <PlatformTarget>$(Platform)</PlatformTarget>
-    <OutputPath>build\$(Platform)\$(Configuration)\</OutputPath>
+    <OutputPath>build\$(Platform)\$(BaseBuildConfiguration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <Optimize Condition="'$(BaseBuildConfiguration)' == 'Release'">true</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\CanMonitor\PacketDisplay\*.cs" />
@@ -51,9 +51,9 @@
   </ItemGroup>
   <PropertyGroup>
     <IntermediateOutputPath>obj\$(SolutionName)\$(Platform)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
-    <OutputPath Condition="'$(BuildNet8)' == 'true'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
+    <OutputPath Condition="'$(TargetFramework)' == 'net8.0-windows'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
-    <Prefer32Bit Condition="'$(BuildNet8)' != 'true' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
+    <Prefer32Bit Condition="'$(TargetFramework)' == 'net481' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
   </PropertyGroup>
 </Project>

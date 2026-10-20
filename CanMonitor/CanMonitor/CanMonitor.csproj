@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net481</TargetFramework>
+    <TargetFrameworks>net481;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildNet8)' == 'true'">net8.0-windows;net481</TargetFrameworks>
+    <!-- Follow the solution dropdown even after the debugger has remembered a framework. -->
+    <ActiveDebugFramework Condition="'$(BuildNet8)' == 'true'">net8.0-windows</ActiveDebugFramework>
+    <ActiveDebugFramework Condition="'$(BuildNet8)' != 'true'">net481</ActiveDebugFramework>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
     <LangVersion>7.3</LangVersion>
@@ -10,7 +14,6 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <TargetFramework Condition="'$(BuildNet8)' == 'true'">net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -48,21 +51,21 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\$(BaseBuildConfiguration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\$(BaseBuildConfiguration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -233,22 +236,22 @@
     </Content>
     <Content Include="GroupBy_284.ico" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Debug|x64' ">
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(SolutionDir)\bin\x64\$(Configuration)\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\x64\$(BaseBuildConfiguration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+  <PropertyGroup Condition=" '$(BaseBuildConfiguration)|$(Platform)' == 'Release|x64' ">
     <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)\bin\x64\$(Configuration)\</OutputPath>
+    <OutputPath>$(SolutionDir)\bin\x64\$(BaseBuildConfiguration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -262,8 +265,8 @@
     <PreBuildEvent>git describe --always --tags --long --dirty &gt; "$(ProjectDir)version.txt"  || exit 0</PreBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="8.0.0" Condition="'$(BuildNet8)' == 'true'" />
-    <Reference Include="System.Management" Condition="'$(BuildNet8)' != 'true'" />
+    <PackageReference Include="System.Management" Version="8.0.0" Condition="'$(TargetFramework)' != 'net481'" />
+    <Reference Include="System.Management" Condition="'$(TargetFramework)' == 'net481'" />
     <PackageReference Include="DockPanelSuite" Version="3.1.1" />
     <PackageReference Include="DockPanelSuite.ThemeVS2015" Version="3.1.1" />
     <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
@@ -271,16 +274,16 @@
   </ItemGroup>
   <PropertyGroup>
     <IntermediateOutputPath>obj\$(SolutionName)\$(Platform)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
-    <OutputPath Condition="'$(BuildNet8)' == 'true'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
+    <OutputPath Condition="'$(TargetFramework)' == 'net8.0-windows'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.IO.Ports" Version="8.0.0" Condition="'$(BuildNet8)' == 'true'" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" Condition="'$(BuildNet8)' == 'true'" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" Condition="'$(TargetFramework)' != 'net481'" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" Condition="'$(TargetFramework)' != 'net481'" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SourcePluginCompiler.cs" />
   </ItemGroup>
   <PropertyGroup>
-    <Prefer32Bit Condition="'$(BuildNet8)' != 'true' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
+    <Prefer32Bit Condition="'$(TargetFramework)' == 'net481' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
   </PropertyGroup>
 </Project>

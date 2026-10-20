@@ -1,0 +1,29 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'CanMonitor' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <!-- Model each copy for Visual Studio's fast up-to-date check. F5 must deploy
+         changed/missing native DLLs even when the managed source is unchanged. -->
+    <UpToDateCheckBuilt Include="$(OutputPath)drivers\can_canusb_win32.dll" Original="$(OutputPath)..\drivers\can_canusb_win32.dll" />
+    <UpToDateCheckBuilt Include="$(OutputPath)drivers\can_canusbd2xx_win32.dll" Original="$(OutputPath)..\drivers\can_canusbd2xx_win32.dll" />
+    <UpToDateCheckBuilt Include="$(OutputPath)drivers\can_null_win32.dll" Original="$(OutputPath)..\drivers\can_null_win32.dll" />
+    <UpToDateCheckBuilt Include="$(OutputPath)drivers\can_nanomsg_win32.dll" Original="$(OutputPath)..\drivers\can_nanomsg_win32.dll" />
+    <UpToDateCheckBuilt Include="$(OutputPath)nanomsg.dll" Original="$(OutputPath)..\nanomsg.dll" />
+    <UpToDateCheckBuilt Include="$(OutputPath)ftd2xx.dll" Original="$(OutputPath)..\ftd2xx.dll" Condition="Exists('$(OutputPath)..\ftd2xx.dll')" />
+  </ItemGroup>
+  <Target Name="DeployModernCanMonitorDrivers" AfterTargets="CopyFilesToOutputDirectory"
+          Condition="'$(MSBuildProjectName)' == 'CanMonitor' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <!-- The solution orders native projects before the host. Copy only native
+         deployment files; managed Framework assemblies stay in their own tree. -->
+    <ItemGroup>
+      <ModernNativeDriver Include="$(TargetDir)..\drivers\*.dll" />
+      <ModernNativeRuntime Include="$(TargetDir)..\nanomsg.dll" Condition="Exists('$(TargetDir)..\nanomsg.dll')" />
+      <ModernNativeRuntime Include="$(TargetDir)..\ftd2xx.dll" Condition="Exists('$(TargetDir)..\ftd2xx.dll')" />
+    </ItemGroup>
+    <MakeDir Directories="$(TargetDir)drivers" />
+    <Copy SourceFiles="@(ModernNativeDriver)" DestinationFolder="$(TargetDir)drivers" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ModernNativeRuntime)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="@(ModernNativeDriver->'$(TargetDir)drivers\%(Filename)%(Extension)')" />
+      <FileWrites Include="@(ModernNativeRuntime->'$(TargetDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
+</Project>

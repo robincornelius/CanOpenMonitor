@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net481</TargetFramework>
+    <TargetFrameworks>net481;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildNet8)' == 'true'">net8.0-windows;net481</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
     <LangVersion>7.3</LangVersion>
@@ -10,7 +11,6 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <TargetFramework Condition="'$(BuildNet8)' == 'true'">net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -29,8 +29,8 @@
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <PlatformTarget>$(Platform)</PlatformTarget>
-    <OutputPath>build\$(Platform)\$(Configuration)\</OutputPath>
-    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <OutputPath>build\$(Platform)\$(BaseBuildConfiguration)\</OutputPath>
+    <Optimize Condition="'$(BaseBuildConfiguration)' == 'Release'">true</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ConformanceTests.cs" />
@@ -59,13 +59,13 @@
   </ItemGroup>
   <PropertyGroup>
     <IntermediateOutputPath>obj\$(SolutionName)\$(Platform)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
-    <OutputPath Condition="'$(BuildNet8)' == 'true'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
+    <OutputPath Condition="'$(TargetFramework)' == 'net8.0-windows'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\CanMonitor\SourcePluginCompiler.cs" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" Condition="'$(BuildNet8)' == 'true'" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" Condition="'$(TargetFramework)' != 'net481'" />
   </ItemGroup>
   <PropertyGroup>
-    <Prefer32Bit Condition="'$(BuildNet8)' != 'true' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
+    <Prefer32Bit Condition="'$(TargetFramework)' == 'net481' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
   </PropertyGroup>
 </Project>

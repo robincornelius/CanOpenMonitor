@@ -126,6 +126,26 @@ dependencies during the application build.
 
 ## .NET 8 support
 
+In Visual Studio, reload the solution after updating the checkout and use the
+normal solution configuration dropdown with platform **x64**:
+
+| Configuration | Runtime |
+| --- | --- |
+| Debug / Release | .NET Framework 4.8.1 |
+| Debug .NET 8 / Release .NET 8 | .NET 8 |
+
+The selection applies to the application, public plugins and library dependencies.
+Native projects retain their matching Debug/Release x64 configurations, and the
+host build copies their DLLs into the modern deployment automatically. No command
+line flags are needed for these Visual Studio configurations. Debug .NET 8 keeps
+debug symbols and disables optimisation; Release .NET 8 enables optimisation.
+
+Managed projects restore and build both supported frameworks into separate
+directories. The configuration selects the default debugging runtime, rather
+than removing the other framework from NuGet's restore graph. References and
+runtime-specific packages are selected from each inner build's target framework.
+After reloading an older solution, restore NuGet packages once before rebuilding.
+
 Install a current .NET SDK that supports targeting .NET 8, plus the x64 .NET 8
 Desktop Runtime to run the application. The C++ prerequisites above still apply.
 From the public repository root, build both managed runtimes with:
@@ -142,8 +162,8 @@ together, including `plugins`, `drivers`, runtime configuration and dependency f
 
 For direct MSBuild use, pass `/p:BuildNet8=true /p:BuildNet481=false` to both
 restore and build. Native projects still output under the configuration's
-`drivers` directory; the helper copies those DLLs and `nanomsg.dll` into the
-modern deployment after the solution build finishes.
+`drivers` directory; the host build and helper deploy those DLLs and `nanomsg.dll`
+into the modern deployment.
 
 Public plugins and the PDOInterface contract are rebuilt for each runtime.
 Rebuild external/private plugins for the same target as their host rather than
