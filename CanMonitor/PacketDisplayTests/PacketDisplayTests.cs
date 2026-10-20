@@ -449,11 +449,81 @@ internal static class PacketDisplayTests
         SdoEditorCallbacks(application, can, appDirectory);
     }
 
+    private static void SdoEditorEmptyReadsAndNodeInput(Type editorType, string directory)
+    {
+        BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+        var can = new libCanopenSimple.libCanopenSimple();
+        try
+        {
+            // Use the native null adapter so the real connected-state guards run
+            // without opening hardware or sending anything onto a physical bus.
+            Require(can.open("null://null1", BUSSPEED.BUS_500Kbit,
+                Path.Combine(directory, "drivers", "can_null_win32")), "Null adapter did not open");
+            using (var editor = (Form)Activator.CreateInstance(editorType, new object[] { can }))
+            {
+                IntPtr handle = editor.Handle;
+                var list = (ListView)editorType.GetField("listView1", instance).GetValue(editor);
+                var read = (Button)editorType.GetField("button_read", instance).GetValue(editor);
+                var node = (NumericUpDown)editorType.GetField("numericUpDown_node", instance).GetValue(editor);
+                node.Value = 0x19;
+                Action<string> invoke = name => editorType.GetMethod(name, instance).Invoke(editor, new object[] { null, EventArgs.Empty });
+
+                invoke("button_read_Click");
+                Require(read.Enabled, "Reading an empty OD table stranded the Read button");
+                invoke("Refreshtimer_Tick");
+                Require(read.Enabled, "Auto refresh of an empty OD table stranded the Read button");
+
+                Type helperType = editorType.GetNestedType("sdocallbackhelper", BindingFlags.Public);
+                Type odType = Assembly.LoadFrom(Path.Combine(directory, "libEDSsharp.dll")).GetType("libEDSsharp.ODentry", true);
+                object od = Activator.CreateInstance(odType, new object[] { "Test", (ushort)0x1000, (byte)0 });
+                FieldInfo objectType = odType.GetField("objecttype");
+                objectType.SetValue(od, Enum.Parse(objectType.FieldType, "DOMAIN"));
+                object helper = Activator.CreateInstance(helperType);
+                helperType.GetField("od").SetValue(helper, od);
+                var row = new ListViewItem(new[] { "0x1000", "0x00", "Test", "", "0", "", "", "" }) { Tag = helper };
+                list.Items.Add(row);
+                invoke("button_read_Click");
+                Require(read.Enabled, "A DOMAIN-only table stranded the Read button");
+                invoke("Refreshtimer_Tick");
+                Require(read.Enabled, "Auto refresh of a DOMAIN-only table stranded the Read button");
+
+                objectType.SetValue(od, Enum.Parse(objectType.FieldType, "VAR"));
+                invoke("button_read_Click");
+                SDO transfer = (SDO)helperType.GetField("sdo").GetValue(row.Tag);
+                Require(transfer != null && transfer.node == 0x19,
+                    "A populated view could not read the selected node after empty reads without flushing");
+                PumpUntil(() => read.Enabled, "Read did not recover after null-adapter request completion");
+
+                Require(node.Hexadecimal && node.Text.StartsWith("0x", StringComparison.Ordinal)
+                    && Convert.ToInt32(node.Text, 16) == 0x19, "Node value does not visibly identify its hexadecimal base");
+                MethodInfo validate = node.GetType().GetMethod("ValidateEditText", instance);
+                foreach (string input in new[] { "19", "0x19" })
+                {
+                    node.Text = input;
+                    validate.Invoke(node, null);
+                    Require(node.Value == 0x19 && node.Text.StartsWith("0x", StringComparison.Ordinal),
+                        "Node input changed its hexadecimal meaning: " + input);
+                }
+                node.UpButton();
+                Require(node.Value == 0x1A && node.Text.StartsWith("0x", StringComparison.Ordinal), "Node spinner lost its prefix or increment");
+                node.Text = "0xFF";
+                validate.Invoke(node, null);
+                Require(node.Value == 0x7F, "Node input exceeded the CANopen node range");
+            }
+        }
+        finally
+        {
+            can.close();
+        }
+        Console.WriteLine("PASS: prefixed hexadecimal node input and empty/DOMAIN-only manual/automatic reads recover without flushing");
+    }
+
     private static void SdoEditorCallbacks(Assembly application, libCanopenSimple.libCanopenSimple can, string directory)
     {
         Assembly plugin = Assembly.LoadFrom(Path.Combine(directory, "plugins", "SDOEditorPlugin.dll"));
         Type editorType = plugin.GetType("SDOEditorPlugin.SDOEditor", true);
         BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+        SdoEditorEmptyReadsAndNodeInput(editorType, directory);
         var editor = (Form)Activator.CreateInstance(editorType, new object[] { can });
         try
         {

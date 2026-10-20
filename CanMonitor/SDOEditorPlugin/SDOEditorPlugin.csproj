@@ -88,6 +88,10 @@
       <Project>{cc0fa4b1-2bfc-43b3-8c56-b428df2d24e7}</Project>
       <Name>libEDSsharp</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GUIComponents\GUIComponents.csproj">
+      <Project>{35368bb9-3ac0-4c7e-8df2-11594e341421}</Project>
+      <Name>GUIComponents</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PDOInterface\PDOInterface.csproj">
       <Project>{1f61b56a-0bdc-45f6-8954-cf2550775cbd}</Project>
       <Name>PDOInterface</Name>

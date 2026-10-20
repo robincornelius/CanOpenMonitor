@@ -259,9 +259,17 @@ namespace SDOEditorPlugin
             }
         }
 
+        private bool HasReadableEntries()
+        {
+            // Read is re-enabled by request completion. An empty filtered view,
+            // or a view containing only skipped DOMAIN entries, has no completion.
+            return listView1.Items.Cast<ListViewItem>()
+                .Any(row => ((sdocallbackhelper)row.Tag).od.objecttype != ObjectType.DOMAIN);
+        }
+
         private void Refreshtimer_Tick(object sender, EventArgs e)
         {
-            if (editingValue || applyingParameters || pendingWrites.Count != 0 || !lco.isopen())
+            if (editingValue || applyingParameters || pendingWrites.Count != 0 || !lco.isopen() || !HasReadableEntries())
             {
                 return;
             }
@@ -918,7 +926,7 @@ namespace SDOEditorPlugin
 
         private void button_read_Click(object sender, EventArgs e)
         {
-            if (applyingParameters || pendingWrites.Count != 0)
+            if (applyingParameters || pendingWrites.Count != 0 || !HasReadableEntries())
             {
                 return;
             }

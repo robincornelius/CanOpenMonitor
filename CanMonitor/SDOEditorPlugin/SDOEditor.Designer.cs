@@ -30,7 +30,7 @@
         {
             this.textBox_edsfilename = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.numericUpDown_node = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDown_node = new GUIComponents.HexUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -86,6 +86,7 @@
             // 
             // numericUpDown_node
             // 
+            this.numericUpDown_node.AccessibleName = "Node ID (hexadecimal)";
             this.numericUpDown_node.Hexadecimal = true;
             this.numericUpDown_node.Location = new System.Drawing.Point(56, 36);
             this.numericUpDown_node.Maximum = new decimal(new int[] {
@@ -415,7 +416,7 @@
 
         private System.Windows.Forms.TextBox textBox_edsfilename;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numericUpDown_node;
+        private GUIComponents.HexUpDown numericUpDown_node;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader columnHeader1;
