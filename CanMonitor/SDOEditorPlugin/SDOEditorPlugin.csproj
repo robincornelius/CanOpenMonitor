@@ -59,6 +59,8 @@
     <Compile Include="RecentDeviceFiles.cs" />
     <Compile Include="PdoEditorForm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="LegacyXml\Bridge.cs" />
+    <Compile Include="LegacyXml\CanOpenXML.cs" />
     <Compile Include="SDOEditor.cs">
       <SubType>Form</SubType>
     </Compile>

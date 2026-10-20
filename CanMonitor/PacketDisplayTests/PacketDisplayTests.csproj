@@ -23,6 +23,7 @@
     <Compile Include="PacketDisplayTests.cs" />
     <Compile Include="FilterExpressionTests.cs" />
     <Compile Include="BugRegressionTests.cs" />
+    <Compile Include="DependencyMigrationTests.cs" />
     <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj">
       <Project>{2FB81ADD-258F-4135-A9B9-17E2ACA2448E}</Project>
       <Name>libCanopenSimple</Name>

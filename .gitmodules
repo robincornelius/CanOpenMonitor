@@ -1,6 +1,6 @@
 [submodule "libeds"]
 	path = libeds
-	url = https://github.com/robincornelius/libedssharp.git
+	url = https://github.com/CANopenNode/CANopenEditor.git
 [submodule "libCanOpenSimple2"]
 	path = libCanOpenSimple2
 	url = https://github.com/robincornelius/libCanOpenSimple.git

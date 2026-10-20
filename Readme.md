@@ -84,3 +84,24 @@ The SDO Editor allows live updating of paramaters in the object dictionary of an
 	
 
 
+
+## Object dictionary dependency
+
+The `libeds` submodule now follows the maintained
+[CANopenNode/CANopenEditor](https://github.com/CANopenNode/CANopenEditor)
+repository. The original `robincornelius/libedssharp` repository is obsolete.
+The directory name is retained so existing solution/project paths remain valid.
+
+CanMonitor selects the optional `BuildNet48` compatibility target through
+`Directory.Build.props`, keeping its application and plugins on .NET Framework
+4.8. The dependency retains its other upstream target frameworks. The Windows
+editor solution is `libeds/EDSEditor.Windows.sln`; select `BuildNet48=true` when
+building it outside this checkout. Use the pinned submodule commit, including
+its reviewed compatibility changes, rather than substituting an arbitrary
+upstream revision.
+
+The OD Editor uses the maintained library for EDS, DCF and XDD files. A small
+legacy XML importer remains in the OD Editor plugin for existing original
+CANopenNode project XML files; it does not depend on the obsolete assembly.
+CanMonitor generates binding redirects for the maintained library's transitive
+dependencies during the application build.

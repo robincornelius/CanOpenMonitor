@@ -499,6 +499,7 @@ internal static class PacketDisplayTests
             DcfPdoEntries(editorType, odType);
             IntegerColumns(editorType, odType, can);
             RecentFileMenu(editorType, can);
+            DependencyMigrationTests.Run(editorType, can);
             editor.Dispose();
             Require(Task.Run(() => editorType.GetMethod("gotit", instance).Invoke(editor, new object[] { transfer })).Wait(1000),
                 "Closed OD Editor callback blocked");

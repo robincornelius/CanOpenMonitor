@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using libEDSsharp;
 using System.IO;
-using Xml2CSharp;
 using libCanopenSimple;
 using WeifenLuo.WinFormsUI.Docking;
 using System.Security.Cryptography;
@@ -315,39 +314,25 @@ namespace SDOEditorPlugin
                 {
                     case ".xdd":
                     {
-
-                            CanOpenXDD_1_1 xdd = new CanOpenXDD_1_1();
-                            eds = xdd.ReadXML(filename);
-                          
-
-                                if(eds==null)
-                                {
-                                    CanOpenXDD xdd2 = new CanOpenXDD();
-                                    xdd2.readXML(filename);
-
-                                    Bridge b = new Bridge();
-                                    eds = xdd2.convert(xdd2.dev);
-                                }
-  
-                            /*   
-                            eds.xmlfilename = filename;
-                            */
+                        eds = new CanOpenXDD_1_1().ReadXML(filename)
+                            ?? new CanOpenXDD().readXML(filename);
+                        if (eds == null)
+                        {
+                            throw new InvalidDataException("The selected file is not a supported XDD dictionary.");
                         }
-
-                    break;
+                        break;
+                    }
 
                     case ".xml":
                     {
-                        CanOpenXML coxml = new CanOpenXML();
-                        coxml.readXML(filename);
-
-                        Bridge b = new Bridge();
-
-                        eds = b.convert(coxml.dev);
+                        // Upstream retired the original project XML format. Keep
+                        // this importer local to CanMonitor for existing files.
+                        LegacyXml.CanOpenXML legacy = new LegacyXml.CanOpenXML();
+                        legacy.readXML(filename);
+                        eds = new LegacyXml.Bridge().convert(legacy.dev);
                         eds.xmlfilename = filename;
+                        break;
                     }
-
-                    break;
 
                     case ".dcf":
                     {
