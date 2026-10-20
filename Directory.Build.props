@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <!-- Select the maintained editor library's optional compatibility target.
-         Keep all managed CanMonitor components on .NET Framework 4.8. -->
-    <BuildNet48>true</BuildNet48>
+    <!-- Select the maintained editor library's .NET Framework 4.8.1 target.
+         Keep all managed CanMonitor components on .NET Framework 4.8.1. -->
+    <BuildNet481>true</BuildNet481>
   </PropertyGroup>
 </Project>

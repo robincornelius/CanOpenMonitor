@@ -3,7 +3,7 @@ PDO editor window regressions
 
 Run ./run-tests.ps1 to rebuild and test x64/x86 Debug/Release, or select
 -Platform and -Configuration. Prerequisites match the application: Visual Studio
-MSBuild, .NET Framework 4.8 targeting pack and restored libEDSsharp dependencies.
+MSBuild, .NET Framework 4.8.1 targeting pack and restored libEDSsharp dependencies.
 The tests link the production dialog/model sources and use a fake device. No
 CAN driver is opened. A stalled test process exits after 60 seconds.
 

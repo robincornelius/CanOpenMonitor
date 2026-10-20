@@ -92,10 +92,10 @@ The `libeds` submodule now follows the maintained
 repository. The original `robincornelius/libedssharp` repository is obsolete.
 The directory name is retained so existing solution/project paths remain valid.
 
-CanMonitor selects the optional `BuildNet48` compatibility target through
+CanMonitor selects the upstream `BuildNet481` target through
 `Directory.Build.props`, keeping its application and plugins on .NET Framework
-4.8. The dependency retains its other upstream target frameworks. The Windows
-editor solution is `libeds/EDSEditor.Windows.sln`; select `BuildNet48=true` when
+4.8.1. The dependency retains its other upstream target frameworks. The Windows
+editor solution is `libeds/EDSEditor.Windows.sln`; select `BuildNet481=true` when
 building it outside this checkout. Use the pinned submodule commit, including
 its reviewed compatibility changes, rather than substituting an arbitrary
 upstream revision.

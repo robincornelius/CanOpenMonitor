@@ -1,7 +1,7 @@
 Packet display regression tests
 ===============================
 
-Run from PowerShell with Visual Studio MSBuild and the .NET Framework 4.8
+Run from PowerShell with Visual Studio MSBuild and the .NET Framework 4.8.1
 targeting pack installed:
 
     ./run-tests.ps1
@@ -116,7 +116,7 @@ application test verifies full DCF extraction and typed mapping-count values.
 Issue regressions
 =================
 
-Prerequisites: Visual Studio with MSBuild, the .NET Framework 4.8 targeting pack,
+Prerequisites: Visual Studio with MSBuild, the .NET Framework 4.8.1 targeting pack,
 v145 C++ tools and CMake. Rebuild the public CanMonitor solution for the desired
 configuration/platform first. Tests must match the application's architecture.
 

@@ -9,7 +9,7 @@ $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer
 $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
 if (-not $msbuild)
 {
-    throw 'Install Visual Studio MSBuild and the .NET Framework 4.8 targeting pack.'
+    throw 'Install Visual Studio MSBuild and the .NET Framework 4.8.1 targeting pack.'
 }
 $architectures = if ($Platform -eq 'All') { @('x64', 'x86') } else { @($Platform) }
 $variants = if ($Configuration -eq 'All') { @('Debug', 'Release') } else { @($Configuration) }
