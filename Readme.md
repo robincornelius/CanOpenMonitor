@@ -110,9 +110,9 @@ The `libeds` submodule now follows the maintained
 repository. The original `robincornelius/libedssharp` repository is obsolete.
 The directory name is retained so existing solution/project paths remain valid.
 
-CanMonitor selects the upstream `BuildNet481` target through
-`Directory.Build.props`, keeping its application and plugins on .NET Framework
-4.8.1. The dependency retains its other upstream target frameworks. The Windows
+CanMonitor defaults to the upstream `BuildNet481` target through
+`Directory.Build.props`. Selecting `BuildNet8=true` instead builds the application,
+plugins and maintained dependencies for .NET 8. The Windows
 editor solution is `libeds/EDSEditor.Windows.sln`; select `BuildNet481=true` when
 building it outside this checkout. Use the pinned submodule commit, including
 its reviewed compatibility changes, rather than substituting an arbitrary
@@ -123,3 +123,30 @@ legacy XML importer remains in the OD Editor plugin for existing original
 CANopenNode project XML files; it does not depend on the obsolete assembly.
 CanMonitor generates binding redirects for the maintained library's transitive
 dependencies during the application build.
+
+## .NET 8 support
+
+Install a current .NET SDK that supports targeting .NET 8, plus the x64 .NET 8
+Desktop Runtime to run the application. The C++ prerequisites above still apply.
+From the public repository root, build both managed runtimes with:
+
+```powershell
+./build.ps1 -Framework All
+```
+
+Use `-Framework net8 -Configuration Release` for just the modern Release build.
+The helper rebuilds the public x64 solution and deploys the native driver DLLs.
+The modern executable is `CanMonitor/bin/x64/Release/net8.0/CanMonitor.exe`;
+Framework outputs retain their existing paths. Keep each entire deployment
+together, including `plugins`, `drivers`, runtime configuration and dependency files.
+
+For direct MSBuild use, pass `/p:BuildNet8=true /p:BuildNet481=false` to both
+restore and build. Native projects still output under the configuration's
+`drivers` directory; the helper copies those DLLs and `nanomsg.dll` into the
+modern deployment after the solution build finishes.
+
+Public plugins and the PDOInterface contract are rebuilt for each runtime.
+Rebuild external/private plugins for the same target as their host rather than
+copying Framework plugin binaries into the .NET 8 deployment. Source `.cs`
+plugins use Roslyn on .NET 8 and CodeDOM on Framework. CanMonitor remains a
+Windows Forms application; adding this target does not add Linux UI support.

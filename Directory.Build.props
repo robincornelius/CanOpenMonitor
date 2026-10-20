@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <!-- Select the maintained editor library's .NET Framework 4.8.1 target.
-         Keep all managed CanMonitor components on .NET Framework 4.8.1. -->
-    <BuildNet481>true</BuildNet481>
+    <!-- Keep existing deployments on Framework unless the entire solution opts into .NET 8. -->
+    <BuildNet481 Condition="'$(BuildNet481)' == '' and '$(BuildNet8)' != 'true' and '$(MSBuildProjectName)' != 'libCanopenSimple'">true</BuildNet481>
+    <SolutionDir Condition="'$(SolutionDir)' == '' or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)CanMonitor\</SolutionDir>
   </PropertyGroup>
 </Project>

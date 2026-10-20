@@ -1,36 +1,71 @@
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net481</TargetFramework>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <TargetFramework Condition="'$(BuildNet8)' == 'true'">net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyMetadataAttributes>false</GenerateAssemblyMetadataAttributes>
+  </PropertyGroup>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <AssemblyName>ConformanceTests</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <PlatformTarget>$(Platform)</PlatformTarget>
     <OutputPath>build\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>build\obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" /><Reference Include="System.Core" />
-    <Reference Include="System.Drawing" /><Reference Include="System.Windows.Forms" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="WeifenLuo.WinFormsUI.Docking">
-      <HintPath>..\packages\DockPanelSuite.3.1.1\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
-    </Reference>
     <Compile Include="ConformanceTests.cs" />
     <Compile Include="..\CanMonitor\PluginManager.cs" />
     <ProjectReference Include="..\ConformancePlugin\ConformancePlugin.csproj">
-      <Name>ConformancePlugin</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
+      <Name>ConformancePlugin</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
     </ProjectReference>
     <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj">
-      <Name>libCanopenSimple</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
+      <Name>libCanopenSimple</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
     </ProjectReference>
     <ProjectReference Include="..\..\libeds\libEDSsharp\libEDSsharp.csproj">
-      <Name>libEDSsharp</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
+      <Name>libEDSsharp</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
     </ProjectReference>
     <ProjectReference Include="..\PDOInterface\PDOInterface.csproj">
-      <Name>PDOInterface</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
+      <Name>PDOInterface</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <PackageReference Include="DockPanelSuite" Version="3.1.1" />
+    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+  </ItemGroup>
+  <PropertyGroup>
+    <IntermediateOutputPath>obj\$(SolutionName)\$(Platform)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <OutputPath Condition="'$(BuildNet8)' == 'true'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\CanMonitor\SourcePluginCompiler.cs" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" Condition="'$(BuildNet8)' == 'true'" />
+  </ItemGroup>
+  <PropertyGroup>
+    <Prefer32Bit Condition="'$(BuildNet8)' != 'true' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
+  </PropertyGroup>
 </Project>

@@ -1,8 +1,6 @@
 ﻿using libCanopenSimple;
-using Microsoft.CSharp;
 using PDOInterface;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -172,45 +170,7 @@ namespace CanMonitor
 
                 if (ext == ".cs")
                 {
-                    CSharpCodeProvider provider = new CSharpCodeProvider();
-                    CompilerParameters parameters = new CompilerParameters();
-
-                    // Reference to System.Drawing library
-                    parameters.ReferencedAssemblies.Add("System.dll");
-                    parameters.ReferencedAssemblies.Add("System.Core.dll");
-                    parameters.ReferencedAssemblies.Add("System.Data.dll");
-                    parameters.ReferencedAssemblies.Add("PDOInterface.dll");
-                    parameters.ReferencedAssemblies.Add("libCanopenSimple.dll");
-                    parameters.ReferencedAssemblies.Add("System.Windows.Forms");
-                    parameters.ReferencedAssemblies.Add("System.Drawing");
-
-
-
-
-                    // True - memory generation, false - external file generation
-                    parameters.GenerateInMemory = true;
-                    // True - exe file generation, false - dll file generation
-                    parameters.GenerateExecutable = false;
-
-                    string code = File.ReadAllText(filename);
-
-                    CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
-
-                    if (results.Errors.HasErrors)
-                    {
-                        StringBuilder sb = new StringBuilder();
-
-                        foreach (CompilerError error in results.Errors)
-                        {
-                            sb.AppendLine(String.Format("{0}: Error ({1}): {2}", error.Line, error.ErrorNumber, error.ErrorText));
-                        }
-
-                        MessageBox.Show(sb.ToString());
-                        return;
-
-                    }
-
-                    assembly = results.CompiledAssembly;
+                    assembly = SourcePluginCompiler.Compile(File.ReadAllText(filename));
 
                 }
                 else

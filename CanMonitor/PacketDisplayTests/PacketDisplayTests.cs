@@ -13,6 +13,12 @@ using System.Windows.Forms;
 
 internal static class PacketDisplayTests
 {
+#if NET8_0_OR_GREATER
+    private const string ApplicationAssemblyName = "CanMonitor.dll";
+#else
+    private const string ApplicationAssemblyName = "CanMonitor.exe";
+#endif
+
     private static readonly DateTime Timestamp = new DateTime(2026, 1, 2, 3, 4, 5, 678);
     private static void Require(bool condition, string message)
     {
@@ -336,7 +342,7 @@ internal static class PacketDisplayTests
             return File.Exists(candidate) ? Assembly.LoadFrom(candidate) : null;
         };
         AppDomain.CurrentDomain.AssemblyResolve += resolve;
-        Assembly application = Assembly.LoadFrom(Path.Combine(appDirectory, "CanMonitor.exe"));
+        Assembly application = Assembly.LoadFrom(Path.Combine(appDirectory, ApplicationAssemblyName));
         var can = new libCanopenSimple.libCanopenSimple();
         BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
         Func<string, int> subscriptions = name =>
@@ -671,7 +677,7 @@ internal static class PacketDisplayTests
             string candidate = Path.Combine(applicationDirectory, new AssemblyName(args.Name).Name + ".dll");
             return File.Exists(candidate) ? Assembly.LoadFrom(candidate) : null;
         };
-        Assembly application = Assembly.LoadFrom(Path.Combine(applicationDirectory, "CanMonitor.exe"));
+        Assembly application = Assembly.LoadFrom(Path.Combine(applicationDirectory, ApplicationAssemblyName));
         Type settingsType = application.GetType("CanMonitor.Properties.Settings", true);
         object settings = settingsType.GetProperty("Default", BindingFlags.Static | BindingFlags.Public).GetValue(null);
         settingsType.GetProperty("showpdo").SetValue(settings, true);
@@ -756,6 +762,11 @@ internal static class PacketDisplayTests
         {
             try
             {
+                if (args.Length == 2 && args[0] == "--startup")
+                {
+                    BugRegressionTests.StartupSmoke(Path.GetFullPath(args[1]));
+                    return 0;
+                }
                 if (args.Length == 3 && args[0] == "--bugs")
                 {
                     BugRegressionTests.Run(args[1], Path.GetFullPath(args[2]));

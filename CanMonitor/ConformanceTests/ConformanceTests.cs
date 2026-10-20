@@ -178,6 +178,7 @@ internal static class ConformanceTests
             {
                 return Hardware(args);
             }
+            SourcePluginCompilation();
             var device = new Device();
             var description = Description(device);
             var report = Run(device, description);
@@ -384,6 +385,33 @@ internal static class ConformanceTests
                 can.close();
             }
         }
+    }
+
+    private static void SourcePluginCompilation()
+    {
+        var assembly = CanMonitor.SourcePluginCompiler.Compile(
+            "public class Probe : System.Windows.Forms.Form { "
+            + "public System.Type Contract { get { return typeof(PDOInterface.IInterfaceService); } } "
+            + "public System.Type Library { get { return typeof(libCanopenSimple.libCanopenSimple); } } }");
+        Type probe = assembly.GetType("Probe", true);
+        using (var form = (Form)Activator.CreateInstance(probe))
+        {
+            Require((Type)probe.GetProperty("Contract").GetValue(form) == typeof(PDOInterface.IInterfaceService),
+                "Source plugin compiled against a different contract assembly");
+            Require((Type)probe.GetProperty("Library").GetValue(form) == typeof(libCanopenSimple.libCanopenSimple),
+                "Source plugin compiled against a different library assembly");
+        }
+        bool rejected = false;
+        try
+        {
+            CanMonitor.SourcePluginCompiler.Compile("public class Broken { unknown syntax }");
+        }
+        catch (InvalidOperationException error)
+        {
+            rejected = error.Message.Contains("CS");
+        }
+        Require(rejected, "Invalid source plugin did not report compiler diagnostics");
+        Console.WriteLine("PASS: source plugin compilation, WinForms/contracts and invalid-source diagnostics");
     }
 
     private static int ExitCode(ConformanceReport report)

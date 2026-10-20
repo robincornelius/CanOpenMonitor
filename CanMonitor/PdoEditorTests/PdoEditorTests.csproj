@@ -1,26 +1,62 @@
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net481</TargetFramework>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <TargetFramework Condition="'$(BuildNet8)' == 'true'">net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyMetadataAttributes>false</GenerateAssemblyMetadataAttributes>
+  </PropertyGroup>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <AssemblyName>PdoEditorTests</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <PlatformTarget>$(Platform)</PlatformTarget>
     <OutputPath>build\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>build\obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" /><Reference Include="System.Core" />
-    <Reference Include="System.Drawing" /><Reference Include="System.Windows.Forms" />
     <Compile Include="..\SDOEditorPlugin\PdoEditorModel.cs" />
     <Compile Include="..\SDOEditorPlugin\PdoEditorForm.cs" />
     <Compile Include="PdoEditorTests.cs" />
     <Compile Include="..\SDOEditorPlugin\OdIntegerDisplay.cs" />
     <Compile Include="..\SDOEditorPlugin\OdValueComparison.cs" />
     <Compile Include="..\SDOEditorPlugin\RecentDeviceFiles.cs" />
-    <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj"><Name>libCanopenSimple</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform></ProjectReference>
-    <ProjectReference Include="..\..\libeds\libEDSsharp\libEDSsharp.csproj"><Name>libEDSsharp</Name><SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform></ProjectReference>
+    <ProjectReference Include="..\..\libCanOpenSimple2\libCanopenSimple.csproj">
+      <Name>libCanopenSimple</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libeds\libEDSsharp\libEDSsharp.csproj">
+      <Name>libEDSsharp</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=AnyCPU</SetPlatform>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+  </ItemGroup>
+  <PropertyGroup>
+    <IntermediateOutputPath>obj\$(SolutionName)\$(Platform)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <OutputPath Condition="'$(BuildNet8)' == 'true'">$(OutputPath.TrimEnd('\'))\net8.0\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Prefer32Bit Condition="'$(BuildNet8)' != 'true' and '$(Platform)' == 'AnyCPU'">true</Prefer32Bit>
+  </PropertyGroup>
 </Project>

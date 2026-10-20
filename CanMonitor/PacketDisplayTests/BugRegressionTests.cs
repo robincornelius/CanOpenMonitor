@@ -12,6 +12,12 @@ using libCanopenSimple;
 
 internal static class BugRegressionTests
 {
+#if NET8_0_OR_GREATER
+    private const string ApplicationAssemblyName = "CanMonitor.dll";
+#else
+    private const string ApplicationAssemblyName = "CanMonitor.exe";
+#endif
+
     private const BindingFlags Instance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
     private static void Require(bool condition, string message)
@@ -30,7 +36,7 @@ internal static class BugRegressionTests
             string path = Path.Combine(applicationDirectory, new AssemblyName(args.Name).Name + ".dll");
             return File.Exists(path) ? Assembly.LoadFrom(path) : null;
         };
-        Assembly application = Assembly.LoadFrom(Path.Combine(applicationDirectory, "CanMonitor.exe"));
+        Assembly application = Assembly.LoadFrom(Path.Combine(applicationDirectory, ApplicationAssemblyName));
         application.GetType("CanMonitor.Program", true).GetField("lco", BindingFlags.Static | BindingFlags.Public)
             .SetValue(null, new libCanopenSimple.libCanopenSimple());
         int failures = 0;
@@ -49,7 +55,7 @@ internal static class BugRegressionTests
         Require(failures == 0, failures + " issue regression(s) failed.");
     }
 
-    private static void StartupSmoke(string applicationDirectory)
+    internal static void StartupSmoke(string applicationDirectory)
     {
         string temporary = Path.Combine(Path.GetTempPath(), "canmonitor-launch-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(temporary);
@@ -64,6 +70,20 @@ internal static class BugRegressionTests
         foreach (string file in Directory.GetFiles(plugins))
         {
             File.Copy(file, Path.Combine(disconnected, "plugins", Path.GetFileName(file)));
+        }
+        foreach (string subdirectory in Directory.GetDirectories(applicationDirectory))
+        {
+            string name = Path.GetFileName(subdirectory);
+            if (name == "drivers" || name == "plugins")
+            {
+                continue;
+            }
+            foreach (string file in Directory.GetFiles(subdirectory, "*", SearchOption.AllDirectories))
+            {
+                string target = Path.Combine(disconnected, file.Substring(applicationDirectory.TrimEnd(Path.DirectorySeparatorChar).Length + 1));
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
+                File.Copy(file, target);
+            }
         }
         foreach (string deployment in new[] { applicationDirectory, disconnected })
         {
