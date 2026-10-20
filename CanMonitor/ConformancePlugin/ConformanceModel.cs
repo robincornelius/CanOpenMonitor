@@ -110,7 +110,7 @@ namespace ConformancePlugin
             EDSsharp dictionary;
             if (string.Equals(Path.GetExtension(filename), ".xdd", StringComparison.OrdinalIgnoreCase))
             {
-                dictionary = new CanOpenXDD_1_1().ReadXML(filename) ?? new CanOpenXDD().readXML(filename);
+                dictionary = XddLoader.Load(filename);
             }
             else
             {

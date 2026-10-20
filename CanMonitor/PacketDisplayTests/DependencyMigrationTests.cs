@@ -58,6 +58,12 @@ internal static class DependencyMigrationTests
                     converter.GetMethod(legacy ? "writeXML" : "WriteXML").Invoke(Activator.CreateInstance(converter),
                         legacy ? new object[] { xdd, model } : new object[] { xdd, model, false, false });
                     load(xdd);
+                    Type descriptionType = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(editorType.Assembly.Location),
+                        "ConformancePlugin.dll")).GetType("ConformancePlugin.DeviceDescription", true);
+                    object description = descriptionType.GetMethod("Load").Invoke(null, new object[] { xdd });
+                    object dictionary = descriptionType.GetField("Dictionary").GetValue(description);
+                    Require(((IDictionary)dictionary.GetType().GetField("ods").GetValue(dictionary)).Count == 1,
+                        "Conformance loader lost objects from " + Path.GetFileName(xdd));
                 }
                 string xml = Path.Combine(folder, "original.xml");
                 File.WriteAllText(xml, "<device><CANopenObjectList><CANopenObject index='1000' name='Device type' "
@@ -69,7 +75,7 @@ internal static class DependencyMigrationTests
                     + "<dummy entry='Dummy0006=0'/><dummy entry='Dummy0007=0'/></dummyUsage></other></device>");
                 load(xml);
             }
-            Console.WriteLine("PASS: migrated CanMonitor imports EDS, DCF, XDD 1.0/1.1 and original device XML with intact values");
+            Console.WriteLine("PASS: migrated CanMonitor imports EDS, DCF, XDD 1.0/1.1 and original device XML with intact values; conformance accepts both XDD schemas");
         }
         finally
         {

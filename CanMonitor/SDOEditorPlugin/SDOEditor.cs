@@ -314,12 +314,7 @@ namespace SDOEditorPlugin
                 {
                     case ".xdd":
                     {
-                        eds = new CanOpenXDD_1_1().ReadXML(filename)
-                            ?? new CanOpenXDD().readXML(filename);
-                        if (eds == null)
-                        {
-                            throw new InvalidDataException("The selected file is not a supported XDD dictionary.");
-                        }
+                        eds = XddLoader.Load(filename);
                         break;
                     }
 
