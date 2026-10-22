@@ -299,6 +299,7 @@
             this.checkBox_useronly.TabIndex = 10;
             this.checkBox_useronly.Text = "Manufacture specific only";
             this.checkBox_useronly.UseVisualStyleBackColor = true;
+            this.checkBox_useronly.CheckedChanged += new System.EventHandler(this.ViewFilterChanged);
             // 
             // button1
             // 

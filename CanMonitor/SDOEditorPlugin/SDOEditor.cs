@@ -19,6 +19,7 @@ namespace SDOEditorPlugin
     {
 
         EDSsharp eds;
+        private readonly List<ListViewItem> unfilteredRows = new List<ListViewItem>();
         libCanopenSimple.libCanopenSimple lco;
         string filename = null;
         private string appdatafolder;
@@ -340,8 +341,10 @@ namespace SDOEditorPlugin
                     case ".dcf":
                     {
                         isdcf = true;
-                        if (listView1.Items.Count == 0)
+                        if (unfilteredRows.Count == 0)
+                        {
                             isemptydcf = true;
+                        }
 
                         eds = new EDSsharp();
                         eds.Loadfile(filename);
@@ -405,22 +408,7 @@ namespace SDOEditorPlugin
             {
 
 
-                if (comboBoxtype.SelectedItem.ToString() != "ALL")
-                {
-                    if (comboBoxtype.SelectedItem.ToString() == "EEPROM" && (tod.prop.CO_storageGroup.ToUpper() != "EEPROM"))
-                        continue;
-                    if (comboBoxtype.SelectedItem.ToString() == "ROM" && (tod.prop.CO_storageGroup.ToUpper() != "ROM"))
-                        continue;
-                    if (comboBoxtype.SelectedItem.ToString() == "RAM" && (tod.prop.CO_storageGroup.ToUpper() != "RAM"))
-                        continue;
-
-                }
-
-
                 if (tod.prop.CO_disabled == true)
-                    continue;
-
-                if (tod.Index < 0x2000 && checkBox_useronly.Checked == true)
                     continue;
 
                 if (tod.objecttype == ObjectType.ARRAY || tod.objecttype == ObjectType.RECORD)
@@ -444,9 +432,46 @@ namespace SDOEditorPlugin
             }
 
             listView1.EndUpdate();
+            if (!isdcf || isemptydcf)
+            {
+                unfilteredRows.Clear();
+                unfilteredRows.AddRange(listView1.Items.Cast<ListViewItem>());
+            }
+            ApplyViewFilters();
+        }
 
+        private void ApplyViewFilters()
+        {
+            string storage = comboBoxtype.SelectedItem as string ?? comboBoxtype.Text;
+            listView1.BeginUpdate();
+            try
+            {
+                listView1.Items.Clear();
+                foreach (ListViewItem row in unfilteredRows)
+                {
+                    ODentry entry = ((sdocallbackhelper)row.Tag).od;
+                    ODentry parent = entry.parent ?? entry;
+                    if (checkBox_useronly.Checked && entry.Index < 0x2000)
+                    {
+                        continue;
+                    }
+                    if (!storage.Equals("ALL", StringComparison.OrdinalIgnoreCase)
+                        && !storage.Equals(parent.prop.CO_storageGroup, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    listView1.Items.Add(row);
+                }
+            }
+            finally
+            {
+                listView1.EndUpdate();
+            }
+        }
 
-
+        private void ViewFilterChanged(object sender, EventArgs e)
+        {
+            ApplyViewFilters();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -465,7 +490,11 @@ namespace SDOEditorPlugin
         void adddcfvalue(ODentry od)
         {
 
-            foreach (ListViewItem lvi in listView1.Items)
+            // Overlay values onto hidden rows too, retaining the base dictionary's
+            // storage/access metadata and values when the display filters change.
+            IEnumerable<ListViewItem> rows = unfilteredRows.Count == 0
+                ? listView1.Items.Cast<ListViewItem>() : unfilteredRows;
+            foreach (ListViewItem lvi in rows)
             {
                 sdocallbackhelper help = (sdocallbackhelper)lvi.Tag;
 
@@ -989,7 +1018,7 @@ namespace SDOEditorPlugin
 
         private void comboBoxtype_SelectedIndexChanged(object sender, EventArgs e)
         {
-            loadeds(filename);
+            ApplyViewFilters();
         }
 
         private void EnsureRecentFiles()
@@ -1145,23 +1174,59 @@ namespace SDOEditorPlugin
 
         }
 
+        private static bool IsSavedReadError(string value)
+        {
+            string text = value.Trim();
+            return text.StartsWith("*", StringComparison.Ordinal)
+                && text.EndsWith("*", StringComparison.Ordinal)
+                && text.Trim('*').Trim().Equals("ERROR", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static List<SdoParameterWrite> BuildDcfWrites(EDSsharp dcf)
+        {
+            return BuildDcfWritesForEntries(dcf, null);
+        }
+
+        private static List<SdoParameterWrite> BuildDcfWritesForEntries(EDSsharp dcf, HashSet<uint> displayed)
         {
             if (dcf == null)
             {
                 throw new InvalidOperationException("Load a DCF before applying it.");
             }
             var writes = new List<SdoParameterWrite>();
-            // Use the complete DCF, not the currently filtered rows. Otherwise
-            // a hidden mapping-count entry can leave a remap incomplete.
+            HashSet<uint> selected = displayed == null ? null : new HashSet<uint>(displayed);
+            if (selected != null)
+            {
+                // A selected mapping still requires its DCF count even if the
+                // count row is hidden. Do not expand into unrelated PDO groups.
+                foreach (uint key in displayed)
+                {
+                    ushort index = (ushort)(key >> 8);
+                    if ((index >= 0x1600 && index <= 0x17FF) || (index >= 0x1A00 && index <= 0x1BFF))
+                    {
+                        selected.Add((uint)index << 8);
+                    }
+                }
+            }
             foreach (ODentry parent in dcf.ods.Values)
             {
                 IEnumerable<ODentry> entries = parent.subobjects.Count == 0
                     ? new[] { parent } : parent.subobjects.Values.AsEnumerable();
                 foreach (ODentry entry in entries)
                 {
+                    if (selected != null && !selected.Contains(((uint)entry.Index << 8) | entry.Subindex))
+                    {
+                        continue;
+                    }
                     if (entry.prop.CO_disabled || entry.actualvalue.Length == 0 || entry.AccessSDO() != AccessSDO.rw)
                     {
+                        continue;
+                    }
+                    // Older DCF saves could persist the Current column's read-error
+                    // placeholder. It describes missing data, never a device value.
+                    if (IsSavedReadError(entry.actualvalue))
+                    {
+                        System.Diagnostics.Trace.TraceWarning("Skipping DCF entry {0:X4}:{1:X2}: saved SDO read error.", entry.Index, entry.Subindex);
                         continue;
                     }
                     if (entry.Subindex == 0 && PdoConfiguration.IsPdoParameter(entry.Index)
@@ -1184,7 +1249,12 @@ namespace SDOEditorPlugin
             }
             try
             {
-                var writes = BuildDcfWrites(eds);
+                var displayed = new HashSet<uint>(listView1.Items.Cast<ListViewItem>().Select(row =>
+                {
+                    ODentry entry = ((sdocallbackhelper)row.Tag).od;
+                    return ((uint)entry.Index << 8) | entry.Subindex;
+                }));
+                var writes = BuildDcfWritesForEntries(eds, displayed);
                 if (writes.Count != 0)
                 {
                     ApplyParameterBatch(writes.ToArray());

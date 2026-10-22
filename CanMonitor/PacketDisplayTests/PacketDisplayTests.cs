@@ -573,6 +573,7 @@ internal static class PacketDisplayTests
             PumpUntil(() => !ReferenceEquals(helperType.GetField("sdo").GetValue(row.Tag), written), "Write read-back was not queued");
             Require(((SDO)helperType.GetField("sdo").GetValue(row.Tag)).node == 7, "Write read-back used a changed node selection");
             DcfPdoEntries(editorType, odType);
+            SdoEditorViewFilters(editorType, odType, can);
             IntegerColumns(editorType, odType, can);
             RecentFileMenu(editorType, can);
             DependencyMigrationTests.Run(editorType, can);
@@ -708,6 +709,59 @@ internal static class PacketDisplayTests
         Console.WriteLine("PASS: integer Default/Current/DCF columns, signed reads, page and row formats preserve values");
     }
 
+    private static void SdoEditorViewFilters(Type editorType, Type odType, libCanopenSimple.libCanopenSimple can)
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        Type edsType = odType.Assembly.GetType("libEDSsharp.EDSsharp", true);
+        using (var editor = (Form)Activator.CreateInstance(editorType, new object[] { can }))
+        {
+            object model = Activator.CreateInstance(edsType);
+            IntPtr handle = editor.Handle;
+            var storage = (ComboBox)editorType.GetField("comboBoxtype", flags).GetValue(editor);
+            var manufacturer = (CheckBox)editorType.GetField("checkBox_useronly", flags).GetValue(editor);
+            storage.SelectedItem = "EEPROM";
+            manufacturer.Checked = true;
+            object overlay = Activator.CreateInstance(edsType);
+            ushort[] indices = { 0x1005, 0x2000, 0x2001 };
+            string[] groups = { "RAM", "EEPROM", "PERSIST_COMM" };
+            for (int index = 0; index < indices.Length; index++)
+            {
+                foreach (object dictionaryModel in new[] { model, overlay })
+                {
+                    object entry = Activator.CreateInstance(odType, new object[] { "Filter test", indices[index], (byte)0 });
+                    odType.GetField("datatype").SetValue(entry, Enum.Parse(odType.GetField("datatype").FieldType, "UNSIGNED16"));
+                    odType.GetField("defaultvalue").SetValue(entry, "1");
+                    odType.GetField("actualvalue").SetValue(entry, "42");
+                    object properties = odType.GetField("prop").GetValue(entry);
+                    properties.GetType().GetField("CO_storageGroup").SetValue(properties,
+                        ReferenceEquals(dictionaryModel, model) ? groups[index] : "RAM");
+                    object dictionary = edsType.GetField("ods").GetValue(dictionaryModel);
+                    dictionary.GetType().GetMethod("Add").Invoke(dictionary, new[] { (object)indices[index], entry });
+                }
+            }
+            editorType.GetField("eds", flags).SetValue(editor, model);
+            editorType.GetMethod("updatetable", flags).Invoke(editor, new object[] { false, false });
+            var rows = (ListView)editorType.GetField("listView1", flags).GetValue(editor);
+            Require(rows.Items.Count == 1 && rows.Items[0].Text == "0x2000", "EEPROM/manufacturer filters ignored base metadata: "
+                + rows.Items.Count + " rows; storage=" + storage.Text + "; indices=" + string.Join(",", rows.Items.Cast<ListViewItem>().Select(row => row.Text)));
+            ListViewItem original = rows.Items[0];
+            original.SubItems[5].Text = "cached current";
+            editorType.GetField("eds", flags).SetValue(editor, overlay);
+            editorType.GetMethod("updatetable", flags).Invoke(editor, new object[] { true, false });
+            storage.SelectedItem = "ALL";
+            Require(rows.Items.Count == 2, "ALL did not reveal hidden manufacturer objects");
+            manufacturer.Checked = false;
+            Require(rows.Items.Count == 3 && rows.Items.Cast<ListViewItem>().All(row => row.SubItems[6].Text == "42"),
+                "Manufacturer toggle did not refresh or DCF overlay lost hidden values");
+            storage.SelectedItem = "PERSIST_COMM";
+            Require(rows.Items.Count == 1 && rows.Items[0].Text == "0x2001", "PERSIST_COMM was not filtered exactly");
+            storage.SelectedItem = "EEPROM";
+            Require(rows.Items.Count == 1 && ReferenceEquals(rows.Items[0], original) && original.SubItems[5].Text == "cached current",
+                "Filtering lost current values or replaced the base dictionary's storage groups with DCF metadata");
+        }
+        Console.WriteLine("PASS: EEPROM/ALL/PERSIST_COMM and manufacturer filters preserve hidden DCF and current values");
+    }
+
     private static void DcfPdoEntries(Type editorType, Type odType)
     {
         Type edsType = odType.Assembly.GetType("libEDSsharp.EDSsharp", true);
@@ -728,6 +782,13 @@ internal static class PacketDisplayTests
         object communication = entry(0x1800, 0, "UNSIGNED32", "");
         odType.GetMethod("addsubobject").Invoke(communication, new object[] { (byte)3, entry(0x1800, 3, "UNSIGNED16", "200") });
         dictionary.GetType().GetMethod("Add").Invoke(dictionary, new object[] { (ushort)0x1800, communication });
+        dictionary.GetType().GetMethod("Add").Invoke(dictionary, new object[] { (ushort)0x2000, entry(0x2000, 0, "UNSIGNED16", " **ERROR **") });
+        object failedRecord = entry(0x2100, 0, "UNSIGNED32", "");
+        odType.GetMethod("addsubobject").Invoke(failedRecord, new object[] { (byte)1, entry(0x2100, 1, "UNSIGNED32", "*** ERROR ***") });
+        odType.GetMethod("addsubobject").Invoke(failedRecord, new object[] { (byte)2, entry(0x2100, 2, "UNSIGNED16", "42") });
+        odType.GetMethod("addsubobject").Invoke(failedRecord, new object[] { (byte)3, entry(0x2100, 3, "VISIBLE_STRING", "**error**") });
+        dictionary.GetType().GetMethod("Add").Invoke(dictionary, new object[] { (ushort)0x2100, failedRecord });
+        dictionary.GetType().GetMethod("Add").Invoke(dictionary, new object[] { (ushort)0x2200, entry(0x2200, 0, "VISIBLE_STRING", "ERROR counter") });
         var writes = (IEnumerable<SdoParameterWrite>)editorType.GetMethod("BuildDcfWrites", BindingFlags.Static | BindingFlags.NonPublic)
             .Invoke(null, new[] { dcf });
         SdoParameterWrite[] values = new List<SdoParameterWrite>(writes).ToArray();
@@ -736,6 +797,36 @@ internal static class PacketDisplayTests
         Require(Array.Exists(values, write => write.Index == 0x1A00 && write.Subindex == 1 && BitConverter.ToUInt32(write.Data, 0) == 0x20000010)
             && Array.Exists(values, write => write.Index == 0x1800 && write.Subindex == 3 && BitConverter.ToUInt16(write.Data, 0) == 200),
             "DCF planning lost mapping/communication parameters or their widths");
+        Require(!values.Any(write => write.Index == 0x2000 || (write.Index == 0x2100 && write.Subindex != 2)),
+            "DCF replay attempted to write a saved read-error marker");
+        Require(values.Any(write => write.Index == 0x2100 && write.Subindex == 2 && BitConverter.ToUInt16(write.Data, 0) == 42)
+            && values.Any(write => write.Index == 0x2200 && System.Text.Encoding.ASCII.GetString(write.Data) == "ERROR counter"),
+            "DCF replay lost valid values after saved read errors or confused ordinary text with a marker");
+        dictionary.GetType().GetMethod("Add").Invoke(dictionary, new object[] { (ushort)0x2300, entry(0x2300, 0, "UNSIGNED16", "not a number") });
+        bool invalidRejected = false;
+        try
+        {
+            editorType.GetMethod("BuildDcfWrites", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new[] { dcf });
+        }
+        catch (TargetInvocationException error)
+        {
+            // Framework and modern TypeConverter implementations wrap invalid
+            // numbers in different exception types; both must reject the plan.
+            invalidRejected = error.InnerException != null;
+        }
+        Require(invalidRejected, "DCF replay stopped validating malformed values other than saved read-error markers");
+        MethodInfo scopedPlan = editorType.GetMethod("BuildDcfWritesForEntries", BindingFlags.Static | BindingFlags.NonPublic);
+        var scoped = ((IEnumerable<SdoParameterWrite>)scopedPlan.Invoke(null, new object[] { dcf,
+            new HashSet<uint> { ((uint)0x2100 << 8) | 2 } })).ToArray();
+        Require(scoped.Length == 1 && scoped[0].Index == 0x2100 && scoped[0].Subindex == 2,
+            "Filtered DCF replay included hidden PDOs, error markers or malformed values");
+        scoped = ((IEnumerable<SdoParameterWrite>)scopedPlan.Invoke(null, new object[] { dcf,
+            new HashSet<uint> { ((uint)0x1A00 << 8) | 1 } })).ToArray();
+        Require(scoped.Length == 2 && scoped.Any(write => write.Index == 0x1A00 && write.Subindex == 0 && write.Data[0] == 2)
+            && scoped.All(write => write.Index == 0x1A00), "Scoped PDO remapping lost its count or included unrelated parameters");
+        scoped = ((IEnumerable<SdoParameterWrite>)scopedPlan.Invoke(null, new object[] { dcf, new HashSet<uint>() })).ToArray();
+        Require(scoped.Length == 0, "An empty view replayed hidden DCF parameters");
+        Console.WriteLine("PASS: DCF replay skips saved scalar/subobject read errors, preserves later valid writes and rejects other malformed values");
         Console.WriteLine("PASS: actual OD Editor DCF planning includes mapping count and combined communication/mapping values");
     }
 
